@@ -429,7 +429,7 @@ function AppContent() {
       setAuthState(state);
       setNeedsName(false);
     } catch (err: any) {
-      setSignupError(err.message || "Something went wrong");
+      setSignupError(err?.message || "Something went wrong");
     } finally {
       setIsSigningUp(false);
     }

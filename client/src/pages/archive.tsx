@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
+import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
 
 type TabMode = "discoveries" | "questions";
 
@@ -176,7 +177,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                   >
                     All Categories
                   </button>
-                  {['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'].map(cat => (
+                  {VALID_CATEGORIES_LIST.map(cat => (
                     <button
                       key={cat}
                       onClick={() => {

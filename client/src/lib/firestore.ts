@@ -10,13 +10,13 @@ import {
   where,
   addDoc,
   runTransaction,
-  deleteField,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer } from "./mock-data";
 
 const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
-const VALID_CATEGORIES: Set<string> = new Set(['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random']);
+export const VALID_CATEGORIES_LIST = ['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'] as const;
+const VALID_CATEGORIES: Set<string> = new Set(VALID_CATEGORIES_LIST);
 export const VALID_CATEGORIES_SET = VALID_CATEGORIES;
 const MAX_FACT_LENGTH = 5000;
 const MAX_ANSWER_LENGTH = 2000;
@@ -96,16 +96,6 @@ export async function reconnectUser(
   const field = isUser1 ? "user1Id" : "user2Id";
   await updateDoc(doc(db, "pairings", pairingId), { [field]: newUid });
 
-  const factsQuery = query(
-    collection(db, "facts"),
-    where("pairingId", "==", pairingId),
-    where("authorId", "==", oldUid)
-  );
-  const factsSnap = await getDocs(factsQuery);
-  for (const factDoc of factsSnap.docs) {
-    await updateDoc(doc(db, "facts", factDoc.id), { authorId: newUid });
-  }
-
   const answersQuery = query(
     collection(db, "dailyAnswers"),
     where("pairingId", "==", pairingId)
@@ -117,7 +107,6 @@ export async function reconnectUser(
       try {
         await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
           [`answers.${newUid}`]: ansData.answers[oldUid],
-          [`answers.${oldUid}`]: deleteField(),
         });
       } catch {}
     }
@@ -129,6 +118,9 @@ export async function reconnectUser(
   );
   const allFactsSnap = await getDocs(allFactsQuery);
   for (const factDoc of allFactsSnap.docs) {
+    if (factDoc.data().authorId === oldUid) {
+      try { await updateDoc(doc(db, "facts", factDoc.id), { authorId: newUid }); } catch {}
+    }
     try {
       const oldReactionRef = doc(db, "facts", factDoc.id, "reactions", oldUid);
       const oldReactionSnap = await getDoc(oldReactionRef);
