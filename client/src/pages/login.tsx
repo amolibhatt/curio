@@ -25,7 +25,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
           </div>
           <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">
-            {isInvite ? "You've been invited to the cabinet." : "A private cabinet of curiosities for two."}
+            {isInvite ? "You've been invited." : "A shared archive of curiosities for two."}
           </p>
         </div>
 

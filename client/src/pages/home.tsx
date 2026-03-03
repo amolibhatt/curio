@@ -184,7 +184,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             What did you <span className="italic text-[#4A4A4A]">discover</span>?
           </h1>
           <p className="text-[1.15rem] md:text-[1.25rem] text-[#909090] italic font-serif">
-            One curiosity a day for the cabinet.
+            One curiosity a day, just between us.
           </p>
         </div>
       </header>
@@ -224,7 +224,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
               <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
               <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                To the cabinet
+                To the archive
               </p>
             </div>
           </CardContent>
@@ -329,7 +329,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0 || isSubmitting}
                     data-testid="button-save-fact"
                   >
-                    {isSubmitting ? "Adding..." : "Add to cabinet"}
+                    {isSubmitting ? "Adding..." : "Add to archive"}
                   </button>
                 </div>
               </div>

@@ -10,7 +10,7 @@ export default function NotFound() {
         </div>
         <h1 className="text-3xl font-serif text-[#1C1C1C]" data-testid="text-not-found">Page not found</h1>
         <p className="text-[#909090] font-serif italic">
-          This page doesn't exist in the cabinet.
+          Nothing to see here.
         </p>
         <Link href="/">
           <span className="inline-block mt-4 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors cursor-pointer" data-testid="link-home">

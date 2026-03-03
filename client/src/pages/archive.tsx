@@ -73,7 +73,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
-              The Cabinet
+              The Archive
             </h1>
             <p className="text-base text-[#909090] italic font-serif mt-2">
               Everything we've found, side by side.
@@ -447,7 +447,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                 <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-80 mix-blend-multiply" />
               </div>
               
-              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The cabinet is empty.</h3>
+              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
               <p className="text-[#909090] text-sm md:text-base leading-relaxed">
                 Share your first discovery to begin.
               </p>
