@@ -35,27 +35,27 @@ export default function Layout({ children, user }: { children: React.ReactNode, 
             </div>
           </Link>
           
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 pr-1 border-r border-black/10">
-              <span className="text-[11px] font-semibold text-[#1C1C1C] hidden md:block">{user.name}</span>
-              <div className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden border border-black/10 shrink-0">
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover bg-white" />
+          <div className="flex items-center gap-1.5 md:gap-3 bg-white px-1.5 py-1.5 rounded-[1.2rem] md:rounded-full shadow-sm border border-black/[0.04]">
+            <div className="flex items-center gap-2.5 pl-2 pr-2 md:pr-3 border-r border-black/[0.08]">
+              <span className="text-[11px] md:text-xs font-semibold text-[#1C1C1C] max-w-[80px] md:max-w-[120px] truncate">{user.name}</span>
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden border border-black/10 shrink-0 bg-white">
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
               </div>
             </div>
             <Button 
               variant="ghost" 
               onClick={handleShareLink}
-              className={`rounded-full h-9 px-3 flex items-center gap-2 transition-all ${copied ? 'text-green-600 hover:text-green-700 bg-green-50/50 hover:bg-green-50' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
+              className={`rounded-full h-7 md:h-8 px-3 md:px-4 flex items-center gap-1.5 md:gap-2 transition-all mr-0.5 ${copied ? 'text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800' : 'text-[#737373] hover:text-black hover:bg-black/5'}`}
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  <span className="text-[10px] font-bold tracking-[0.15em]">COPIED</span>
+                  <Check className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={2.5} />
+                  <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] hidden sm:inline-block">COPIED</span>
                 </>
               ) : (
                 <>
-                  <LinkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  <span className="text-[10px] font-bold tracking-[0.15em]">INVITE</span>
+                  <LinkIcon className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={2.5} />
+                  <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] hidden sm:inline-block">INVITE</span>
                 </>
               )}
             </Button>
