@@ -25,11 +25,17 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
     if (!auth.pairing) return;
     try {
       const data = await firestoreOps.getFactsByPairing(auth.pairing.id);
+      console.log("[Curio] Fetched facts:", data.length, "pairing:", auth.pairing.id);
       setFacts(data);
-    } catch (err) {
-      console.error("Failed to fetch facts:", err);
+    } catch (err: any) {
+      console.error("[Curio] Failed to fetch facts:", err);
+      toast({
+        title: "Couldn't load discoveries",
+        description: err?.message || "Check Firestore rules",
+        variant: "destructive",
+      });
     }
-  }, [auth.pairing]);
+  }, [auth.pairing, toast]);
 
   useEffect(() => {
     fetchFacts();
@@ -46,8 +52,9 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
       throw new Error("You've already shared a discovery today");
     }
 
-    await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
-    await fetchFacts();
+    const newFact = await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
+    setFacts(prev => [newFact, ...prev]);
+    fetchFacts().catch(() => {});
   };
 
   const handleReact = async (factId: string, type: ReactionType) => {
