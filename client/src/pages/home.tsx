@@ -152,10 +152,10 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </div>
         
             <div className="space-y-1 pt-1">
-          <h1 className="text-[2.25rem] md:text-[3rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
+          <h1 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
             Did you learn something <span className="italic text-[#4A4A4A]">new</span> today?
           </h1>
-          <p className="text-[1rem] md:text-[1.15rem] text-[#909090] italic font-serif">
+          <p className="text-[0.95rem] md:text-[1.05rem] text-[#909090] italic font-serif">
             Add it to our shared cabinet of curiosities.
           </p>
         </div>
