@@ -94,11 +94,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex bg-[#FAF9F7] rounded-full p-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex bg-[#FAF9F7] rounded-full p-1 shrink-0">
             <button
               onClick={() => setActiveTab("discoveries")}
-              className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all ${
+              className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all ${
                 activeTab === "discoveries" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
               }`}
               data-testid="tab-discoveries"
@@ -107,7 +107,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             </button>
             <button
               onClick={() => setActiveTab("questions")}
-              className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all flex items-center gap-1.5 ${
                 activeTab === "questions" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
               }`}
               data-testid="tab-questions"
@@ -125,11 +125,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
           {activeTab === "discoveries" && (
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
               data-testid="button-toggle-filters"
             >
               <Filter className="w-3.5 h-3.5" />
-              Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}
+              {(filterPerson || filterCategories.length > 0) ? 'Filtered' : 'Filter'}
             </button>
           )}
         </div>
@@ -210,7 +210,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                   key={qa.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.08 }}
+                  transition={{ duration: 0.4, delay: Math.min(idx * 0.08, 0.8) }}
                   className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5"
                   data-testid={`card-qa-${qa.id}`}
                 >

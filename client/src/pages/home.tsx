@@ -232,7 +232,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && (isAdding || isEditing)) {
-        setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]);
+        setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false);
       }
     };
     document.addEventListener("keydown", handleEscape);
@@ -263,7 +263,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       } else {
         await onAddFact(newFact.trim(), selectedCategories);
       }
-      setNewFact(""); setSelectedCategories([]); setIsAdding(false); setIsEditing(false); setEditingFactId(null);
+      setNewFact(""); setSelectedCategories([]); setIsAdding(false); setIsEditing(false); setEditingFactId(null); setShowHeadingMenu(false);
     } catch (err: any) {
       toast({ title: isEditing ? "Couldn't update" : "Couldn't add", description: err?.message || "Something went wrong. Try again.", variant: "destructive" });
     } finally {
@@ -283,7 +283,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             {isEditing ? "Edit entry" : "New entry"}
           </p>
           <button
-            onClick={() => { setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); }}
+            onClick={() => { setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false); }}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
             data-testid="button-close-form"
           >
@@ -341,7 +341,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               {getGreeting()} <span className="text-[#909090]">✦</span>
             </p>
             <p className="text-[11px] text-[#909090] font-medium mt-0.5">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              {(() => { const [y, m, d] = todayStr.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); })()}
             </p>
           </div>
           {streak > 0 && (

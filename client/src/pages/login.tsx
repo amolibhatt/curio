@@ -35,33 +35,33 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
         </div>
 
         <div className="pt-8 pb-8 px-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Input 
-                  placeholder="What's your name?"
-                  className="h-14 rounded-2xl px-6 bg-white border-none focus-visible:ring-black/5 focus-visible:border-black/5 text-base text-center placeholder:text-center shadow-sm"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={50}
-                  data-testid="input-name"
-                  autoFocus
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Input 
+                placeholder="What's your name?"
+                className="h-14 rounded-2xl px-6 bg-white border-none focus-visible:ring-black/5 focus-visible:border-black/5 text-base text-center placeholder:text-center shadow-sm"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={50}
+                data-testid="input-name"
+                autoFocus
+              />
+            </div>
 
-              {error && (
-                <p className="text-[#B86A6A] text-sm text-center" data-testid="text-error">{error}</p>
-              )}
+            {error && (
+              <p className="text-[#B86A6A] text-sm text-center" data-testid="text-error">{error}</p>
+            )}
 
-              <Button 
-                type="submit"
-                disabled={!name.trim() || isLoading}
-                className="w-full h-14 text-base font-medium rounded-2xl justify-center gap-2 px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
-                data-testid="button-submit"
-              >
-                {isLoading ? "Entering..." : "Enter"}
-                <ArrowRight className={`w-5 h-5 opacity-70 ${isLoading ? 'animate-pulse' : ''}`} />
-              </Button>
-            </form>
+            <Button 
+              type="submit"
+              disabled={!name.trim() || isLoading}
+              className="w-full h-14 text-base font-medium rounded-2xl justify-center gap-2 px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+              data-testid="button-submit"
+            >
+              {isLoading ? "Entering..." : "Enter"}
+              <ArrowRight className={`w-5 h-5 opacity-70 ${isLoading ? 'animate-pulse' : ''}`} />
+            </Button>
+          </form>
         </div>
       </div>
     </div>
