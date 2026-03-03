@@ -10,12 +10,14 @@ import {
   where,
   addDoc,
   runTransaction,
+  deleteField,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer } from "./mock-data";
 
 const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
 const VALID_CATEGORIES: Set<string> = new Set(['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random']);
+export const VALID_CATEGORIES_SET = VALID_CATEGORIES;
 const MAX_FACT_LENGTH = 5000;
 const MAX_ANSWER_LENGTH = 2000;
 const MAX_NAME_LENGTH = 50;
@@ -115,6 +117,7 @@ export async function reconnectUser(
       try {
         await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
           [`answers.${newUid}`]: ansData.answers[oldUid],
+          [`answers.${oldUid}`]: deleteField(),
         });
       } catch {}
     }
@@ -131,6 +134,7 @@ export async function reconnectUser(
       const oldReactionSnap = await getDoc(oldReactionRef);
       if (oldReactionSnap.exists()) {
         await setDoc(doc(db, "facts", factDoc.id, "reactions", newUid), oldReactionSnap.data());
+        try { await deleteDoc(oldReactionRef); } catch {}
       }
     } catch {}
   }

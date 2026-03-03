@@ -6,13 +6,21 @@ import { Button } from "@/components/ui/button";
 import { User } from "@/lib/mock-data";
 
 export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [copied, setCopied] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current); };
+  }, []);
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
-  }, [location]);
+    if (location.startsWith("/invite/")) {
+      setLocation("/");
+    }
+  }, [location, setLocation]);
 
   const handleShareLink = async () => {
     if (!inviteCode) return;
@@ -38,7 +46,8 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
       document.body.removeChild(textarea);
     }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
   return (

@@ -106,7 +106,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const handleEditFact = async (factId: string, text: string, categories: Category[]): Promise<void> => {
     await firestoreOps.updateFact(factId, text, categories);
     const safeText = text.slice(0, 5000);
-    const validCats = categories.filter(c => ['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'].includes(c));
+    const validCats = categories.filter((c): c is Category => firestoreOps.VALID_CATEGORIES_SET.has(c));
     setFacts(prev => prev.map(f => f.id === factId ? { ...f, text: safeText, categories: validCats } : f));
   };
 
@@ -139,7 +139,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     } catch (err: any) {
       toast({
         title: "Couldn't react",
-        description: err.message || "Something went wrong.",
+        description: err?.message || "Something went wrong.",
         variant: "destructive",
       });
       fetchFacts().catch(() => {});
