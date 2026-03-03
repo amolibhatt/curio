@@ -3,7 +3,8 @@ import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, ImageIcon, X } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, ImageIcon, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
@@ -22,6 +23,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
@@ -67,7 +69,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-      const interval: any = setInterval(function() {
+      const interval = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -86,6 +88,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
         });
       }, 250);
+
+      return () => clearInterval(interval);
     }
     prevStreakRef.current = streak;
   }, [streak]);
@@ -105,7 +109,12 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
       setSelectedCategories([]);
       setImageUrl(null);
       setIsAdding(false);
-    } catch {
+    } catch (err: any) {
+      toast({
+        title: "Couldn't save",
+        description: err?.message || "Something went wrong. Try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

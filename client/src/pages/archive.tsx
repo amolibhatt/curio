@@ -92,21 +92,26 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                   <button
                     onClick={() => setFilterPerson(null)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    data-testid="filter-everyone"
                   >
                     Everyone
                   </button>
                   <button
                     onClick={() => setFilterPerson(activeUser.id)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    data-testid="filter-me"
                   >
                     Me
                   </button>
-                  <button
-                    onClick={() => setFilterPerson(partnerUser.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
-                  >
-                    {partnerUser.name}
-                  </button>
+                  {partnerUser.id !== 0 && (
+                    <button
+                      onClick={() => setFilterPerson(partnerUser.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                      data-testid="filter-partner"
+                    >
+                      {partnerUser.name}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -159,8 +164,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                   const author = isMe ? activeUser : partnerUser;
                   const isAboutUs = fact.categories.includes('Us');
                   
-                  // Blind reveal logic: if this is a friend's fact, check if I also posted on this date
-                  const iPostedThisDate = dateFacts.some(f => f.authorId === activeUser.id);
+                  const allFactsForDate = facts.filter(f => f.date === date);
+                  const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
                   const isHidden = !isMe && !iPostedThisDate;
                   
                   // Check if current user has reacted
@@ -190,7 +195,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                             <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
                             <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
-                              Hidden until you share today's discovery
+                              {date === new Date().toISOString().split('T')[0]
+                                ? "Hidden until you share yours"
+                                : "You didn\u2019t share that day"}
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
                             </p>
                           </div>
@@ -407,6 +414,19 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
           );
         })}
         
+        {facts.length > 0 && filteredFacts.length === 0 && (
+          <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
+            <p className="text-[#909090] font-serif italic text-lg">No matching entries.</p>
+            <button
+              onClick={() => { setFilterPerson(null); setFilterCategories([]); }}
+              className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
+              data-testid="button-clear-filters"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
+
         {facts.length === 0 && (
           <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 relative py-12">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FBF9F6]/90 to-[#FBF9F6] z-10 pointer-events-none" />

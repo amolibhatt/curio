@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, Compass, History, Link as LinkIcon, Check } from "lucide-react";
+import { BookOpen, Compass, History, Link as LinkIcon, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 
 import { User } from "@/lib/mock-data";
 
 export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
+
+  const handleLogout = async () => {
+    await apiRequest("POST", "/api/auth/logout");
+    queryClient.setQueryData(["/api/auth/me"], null);
+    queryClient.invalidateQueries();
+  };
 
   const handleShareLink = () => {
     if (!inviteCode) return;
@@ -44,6 +51,7 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
                 variant="ghost" 
                 onClick={handleShareLink}
                 className={`rounded-full h-7 md:h-8 px-3 md:px-4 flex items-center gap-1.5 md:gap-2 transition-all mr-0.5 ${copied ? 'text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800' : 'text-[#737373] hover:text-black hover:bg-black/5'}`}
+                data-testid="button-invite"
               >
                 {copied ? (
                   <>
@@ -58,6 +66,15 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
                 )}
               </Button>
             )}
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="rounded-full h-7 w-7 md:h-8 md:w-8 p-0 text-[#909090] hover:text-black hover:bg-black/5"
+              data-testid="button-logout"
+              title="Log out"
+            >
+              <LogOut className="w-3.5 h-3.5" strokeWidth={2} />
+            </Button>
           </div>
         </header>
 

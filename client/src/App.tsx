@@ -16,6 +16,15 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { data: facts = [] } = useQuery<Fact[]>({
     queryKey: ["/api/facts"],
     refetchInterval: 15000,
+    queryFn: async () => {
+      const res = await fetch("/api/facts", { credentials: "include" });
+      if (res.status === 401) {
+        queryClient.setQueryData(["/api/auth/me"], null);
+        return [];
+      }
+      if (!res.ok) throw new Error("Failed to fetch facts");
+      return res.json();
+    },
   });
 
   const addFactMutation = useMutation({
