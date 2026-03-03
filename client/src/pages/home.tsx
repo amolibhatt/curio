@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check } from "lucide-react";
+import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -103,6 +103,13 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
   );
 }
 
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -111,6 +118,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [promptIndex, setPromptIndex] = useState(0);
   const { toast } = useToast();
+
+  const hasPartner = partnerUser.id !== "0";
 
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
   useEffect(() => {
@@ -287,210 +296,233 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     );
   };
 
+  if (isAdding || isEditing) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
+        <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
+          <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
+            {isEditing ? "Edit entry" : "New entry"}
+          </p>
+          <button 
+            onClick={() => {
+              setIsAdding(false);
+              setIsEditing(false);
+              setEditingFactId(null);
+              setNewFact("");
+              setSelectedCategories([]);
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
+            data-testid="button-close-form"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
+            <RichEditorSection
+              newFact={newFact}
+              setNewFact={setNewFact}
+              showHeadingMenu={showHeadingMenu}
+              setShowHeadingMenu={setShowHeadingMenu}
+            />
+
+            <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
+              <div className="space-y-4">
+                <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">
+                  Tags
+                </p>
+                <div className="flex flex-wrap gap-2.5">
+                  {CATEGORIES.map(({ name, icon: Icon }) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        toggleCategory(name);
+                      }}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-200 active:scale-95 border ${
+                        selectedCategories.includes(name)
+                          ? name === 'Us' 
+                            ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' 
+                            : 'bg-black text-white border-black shadow-sm'
+                          : 'bg-white text-[#737373] border-black/5 hover:border-black/10 shadow-sm hover:shadow-md'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end pt-8 border-t border-black/5">
+                <button 
+                  type="submit" 
+                  className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
+                  disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting}
+                  data-testid="button-save-fact"
+                >
+                  {isSubmitting ? (isEditing ? "Saving..." : "Adding...") : (isEditing ? "Save changes" : "Add to archive")}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-1 md:pt-4 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-3 md:gap-6">
-      <header className="space-y-2 md:space-y-4 flex-shrink-0 px-2 md:px-0">
-        {streak > 0 && (
-          <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]" data-testid="badge-streak">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            {streak} DAY STREAK
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-5 md:gap-6">
+
+      <header className="flex-shrink-0 px-2 md:px-0 text-center">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
+            <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
           </div>
-        )}
-        <div className="space-y-3 pt-4">
-          <h1 className="text-[2rem] md:text-[3.25rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
-            What did you <span className="italic text-[#4A4A4A]">discover</span>?
-          </h1>
-          <p className="text-base md:text-[1.25rem] text-[#909090] italic font-serif">
-            One curiosity a day, just between us.
+          <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-in zoom-in duration-500" />
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
+            <img src={partnerUser.avatar} alt={partnerUser.name} className="w-full h-full" />
+          </div>
+        </div>
+
+        <h1 className="font-serif text-[1.6rem] md:text-[2.5rem] leading-tight text-[#1C1C1C] tracking-tight mb-1" data-testid="text-greeting">
+          {getGreeting()}, <span className="italic text-[#4A4A4A]">{activeUser.name}</span>
+          {hasPartner && <span className="text-[#909090]"> & </span>}
+          {hasPartner && <span className="italic text-[#4A4A4A]">{partnerUser.name}</span>}
+        </h1>
+
+        <div className="flex items-center justify-center gap-3 mt-3">
+          {streak > 0 && (
+            <div className="inline-flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[0.1em]" data-testid="badge-streak">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {streak} DAY STREAK
+            </div>
+          )}
+          <p className="text-[11px] text-[#909090] font-medium">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </p>
         </div>
       </header>
 
-      {!isAdding && !isEditing ? (
-        <div className="flex-1 flex flex-col gap-3 md:gap-4 mx-2 md:mx-0">
-
-          {myFactToday && (
-            <div
-              className={`rounded-[1.25rem] px-5 py-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500 ${
-                partnerFactToday
-                  ? 'bg-amber-50/80 border border-amber-200/60'
-                  : 'bg-green-50/80 border border-green-200/60'
-              }`}
-              data-testid="banner-today-status"
-            >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                partnerFactToday ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'
+      <div className="px-2 md:px-0">
+        <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-black/5" data-testid="card-today-checkin">
+          <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-3 px-1">Today's check-in</p>
+          <div className="flex gap-3">
+            <div className={`flex-1 rounded-xl px-4 py-3 flex items-center gap-3 transition-colors ${
+              myFactToday ? 'bg-green-50/80' : 'bg-[#FBF9F6]'
+            }`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                myFactToday ? 'bg-green-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
               }`}>
-                {partnerFactToday ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                {myFactToday && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#1C1C1C]" data-testid="text-sealed-title">
-                  {partnerFactToday
-                    ? "Both shared!"
-                    : partnerUser.id === "0"
-                      ? "Sealed. Invite someone to start."
-                      : `Sealed. Waiting for ${partnerUser.name}.`}
+              <div className="min-w-0">
+                <p className={`text-xs font-semibold truncate ${myFactToday ? 'text-green-700' : 'text-[#909090]'}`}>
+                  {activeUser.name}
+                </p>
+                <p className="text-[10px] text-[#b0b0b0]">
+                  {myFactToday ? "Shared" : "Not yet"}
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {partnerFactToday && (
-                  <a
-                    href="/archive"
-                    className="text-[10px] font-bold tracking-[0.15em] uppercase text-amber-700 hover:text-amber-900 transition-colors"
-                    data-testid="link-view-archive"
-                  >
-                    Archive
-                  </a>
-                )}
+              {myFactToday && (
                 <button
                   onClick={startEditing}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors text-[#909090] hover:text-black"
+                  className="ml-auto w-7 h-7 flex items-center justify-center rounded-full hover:bg-green-100 transition-colors text-green-600"
                   data-testid="button-edit-fact"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div
-            className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-black/5 animate-in fade-in slide-in-from-bottom-2 duration-500"
-            data-testid="card-daily-prompt"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
-                <Lightbulb className="w-4 h-4 text-amber-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Today's prompt</p>
-                <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
-                  {currentPrompt}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={shufflePrompt}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-medium text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95"
-                data-testid="button-shuffle-prompt"
-              >
-                <RefreshCw className="w-3 h-3" />
-                Another
-              </button>
-              {!myFactToday && (
-                <button
-                  onClick={usePrompt}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
-                  data-testid="button-use-prompt"
-                >
-                  Use this
-                  <ArrowRight className="w-3 h-3" />
+                  <Pencil className="w-3 h-3" />
                 </button>
               )}
             </div>
-          </div>
 
-          {!myFactToday && (
-            <Card 
-              className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] shadow-sm border border-black/5"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(50);
-                setIsAdding(true);
-              }}
-              data-testid="card-add-discovery"
+            <div className={`flex-1 rounded-xl px-4 py-3 flex items-center gap-3 transition-colors ${
+              partnerFactToday ? 'bg-green-50/80' : 'bg-[#FBF9F6]'
+            }`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                partnerFactToday ? 'bg-green-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
+              }`}>
+                {partnerFactToday && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+              </div>
+              <div className="min-w-0">
+                <p className={`text-xs font-semibold truncate ${partnerFactToday ? 'text-green-700' : 'text-[#909090]'}`}>
+                  {hasPartner ? partnerUser.name : "Partner"}
+                </p>
+                <p className="text-[10px] text-[#b0b0b0]">
+                  {!hasPartner ? "Invite them" : partnerFactToday ? "Shared" : "Not yet"}
+                </p>
+              </div>
+            </div>
+          </div>
+          {myFactToday && partnerFactToday && (
+            <a
+              href="/archive"
+              className="flex items-center justify-center gap-2 mt-3 py-2.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-colors"
+              data-testid="link-view-archive"
             >
-              <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
-                <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
-                  <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
-                </div>
-                
-                <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
-                  <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
-                  <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                    To the archive
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              Both shared! See today's discoveries
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
           )}
         </div>
-      ) : (
-        <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
-          
-          <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
-            <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
-              {isEditing ? "Edit entry" : "New entry"}
-            </p>
-            <button 
-              onClick={() => {
-                setIsAdding(false);
-                setIsEditing(false);
-                setEditingFactId(null);
-                setNewFact("");
-                setSelectedCategories([]);
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
-              data-testid="button-close-form"
+      </div>
+
+      <div className="px-2 md:px-0">
+        <div
+          className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-black/5"
+          data-testid="card-daily-prompt"
+        >
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Today's prompt</p>
+              <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
+                {currentPrompt}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={shufflePrompt}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-medium text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95"
+              data-testid="button-shuffle-prompt"
             >
-              <X className="w-5 h-5" />
+              <RefreshCw className="w-3 h-3" />
+              Another
             </button>
+            {!myFactToday && (
+              <button
+                onClick={usePrompt}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
+                data-testid="button-use-prompt"
+              >
+                Use this
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
           </div>
+        </div>
+      </div>
 
-          <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
-              
-              <RichEditorSection
-                newFact={newFact}
-                setNewFact={setNewFact}
-                showHeadingMenu={showHeadingMenu}
-                setShowHeadingMenu={setShowHeadingMenu}
-              />
-
-              <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
-                <div className="space-y-4">
-                  <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">
-                    Tags
-                  </p>
-                  <div className="flex flex-wrap gap-2.5">
-                    {CATEGORIES.map(({ name, icon: Icon }) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => {
-                          if (navigator.vibrate) navigator.vibrate(20);
-                          toggleCategory(name);
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-200 active:scale-95 border ${
-                          selectedCategories.includes(name)
-                            ? name === 'Us' 
-                              ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' 
-                              : 'bg-black text-white border-black shadow-sm'
-                            : 'bg-white text-[#737373] border-black/5 hover:border-black/10 shadow-sm hover:shadow-md'
-                        }`}
-                      >
-                        <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end pt-8 border-t border-black/5">
-                  <button 
-                    type="submit" 
-                    className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
-                    disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting}
-                    data-testid="button-save-fact"
-                  >
-                    {isSubmitting ? (isEditing ? "Saving..." : "Adding...") : (isEditing ? "Save changes" : "Add to archive")}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+      {!myFactToday && (
+        <div className="px-2 md:px-0">
+          <button
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(50);
+              setIsAdding(true);
+            }}
+            className="w-full bg-[#1C1C1C] text-white rounded-[1.25rem] py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:bg-black shadow-sm"
+            data-testid="card-add-discovery"
+          >
+            <Send className="w-4 h-4" />
+            Share today's discovery
+          </button>
         </div>
       )}
     </div>
