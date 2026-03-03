@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown } from "lucide-react";
-import emptyArchiveImg from "../assets/images/empty-archive.png";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 
@@ -422,15 +421,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
         )}
 
         {facts.length === 0 && (
-          <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 relative py-12">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FBF9F6]/90 to-[#FBF9F6] z-10 pointer-events-none" />
-            
-            <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-sm mt-[-10vh]">
-              <div className="w-40 h-40 md:w-48 md:h-48 mb-6 relative animate-float-slow">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-100/50 via-transparent to-transparent blur-xl"></div>
-                <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-80 mix-blend-multiply" />
+          <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
+            <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
+              <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
+                <BookOpen className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
               </div>
-              
               <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
               <p className="text-[#909090] text-sm md:text-base leading-relaxed">
                 Share your first discovery to begin.
