@@ -12,7 +12,7 @@ export default function Layout({ children, onLogout, user }: { children: React.R
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <header className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border z-10 sticky top-0">
+      <header className="md:hidden flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] bg-card border-b border-border z-10 sticky top-0 shadow-sm">
         <div className="flex items-center gap-2 font-bold text-lg text-primary">
           <Sparkles className="w-5 h-5" />
           DailyFact
@@ -82,14 +82,14 @@ export default function Layout({ children, onLogout, user }: { children: React.R
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 pb-20 md:pb-0 overflow-y-auto">
+      <main className="flex-1 pb-24 md:pb-0 overflow-y-auto">
         <div className="max-w-3xl mx-auto w-full p-4 md:p-8">
           {children}
         </div>
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around p-2 pb-safe z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-lg border-t border-border flex items-center justify-around p-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] z-50">
         <Link href="/">
           <Button variant="ghost" size="icon" className={`rounded-xl w-14 h-14 ${location === "/" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
             <Home className="w-6 h-6" />
