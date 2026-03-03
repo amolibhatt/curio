@@ -3,11 +3,21 @@ import { currentUser, friendUser, Fact } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Send } from "lucide-react";
+import { Clock, Plus, Send, Sparkles } from "lucide-react";
+
+const PROMPTS = [
+  "Tell me a historical event that sounds fake...",
+  "What's the weirdest thing about the ocean?",
+  "Drop a random space fact...",
+  "Tell me something weird about the human body...",
+  "What's a strange animal adaptation?",
+  "Share a bizarre psychological phenomenon..."
+];
 
 export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
+  const [promptIndex, setPromptIndex] = useState(0);
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
@@ -21,6 +31,10 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
     onAddFact(newFact);
     setNewFact("");
     setIsAdding(false);
+  };
+
+  const cyclePrompt = () => {
+    setPromptIndex((prev) => (prev + 1) % PROMPTS.length);
   };
 
   return (
@@ -78,10 +92,19 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
         </Card>
       ) : (
         <Card className="bg-white border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col animate-in zoom-in-95 duration-300 mx-2 md:mx-0">
-          <CardContent className="p-6 md:p-10 flex-1 flex flex-col">
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col h-full space-y-4">
+          <CardContent className="p-6 md:p-10 flex-1 flex flex-col relative">
+            
+            <button 
+              onClick={cyclePrompt}
+              className="absolute top-6 right-6 md:top-8 md:right-8 flex items-center gap-1.5 text-[10px] md:text-xs font-bold tracking-wider text-[#909090] hover:text-black transition-colors uppercase"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Need an idea?
+            </button>
+
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col h-full space-y-4 pt-8 md:pt-10">
               <Textarea 
-                placeholder="Type your discovery here..." 
+                placeholder={PROMPTS[promptIndex]} 
                 className="flex-1 min-h-[150px] md:min-h-[220px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
                 value={newFact}
                 onChange={(e) => setNewFact(e.target.value)}
