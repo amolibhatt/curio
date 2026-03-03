@@ -9,10 +9,12 @@ import Layout from "./components/layout";
 import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
+import { useToast } from "@/hooks/use-toast";
 
 import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
+  const { toast } = useToast();
   const { data: facts = [] } = useQuery<Fact[]>({
     queryKey: ["/api/facts"],
     refetchInterval: 15000,
@@ -44,6 +46,13 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/facts"] });
+    },
+    onError: (err: Error) => {
+      toast({
+        title: "Couldn't react",
+        description: err.message || "Something went wrong.",
+        variant: "destructive",
+      });
     },
   });
 

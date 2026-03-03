@@ -48,14 +48,18 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   };
 
   const handleReact = (factId: number, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
+    const fact = facts.find(f => f.id === factId);
+    const currentReaction = fact?.reactions?.[String(activeUser.id)];
+    const isRemoving = currentReaction === type;
+
     if (navigator.vibrate) navigator.vibrate(50);
-    setBurstReaction({ id: factId, type });
+    if (!isRemoving) {
+      setBurstReaction({ id: factId, type });
+      setTimeout(() => {
+        setBurstReaction(null);
+      }, 1000);
+    }
     onReact(factId, type);
-    
-    // Clear burst after animation
-    setTimeout(() => {
-      setBurstReaction(null);
-    }, 1000);
   };
 
   return (

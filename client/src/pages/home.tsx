@@ -56,19 +56,20 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     return currentStreak;
   }, [facts, activeUser.id, partnerUser.id]);
 
-  const prevStreakRef = useRef(streak);
-  const hasLoadedRef = useRef(false);
+  const prevStreakRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!hasLoadedRef.current) {
-      hasLoadedRef.current = true;
+    if (facts.length === 0) return;
+
+    if (prevStreakRef.current === null) {
       prevStreakRef.current = streak;
       return;
     }
+
     if (streak > prevStreakRef.current && streak > 0) {
       const duration = 3 * 1000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -92,10 +93,12 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         });
       }, 250);
 
+      prevStreakRef.current = streak;
       return () => clearInterval(interval);
     }
+
     prevStreakRef.current = streak;
-  }, [streak]);
+  }, [streak, facts.length]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -117,6 +120,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     if (selectedCategories.length === 0) return;
     if (isSubmitting) return;
     
+    if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmitting(true);
     try {
       await onAddFact(newFact, selectedCategories);
@@ -145,13 +149,15 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-1 md:pt-4 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-3 md:gap-6">
       <header className="space-y-2 md:space-y-4 flex-shrink-0 px-2 md:px-0">
-        <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          {streak} DAY STREAK
-        </div>
+        {streak > 0 && (
+          <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {streak} DAY STREAK
+          </div>
+        )}
         
             <div className="space-y-3 pt-4">
           <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
@@ -221,10 +227,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           </div>
 
           <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
-            <form onSubmit={(e) => {
-              if (navigator.vibrate) navigator.vibrate(50);
-              handleSubmit(e);
-            }} className="flex-1 flex flex-col space-y-8 md:space-y-12">
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
                 <Textarea 
