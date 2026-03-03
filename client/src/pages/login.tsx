@@ -57,7 +57,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
               <Button 
                 type="submit"
                 disabled={!name.trim() || isLoading}
-                className="w-full h-14 text-base font-medium rounded-2xl justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+                className="w-full h-14 text-base font-medium rounded-2xl justify-center gap-2 px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
                 data-testid="button-submit"
               >
                 {isLoading ? "Entering..." : "Enter"}

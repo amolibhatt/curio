@@ -50,11 +50,15 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 
 ## Design
 
-- Hyper-minimal aesthetic, cream background (#FBF9F6)
+- Hyper-minimal aesthetic, cream background (#FAF9F7), near-black text (#1C1C1C)
 - Serif headings (Playfair Display), no shadows except subtle shadow-sm
 - Category system: Science, History, Etymology, Space, Art, Us, Random
-- "Us" category gets rose tinting throughout
-- User1 avatar: pink bg (#ffd5dc), User2 avatar: blue bg (#d5e0ff)
+- "Us" category gets rose tinting throughout; all other elements use warm neutrals
+- User1 avatar: pink bg (#ffd5dc) with long-hair variants + no beard; User2 avatar: blue bg (#d5e0ff)
+- All active states use solid bg-[#1C1C1C] — no gradients
+- Confetti uses warm muted tones (#D4C5B9, #B8A99A, etc.) — no saturated rainbow
+- Logo icon: BookOpen in warm taupe (#8B7E74) on #EDEAE6 rounded-xl
+- Glow/pulse animations use neutral warm tones, not pink/rose
 
 ## Firebase
 

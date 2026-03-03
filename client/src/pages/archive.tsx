@@ -260,7 +260,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
             return (
               <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5 border-none md:border-none">
+                <div className="sticky top-0 z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5">
                   <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                     {format(parseISO(date), 'MMMM d, yyyy')}
                   </h2>

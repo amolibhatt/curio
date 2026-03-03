@@ -154,7 +154,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const partner = auth.partner || {
     id: "0",
     name: "Your partner",
-    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=e5e4df`,
+    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=d5e0ff`,
   };
 
   return (

@@ -197,8 +197,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         const timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) return clearInterval(interval);
         const particleCount = 50 * (timeLeft / duration);
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'] });
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'] });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#D4C5B9', '#B8A99A', '#C9B8A8', '#E0D5CC', '#A89888', '#C2B2A2', '#DDD0C4'] });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#D4C5B9', '#B8A99A', '#C9B8A8', '#E0D5CC', '#A89888', '#C2B2A2', '#DDD0C4'] });
       }, 250);
       prevStreakRef.current = streak;
       return () => clearInterval(interval);
@@ -260,7 +260,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   if (isAdding || isEditing) {
     return (
       <div className="fixed inset-0 z-[60] bg-[#FAF9F7] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
-        <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FAF9F7]/90 backdrop-blur-md">
+        <div className="flex items-center justify-between p-4 md:p-6 pt-[max(env(safe-area-inset-top),1rem)] sticky top-0 z-20 bg-[#FAF9F7]/90 backdrop-blur-md">
           <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
             {isEditing ? "Edit entry" : "New entry"}
           </p>
@@ -458,7 +458,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         <div className="px-1 md:px-0">
           <button
             onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
-            className="w-full bg-gradient-to-r from-[#1C1C1C] to-[#333] text-white rounded-2xl py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:from-black hover:to-[#222] shadow-sm"
+            className="w-full bg-[#1C1C1C] text-white rounded-2xl py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:bg-black shadow-sm"
             data-testid="card-add-discovery"
           >
             <Send className="w-4 h-4" />

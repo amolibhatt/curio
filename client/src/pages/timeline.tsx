@@ -255,7 +255,7 @@ export default function Timeline({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#ff5e7e', '#ff36ff', '#a25afd', '#fcff42', '#ffa62d'],
+        colors: ['#D4C5B9', '#B8A99A', '#C9B8A8', '#E0D5CC', '#A89888'],
       });
       setShowDatePicker(false);
     } catch {
