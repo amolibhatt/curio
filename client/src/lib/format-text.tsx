@@ -99,6 +99,108 @@ export function insertFormatting(
   });
 }
 
+function processNode(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent || '';
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return '';
+  }
+
+  const el = node as HTMLElement;
+  const tag = el.tagName.toLowerCase();
+  const childContent = Array.from(el.childNodes).map(processNode).join('');
+
+  switch (tag) {
+    case 'b':
+    case 'strong':
+      return `**${childContent}**`;
+    case 'i':
+    case 'em':
+      return `*${childContent}*`;
+    case 'u':
+    case 'ins':
+      return `__${childContent}__`;
+    case 'h1':
+      return `# ${childContent}\n`;
+    case 'h2':
+      return `## ${childContent}\n`;
+    case 'h3':
+      return `### ${childContent}\n`;
+    case 'h4':
+      return `#### ${childContent}\n`;
+    case 'h5':
+      return `##### ${childContent}\n`;
+    case 'h6':
+      return `###### ${childContent}\n`;
+    case 'br':
+      return '\n';
+    case 'p':
+    case 'div':
+      return childContent + '\n';
+    case 'li':
+      return '- ' + childContent + '\n';
+    case 'ul':
+    case 'ol':
+      return childContent;
+    case 'a':
+      return childContent;
+    case 'span': {
+      const style = el.getAttribute('style') || '';
+      let result = childContent;
+      if (style.includes('font-weight: bold') || style.includes('font-weight:bold') || style.match(/font-weight:\s*[7-9]00/)) {
+        result = `**${result}**`;
+      }
+      if (style.includes('font-style: italic') || style.includes('font-style:italic')) {
+        result = `*${result}*`;
+      }
+      if (style.includes('text-decoration: underline') || style.includes('text-decoration:underline') || style.match(/text-decoration[^;]*underline/)) {
+        result = `__${result}__`;
+      }
+      return result;
+    }
+    default:
+      return childContent;
+  }
+}
+
+export function htmlToMarkdown(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const result = Array.from(doc.body.childNodes).map(processNode).join('');
+  return result.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+export function handleRichPaste(
+  e: React.ClipboardEvent<HTMLTextAreaElement>,
+  setText: (val: string) => void
+): boolean {
+  const html = e.clipboardData.getData('text/html');
+  if (!html) return false;
+
+  const plain = e.clipboardData.getData('text/plain');
+  const markdown = htmlToMarkdown(html);
+
+  if (markdown === plain.trim()) return false;
+
+  e.preventDefault();
+  const textarea = e.currentTarget;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const current = textarea.value;
+
+  const newText = current.slice(0, start) + markdown + current.slice(end);
+  setText(newText);
+
+  requestAnimationFrame(() => {
+    textarea.focus();
+    const newPos = start + markdown.length;
+    textarea.setSelectionRange(newPos, newPos);
+  });
+
+  return true;
+}
+
 export function insertLinePrefix(
   textarea: HTMLTextAreaElement,
   prefix: string,

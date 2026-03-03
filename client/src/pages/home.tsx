@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
-import { formatText, insertFormatting, insertLinePrefix } from "@/lib/format-text";
+import { formatText, insertFormatting, insertLinePrefix, handleRichPaste } from "@/lib/format-text";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -331,6 +331,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                     value={newFact}
                     onChange={(e) => setNewFact(e.target.value)}
+                    onPaste={(e) => handleRichPaste(e, setNewFact)}
                     maxLength={1000}
                     autoFocus
                   />
