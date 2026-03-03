@@ -63,7 +63,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
   const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
     if (reactingFacts?.has(factId)) return;
     const fact = facts.find(f => f.id === factId);
-    const currentReaction = fact?.reactions?.[String(activeUser.id)];
+    const currentReaction = fact?.reactions?.[activeUser.id];
     const isRemoving = currentReaction === type;
 
     if (navigator.vibrate) navigator.vibrate(50);
@@ -273,7 +273,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                     const isAboutUs = fact.categories.includes('Us');
                     const isHidden = !isMe && !iPostedThisDate;
                     
-                    const myReaction = fact.reactions?.[String(activeUser.id)];
+                    const myReaction = fact.reactions?.[activeUser.id];
                     
                     return (
                       <motion.div 
@@ -487,14 +487,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     </div>
                                   </div>}
                                 
-                                {(fact.reactions?.[String(partnerUser.id)]) && isMe && (
+                                {(fact.reactions?.[partnerUser.id]) && isMe && (
                                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
-                                    {fact.reactions[String(partnerUser.id)] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
-                                    {fact.reactions[String(partnerUser.id)] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
-                                    {fact.reactions[String(partnerUser.id)] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                    {fact.reactions[String(partnerUser.id)] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
-                                    {fact.reactions[String(partnerUser.id)] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
-                                    {fact.reactions[String(partnerUser.id)] === 'sad' && <Frown className="w-3.5 h-3.5" />}
+                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
+                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
+                                    {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
+                                    {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
+                                    {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
+                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5" />}
                                     <span>{partnerUser.name} reacted</span>
                                   </div>
                                 )}

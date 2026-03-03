@@ -230,9 +230,7 @@ export default function Timeline({
   const daysTogether = useMemo(() => {
     if (!anniversaryDate) return 0;
     const start = parseLocalDate(anniversaryDate);
-    const now = new Date();
-    start.setHours(0, 0, 0, 0);
-    now.setHours(0, 0, 0, 0);
+    const now = parseLocalDate(todayStr);
     return Math.max(0, Math.round((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
   }, [anniversaryDate, todayStr]);
 

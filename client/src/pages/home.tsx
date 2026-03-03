@@ -2,11 +2,10 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
-import { getDailyPrompt, getDailyPromptAlternatives } from "@/lib/daily-prompts";
 import { getDailyQuestion } from "@/lib/daily-questions";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
@@ -116,9 +115,10 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [promptIndex, setPromptIndex] = useState(0);
   const [answerText, setAnswerText] = useState("");
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const { toast } = useToast();
 
   const hasPartner = partnerUser.id !== "0";
@@ -134,24 +134,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
   const partnerFactToday = todayFacts.find(f => f.authorId === partnerUser.id);
-
-  const allPrompts = useMemo(() => {
-    const primary = getDailyPrompt(todayStr);
-    const alts = getDailyPromptAlternatives(todayStr, 4);
-    return [primary, ...alts];
-  }, [todayStr]);
-  const currentPrompt = allPrompts[promptIndex % allPrompts.length];
-
-  const shufflePrompt = () => {
-    if (navigator.vibrate) navigator.vibrate(15);
-    setPromptIndex(prev => prev + 1);
-  };
-
-  const usePrompt = () => {
-    if (navigator.vibrate) navigator.vibrate(50);
-    setNewFact(currentPrompt);
-    setIsAdding(true);
-  };
 
   const dailyQuestion = useMemo(() => getDailyQuestion(todayStr), [todayStr]);
   const todayAnswer = dailyAnswers.find(a => a.date === todayStr);
@@ -184,8 +166,9 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       factsByDate.set(f.date, entry);
     }
     let skippedToday = false;
+    const [ty, tm, td] = todayStr.split('-').map(Number);
     for (let i = 0; i < 365; i++) {
-      const d = new Date();
+      const d = new Date(ty, tm - 1, td);
       d.setDate(d.getDate() - i);
       const dateStr = getLocalDateStr(d);
       const entry = factsByDate.get(dateStr);
@@ -199,7 +182,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       }
     }
     return currentStreak;
-  }, [facts, activeUser.id, partnerUser.id, hasPartner]);
+  }, [facts, activeUser.id, partnerUser.id, hasPartner, todayStr]);
 
   const prevStreakRef = useRef<number | null>(null);
 
@@ -238,9 +221,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isAdding, isEditing]);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showHeadingMenu, setShowHeadingMenu] = useState(false);
 
   const startEditing = () => {
     if (myFactToday) {
@@ -484,32 +464,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </button>
         </div>
       )}
-
-      <div className="px-1 md:px-0">
-        <div className="bg-white rounded-2xl p-4 border border-black/5" data-testid="card-daily-prompt">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#F0EEEA] flex items-center justify-center shrink-0 mt-0.5">
-              <Lightbulb className="w-4 h-4 text-[#8B7E74]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold tracking-[0.25em] text-[#b0b0b0] uppercase mb-0.5">Inspiration</p>
-              <p className="font-serif text-sm text-[#737373] leading-relaxed" data-testid="text-daily-prompt">
-                {currentPrompt}
-              </p>
-              <div className="flex items-center gap-2 mt-2.5">
-                <button onClick={shufflePrompt} className="flex items-center gap-1 text-[10px] font-medium text-[#b0b0b0] hover:text-[#737373] transition-all active:scale-95" data-testid="button-shuffle-prompt">
-                  <RefreshCw className="w-3 h-3" /> Shuffle
-                </button>
-                {!myFactToday && (
-                  <button onClick={usePrompt} className="flex items-center gap-1 text-[10px] font-semibold text-[#1C1C1C] hover:text-black transition-all active:scale-95 ml-auto" data-testid="button-use-prompt">
-                    Use this <ArrowRight className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
