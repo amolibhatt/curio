@@ -218,7 +218,9 @@ function AppContent() {
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
-    authReady.then(() => {
+    authReady.catch((err) => {
+      console.error("[Curio] setPersistence failed:", err);
+    }).then(() => {
       unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
         if (user) {
           setFirebaseUid(user.uid);

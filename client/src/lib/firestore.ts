@@ -209,7 +209,7 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
 
   const reactionPromises = snap.docs.map(async (d) => {
     const reactionsSnap = await getDocs(collection(db, "facts", d.id, "reactions"));
-    const reactions: Record<string, ReactionType | null> = {};
+    const reactions: Record<string, ReactionType> = {};
     reactionsSnap.forEach((r) => {
       reactions[r.id] = r.data().type as ReactionType;
     });

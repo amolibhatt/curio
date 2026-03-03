@@ -102,10 +102,9 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
   );
 }
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
+function getGreeting(hour: number): string {
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
   return "Good evening";
 }
 
@@ -124,13 +123,16 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const hasPartner = partnerUser.id !== "0";
 
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
+  const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   useEffect(() => {
     const check = setInterval(() => {
       const now = getLocalDateStr();
       if (now !== todayStr) setTodayStr(now);
+      const h = new Date().getHours();
+      if (h !== currentHour) setCurrentHour(h);
     }, 30000);
     return () => clearInterval(check);
-  }, [todayStr]);
+  }, [todayStr, currentHour]);
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
   const partnerFactToday = todayFacts.find(f => f.authorId === partnerUser.id);
@@ -318,7 +320,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-serif text-lg md:text-xl text-[#1C1C1C] leading-tight truncate" data-testid="text-greeting">
-              {getGreeting()} <span className="text-[#909090]">✦</span>
+              {getGreeting(currentHour)} <span className="text-[#909090]">✦</span>
             </p>
             <p className="text-[11px] text-[#909090] font-medium mt-0.5">
               {(() => { const [y, m, d] = todayStr.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); })()}

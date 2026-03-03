@@ -9,7 +9,7 @@ export type Fact = {
   pairingId: string;
   date: string;
   categories: Category[];
-  reactions: Record<string, ReactionType | null>;
+  reactions: Record<string, ReactionType>;
 };
 
 export type User = {

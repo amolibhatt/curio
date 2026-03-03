@@ -60,10 +60,9 @@ function effectiveDay(annivDay: number, year: number, month: number): number {
   return Math.min(annivDay, lastDay);
 }
 
-function getMonthlyAnniversary(anniversaryDate: string) {
+function getMonthlyAnniversary(anniversaryDate: string, todayStr: string) {
   const anniv = parseLocalDate(anniversaryDate);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  const now = parseLocalDate(todayStr);
   const annivDay = anniv.getDate();
 
   const effToday = effectiveDay(annivDay, now.getFullYear(), now.getMonth());
@@ -97,9 +96,8 @@ function effectiveAnnivForYear(anniv: Date, year: number): Date {
   return d;
 }
 
-function getYearlyAnniversary(anniversaryDate: string) {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+function getYearlyAnniversary(anniversaryDate: string, todayStr: string) {
+  const now = parseLocalDate(todayStr);
   const anniv = parseLocalDate(anniversaryDate);
   const thisYear = effectiveAnnivForYear(anniv, now.getFullYear());
   thisYear.setHours(0, 0, 0, 0);
@@ -120,8 +118,8 @@ function getYearlyAnniversary(anniversaryDate: string) {
 }
 
 function CountdownCards({ anniversaryDate, todayStr }: { anniversaryDate: string; todayStr: string }) {
-  const monthly = useMemo(() => getMonthlyAnniversary(anniversaryDate), [anniversaryDate, todayStr]);
-  const yearly = useMemo(() => getYearlyAnniversary(anniversaryDate), [anniversaryDate, todayStr]);
+  const monthly = useMemo(() => getMonthlyAnniversary(anniversaryDate, todayStr), [anniversaryDate, todayStr]);
+  const yearly = useMemo(() => getYearlyAnniversary(anniversaryDate, todayStr), [anniversaryDate, todayStr]);
 
   return (
     <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -236,7 +234,7 @@ export default function Timeline({
 
   const monthsTogether = useMemo(() => {
     if (!anniversaryDate) return 0;
-    return getMonthlyAnniversary(anniversaryDate).monthsCompleted;
+    return getMonthlyAnniversary(anniversaryDate, todayStr).monthsCompleted;
   }, [anniversaryDate, todayStr]);
 
   const { achieved, next } = useMemo(() => {
