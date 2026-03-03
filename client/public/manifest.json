@@ -1,7 +1,7 @@
 {
-  "name": "DailyFact",
-  "short_name": "DailyFact",
-  "description": "Share daily facts with your best friend and keep the streak alive.",
+  "name": "Curio",
+  "short_name": "Curio",
+  "description": "Two minds. One private cabinet of curiosities.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

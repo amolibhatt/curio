@@ -3,9 +3,9 @@ import { Link, useLocation } from "wouter";
 import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { currentUser } from "@/lib/mock-data";
+import { User } from "@/lib/mock-data";
 
-export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: typeof currentUser, hasFriendJoined?: boolean }) {
+export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
 

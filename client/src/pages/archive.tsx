@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Fact, currentUser, friendUser } from "@/lib/mock-data";
+import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, X } from "lucide-react";
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void }) {
+export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void, activeUser: User, partnerUser: User }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -96,16 +96,16 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                     Everyone
                   </button>
                   <button
-                    onClick={() => setFilterPerson(currentUser.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === currentUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    onClick={() => setFilterPerson(activeUser.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
                   >
                     Me
                   </button>
                   <button
-                    onClick={() => setFilterPerson(friendUser.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === friendUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    onClick={() => setFilterPerson(partnerUser.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
                   >
-                    {friendUser.name}
+                    {partnerUser.name}
                   </button>
                 </div>
               </div>
@@ -155,16 +155,16 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
               
               <div className="space-y-6 md:space-y-8">
                 {dateFacts.map((fact, index) => {
-                  const isMe = fact.authorId === currentUser.id;
-                  const author = isMe ? currentUser : friendUser;
+                  const isMe = fact.authorId === activeUser.id;
+                  const author = isMe ? activeUser : partnerUser;
                   const isAboutUs = fact.categories.includes('Us');
                   
                   // Blind reveal logic: if this is a friend's fact, check if I also posted on this date
-                  const iPostedThisDate = dateFacts.some(f => f.authorId === currentUser.id);
+                  const iPostedThisDate = dateFacts.some(f => f.authorId === activeUser.id);
                   const isHidden = !isMe && !iPostedThisDate;
                   
                   // Check if current user has reacted
-                  const myReaction = fact.reactions?.[currentUser.id];
+                  const myReaction = fact.reactions?.[activeUser.id];
                   
                   return (
                     <motion.div 
@@ -396,18 +396,17 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                                     </AnimatePresence>
                                   </div>
                                 </div>
-                              )}
                               
                               {/* Display existing reactions if any */}
-                              {(fact.reactions?.['user_2']) && isMe && (
+                              {(fact.reactions?.[partnerUser.id]) && isMe && (
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 shadow-soft">
-                                  {fact.reactions['user_2'] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
-                                  {fact.reactions['user_2'] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
-                                  {fact.reactions['user_2'] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                  {fact.reactions['user_2'] === 'laugh' && <span className="text-[12px]">😂</span>}
-                                  {fact.reactions['user_2'] === 'thinking' && <span className="text-[12px]">🤔</span>}
-                                  {fact.reactions['user_2'] === 'sad' && <span className="text-[12px]">😢</span>}
-                                  <span>{friendUser.name} reacted</span>
+                                  {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
+                                  {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
+                                  {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
+                                  {fact.reactions[partnerUser.id] === 'laugh' && <span className="text-[12px]">😂</span>}
+                                  {fact.reactions[partnerUser.id] === 'thinking' && <span className="text-[12px]">🤔</span>}
+                                  {fact.reactions[partnerUser.id] === 'sad' && <span className="text-[12px]">😢</span>}
+                                  <span>{partnerUser.name} reacted</span>
                                 </div>
                               )}
                             </div>

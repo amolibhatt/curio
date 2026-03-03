@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { currentUser, friendUser, Fact, Category } from "@/lib/mock-data";
+import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
-export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => void }) {
+export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => void, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
@@ -25,7 +25,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
-  const myFactToday = todayFacts.find(f => f.authorId === currentUser.id);
+  const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
 
   // Calculate streak based on consecutive days where both users posted
   const getStreak = () => {
@@ -38,8 +38,8 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
       const dateStr = d.toISOString().split('T')[0];
       
       const factsOnDate = facts.filter(f => f.date === dateStr);
-      const user1Posted = factsOnDate.some(f => f.authorId === 'user_1');
-      const user2Posted = factsOnDate.some(f => f.authorId === 'user_2');
+      const user1Posted = factsOnDate.some(f => f.authorId === activeUser.id);
+      const user2Posted = factsOnDate.some(f => f.authorId === partnerUser.id);
       
       if (user1Posted && user2Posted) {
         currentStreak++;
@@ -174,7 +174,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             </div>
             <h2 className="font-serif text-xl md:text-2xl text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Discovery Captured</h2>
             <p className="text-[#909090] text-sm md:text-base max-w-[250px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
-              Your thought is safe in the archive. The reveal happens when {friendUser.name} adds theirs.
+              Your thought is safe in the archive. The reveal happens when {partnerUser.name} adds theirs.
             </p>
           </CardContent>
         </Card>

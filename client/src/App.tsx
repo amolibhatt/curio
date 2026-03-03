@@ -16,11 +16,15 @@ import { mockFacts, currentUser, friendUser, Fact, User, ReactionType } from "./
 function Router({ 
   facts, 
   onAddFact,
-  onReactToFact
+  onReactToFact,
+  activeUser,
+  partnerUser
 }: { 
   facts: Fact[], 
   onAddFact: (text: string, categories: string[], imageUrl?: string) => void,
-  onReactToFact: (factId: string, reaction: ReactionType | null) => void
+  onReactToFact: (factId: string, reaction: ReactionType | null) => void,
+  activeUser: User,
+  partnerUser: User
 }) {
   const [, setLocation] = useLocation();
 
@@ -32,10 +36,13 @@ function Router({
   return (
     <Switch>
       <Route path="/">
-        <Home facts={facts} onAddFact={handleAddFactAndRedirect} />
+        <Home facts={facts} onAddFact={handleAddFactAndRedirect} activeUser={activeUser} partnerUser={partnerUser} />
       </Route>
       <Route path="/archive">
-        <Archive facts={facts} onReact={onReactToFact} />
+        <Archive facts={facts} onReact={onReactToFact} activeUser={activeUser} partnerUser={partnerUser} />
+      </Route>
+      <Route path="/invite">
+        <Home facts={facts} onAddFact={handleAddFactAndRedirect} activeUser={activeUser} partnerUser={partnerUser} />
       </Route>
       <Route component={NotFound} />
     </Switch>
@@ -129,11 +136,13 @@ function App() {
     );
   }
 
+  const partnerUser = activeUser.id === 'user_1' ? friendUser : currentUser;
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Layout user={activeUser} hasFriendJoined={hasFriendJoined}>
-          <Router facts={facts} onAddFact={handleAddFact} onReactToFact={handleReactToFact} />
+          <Router facts={facts} onAddFact={handleAddFact} onReactToFact={handleReactToFact} activeUser={activeUser} partnerUser={partnerUser} />
         </Layout>
         <Toaster />
       </TooltipProvider>
