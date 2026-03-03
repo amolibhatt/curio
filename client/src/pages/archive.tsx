@@ -1,10 +1,22 @@
+import { useState } from "react";
 import { Fact, currentUser, friendUser } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter } from "lucide-react";
 
 export default function Archive({ facts }: { facts: Fact[] }) {
+  const [filterPerson, setFilterPerson] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Apply filters
+  const filteredFacts = facts.filter(fact => {
+    if (filterPerson && fact.authorId !== filterPerson) return false;
+    if (filterCategory && fact.category !== filterCategory) return false;
+    return true;
+  });
+
   // Group facts by date
-  const groupedFacts = facts.reduce((acc, fact) => {
+  const groupedFacts = filteredFacts.reduce((acc, fact) => {
     if (!acc[fact.date]) {
       acc[fact.date] = [];
     }
@@ -34,13 +46,79 @@ export default function Archive({ facts }: { facts: Fact[] }) {
 
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10">
-      <header className="mb-12 text-center md:text-left px-4 md:px-0">
-        <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
-          The Archive
-        </h1>
-        <p className="text-base text-[#909090] italic font-serif mt-2">
-          A living timeline of the things that made us think.
-        </p>
+      <header className="mb-8 md:mb-12 text-center md:text-left px-4 md:px-0">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
+              The Archive
+            </h1>
+            <p className="text-base text-[#909090] italic font-serif mt-2">
+              A living timeline of the things that made us think.
+            </p>
+          </div>
+
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategory ? 'bg-[#1C1C1C] text-white' : 'bg-white border border-black/[0.05] text-[#1C1C1C] hover:bg-black/5'}`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            Filters {(filterPerson || filterCategory) && '(Active)'}
+          </button>
+        </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="mt-6 p-5 bg-white rounded-[1.5rem] border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-in slide-in-from-top-2 duration-200">
+            <div className="space-y-5">
+              {/* Person Filter */}
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Person</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setFilterPerson(null)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                  >
+                    Everyone
+                  </button>
+                  <button
+                    onClick={() => setFilterPerson(currentUser.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === currentUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                  >
+                    Me
+                  </button>
+                  <button
+                    onClick={() => setFilterPerson(friendUser.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === friendUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                  >
+                    {friendUser.name}
+                  </button>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setFilterCategory(null)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === null ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                  >
+                    All
+                  </button>
+                  {['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'].map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setFilterCategory(cat)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === cat ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="space-y-10 relative before:absolute before:inset-0 before:ml-[28px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-black/5 px-2 md:px-0">
