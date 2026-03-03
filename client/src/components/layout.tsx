@@ -4,7 +4,7 @@ import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, C
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
-import logoImg from "../assets/images/logo-book-organic.png";
+import logoImg from "../assets/images/logo-av-line.png";
 
 export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean }) {
   const [location] = useLocation();
