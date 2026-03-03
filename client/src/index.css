@@ -4,62 +4,63 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
   
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 :root {
-  --background: 40 33% 98%;
-  --foreground: 220 10% 20%;
+  --background: #F8F7F4;
+  --foreground: #1A1A1A;
   
-  --card: 0 0% 100%;
-  --card-foreground: 220 10% 20%;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
   
-  --popover: 0 0% 100%;
-  --popover-foreground: 220 10% 20%;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
   
-  --primary: 250 85% 60%;
-  --primary-foreground: 0 0% 100%;
+  --primary: #1A1A1A;
+  --primary-foreground: #FFFFFF;
   
-  --secondary: 220 15% 95%;
-  --secondary-foreground: 220 10% 30%;
+  --secondary: #F0EFEA;
+  --secondary-foreground: #1A1A1A;
   
-  --muted: 220 15% 95%;
-  --muted-foreground: 220 10% 45%;
+  --muted: #F0EFEA;
+  --muted-foreground: #737373;
   
-  --accent: 340 80% 65%;
-  --accent-foreground: 0 0% 100%;
+  --accent: #F0EFEA;
+  --accent-foreground: #1A1A1A;
   
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
 
-  --border: 220 15% 90%;
-  --input: 220 15% 90%;
-  --ring: 250 85% 60%;
+  --border: #E5E4DF;
+  --input: #E5E4DF;
+  --ring: #1A1A1A;
   
   --radius: 1.5rem;
 }
@@ -74,15 +75,19 @@
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
 }
 
 /* Custom Utilities for Playful UI */
 @layer utilities {
   .shadow-soft {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
   }
   
   .shadow-float {
-    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.06);
   }
 }
