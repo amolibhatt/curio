@@ -14,12 +14,13 @@ import { auth as firebaseAuth, authReady } from "./lib/firebase";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
+import { getLocalDateStr } from "./lib/date-utils";
 import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
-  const [isReacting, setIsReacting] = useState(false);
+  const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
 
@@ -47,7 +48,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const handleAddFact = async (text: string, categories: Category[]): Promise<void> => {
     if (!auth.pairing) throw new Error("No pairing");
-    const date = new Date().toISOString().split("T")[0];
+    const date = getLocalDateStr();
 
     const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
     if (alreadyPosted) {
@@ -65,14 +66,18 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   };
 
   const handleReact = async (factId: string, type: ReactionType) => {
-    setIsReacting(true);
+    if (reactingFacts.has(factId)) return;
+    setReactingFacts(prev => new Set(prev).add(factId));
     const userId = auth.user.id;
+
+    const fact = facts.find(f => f.id === factId);
+    const currentReaction = fact?.reactions?.[userId];
+    const shouldRemove = currentReaction === type;
 
     setFacts(prev => prev.map(f => {
       if (f.id !== factId) return f;
-      const currentReaction = f.reactions?.[userId];
       const newReactions = { ...f.reactions };
-      if (currentReaction === type) {
+      if (shouldRemove) {
         delete newReactions[userId];
       } else {
         newReactions[userId] = type;
@@ -81,7 +86,11 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     }));
 
     try {
-      await firestoreOps.toggleReaction(factId, userId, type);
+      if (shouldRemove) {
+        await firestoreOps.removeReaction(factId, userId);
+      } else {
+        await firestoreOps.setReaction(factId, userId, type);
+      }
     } catch (err: any) {
       toast({
         title: "Couldn't react",
@@ -90,7 +99,11 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
       });
       fetchFacts().catch(() => {});
     } finally {
-      setIsReacting(false);
+      setReactingFacts(prev => {
+        const next = new Set(prev);
+        next.delete(factId);
+        return next;
+      });
     }
   };
 
@@ -120,7 +133,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             }}
             activeUser={auth.user}
             partnerUser={partner}
-            isReacting={isReacting}
+            reactingFacts={reactingFacts}
           />
         </Route>
         <Route path="/invite/:code">

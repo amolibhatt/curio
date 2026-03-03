@@ -63,7 +63,11 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - IDs are strings (Firebase auto-generated or Auth UIDs)
 - Service worker v3 skips all googleapis.com, firebase, gstatic.com, identitytoolkit, securetoken domains
 - Reactions use optimistic UI updates (instant visual feedback, Firestore write in background)
+- Reaction locking is per-fact (Set<string>), not global — users can react to different facts rapidly
+- Reactions write directly to Firestore (setReaction/removeReaction) based on optimistic state — no stale read-then-write race condition
+- All date strings use local timezone via `getLocalDateStr()` from `date-utils.ts` — never `toISOString().split('T')[0]`
 - `todayStr` is reactive (checks every 30s for midnight rollover)
 - `fetchFacts` uses a ref for pairingId to avoid interval restarts on auth refresh
 - Reactions subcollection reads are parallelized with Promise.all
 - Recovery flow: if user doc is deleted, re-login finds existing pairing via `findExistingPairingForUser`
+- Burst animation timeout is cleaned up on component unmount via ref

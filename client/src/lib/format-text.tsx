@@ -114,30 +114,6 @@ export function formatText(text: string): React.ReactNode[] {
   return result;
 }
 
-export function insertFormatting(
-  textarea: HTMLTextAreaElement,
-  prefix: string,
-  suffix: string,
-  setText: (val: string) => void
-) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const text = textarea.value;
-  const selected = text.slice(start, end);
-
-  const newText = text.slice(0, start) + prefix + selected + suffix + text.slice(end);
-  setText(newText);
-
-  requestAnimationFrame(() => {
-    textarea.focus();
-    if (selected.length > 0) {
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    } else {
-      textarea.setSelectionRange(start + prefix.length, start + prefix.length);
-    }
-  });
-}
-
 function processNode(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) {
     return node.textContent || '';
@@ -212,65 +188,3 @@ export function htmlToMarkdown(html: string): string {
   return result.replace(/\n{3,}/g, '\n\n').trim();
 }
 
-export function handleRichPaste(
-  e: React.ClipboardEvent<HTMLTextAreaElement>,
-  setText: (val: string) => void
-): boolean {
-  const html = e.clipboardData.getData('text/html');
-
-  if (html) {
-    const markdown = htmlToMarkdown(html);
-    const plain = e.clipboardData.getData('text/plain');
-
-    if (markdown !== plain.trim()) {
-      e.preventDefault();
-      const textarea = e.currentTarget;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const current = textarea.value;
-
-      const newText = current.slice(0, start) + markdown + current.slice(end);
-      setText(newText);
-
-      requestAnimationFrame(() => {
-        textarea.focus();
-        const newPos = start + markdown.length;
-        textarea.setSelectionRange(newPos, newPos);
-      });
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
-export function insertLinePrefix(
-  textarea: HTMLTextAreaElement,
-  prefix: string,
-  setText: (val: string) => void
-) {
-  const start = textarea.selectionStart;
-  const text = textarea.value;
-
-  const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-  const lineEnd = text.indexOf('\n', start);
-  const currentLine = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
-
-  const existingHeading = currentLine.match(/^#{1,6}\s+/);
-  let newLine: string;
-  if (existingHeading) {
-    newLine = prefix + currentLine.replace(/^#{1,6}\s+/, '');
-  } else {
-    newLine = prefix + currentLine;
-  }
-
-  const newText = text.slice(0, lineStart) + newLine + text.slice(lineEnd === -1 ? text.length : lineEnd);
-  setText(newText);
-
-  requestAnimationFrame(() => {
-    textarea.focus();
-    const newCursor = lineStart + newLine.length;
-    textarea.setSelectionRange(newCursor, newCursor);
-  });
-}

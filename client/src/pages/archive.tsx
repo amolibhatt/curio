@@ -1,23 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Fact, User } from "@/lib/mock-data";
+import { getLocalDateStr } from "@/lib/date-utils";
 import { format, parseISO } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser, isReacting }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, isReacting?: boolean }) {
+export default function Archive({ facts, onReact, activeUser, partnerUser, reactingFacts }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string> }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
-  const [todayStr, setTodayStr] = useState(() => new Date().toISOString().split('T')[0]);
+  const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
+  const burstTimerRef = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
     const check = setInterval(() => {
-      const now = new Date().toISOString().split('T')[0];
+      const now = getLocalDateStr();
       if (now !== todayStr) setTodayStr(now);
     }, 30000);
     return () => clearInterval(check);
   }, [todayStr]);
+  useEffect(() => {
+    return () => { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
+  }, []);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
@@ -56,7 +61,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
   };
 
   const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
-    if (isReacting) return;
+    if (reactingFacts?.has(factId)) return;
     const fact = facts.find(f => f.id === factId);
     const currentReaction = fact?.reactions?.[String(activeUser.id)];
     const isRemoving = currentReaction === type;
@@ -64,7 +69,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
     if (navigator.vibrate) navigator.vibrate(50);
     if (!isRemoving) {
       setBurstReaction({ id: factId, type });
-      setTimeout(() => {
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+      burstTimerRef.current = setTimeout(() => {
         setBurstReaction(null);
       }, 1000);
     }
@@ -134,6 +140,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                   <button
                     onClick={() => setFilterCategories([])}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    data-testid="filter-category-all"
                   >
                     All Categories
                   </button>
@@ -148,6 +155,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                         );
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                      data-testid={`filter-category-${cat.toLowerCase()}`}
                     >
                       {cat}
                     </button>
@@ -217,9 +225,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                           <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
                             
                             <div className="relative z-10">
-                              <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                                "{formatText(fact.text)}"
-                              </p>
+                              <div className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                                {formatText(fact.text)}
+                              </div>
                             
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="flex flex-wrap items-center gap-1.5">

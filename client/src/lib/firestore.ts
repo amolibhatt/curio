@@ -159,11 +159,6 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
   await deleteDoc(doc(db, "facts", factId, "reactions", userId));
 }
 
-export async function getReaction(factId: string, userId: string): Promise<string | null> {
-  const snap = await getDoc(doc(db, "facts", factId, "reactions", userId));
-  if (!snap.exists()) return null;
-  return snap.data().type;
-}
 
 export async function findExistingPairingForUser(uid: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null } | null> {
   const q1 = query(collection(db, "pairings"), where("user1Id", "==", uid));
@@ -213,11 +208,3 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
   }
 }
 
-export async function toggleReaction(factId: string, userId: string, type: ReactionType): Promise<void> {
-  const existing = await getReaction(factId, userId);
-  if (existing === type) {
-    await removeReaction(factId, userId);
-  } else {
-    await setReaction(factId, userId, type);
-  }
-}

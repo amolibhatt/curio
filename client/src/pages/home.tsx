@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
+import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -109,10 +110,10 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const { toast } = useToast();
 
-  const [todayStr, setTodayStr] = useState(() => new Date().toISOString().split('T')[0]);
+  const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
   useEffect(() => {
     const check = setInterval(() => {
-      const now = new Date().toISOString().split('T')[0];
+      const now = getLocalDateStr();
       if (now !== todayStr) setTodayStr(now);
     }, 30000);
     return () => clearInterval(check);
@@ -123,7 +124,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   const streak = useMemo(() => {
     let currentStreak = 0;
-    const today = new Date();
     
     const factsByDate = new Map<string, { user1: boolean; user2: boolean }>();
     for (const f of facts) {
@@ -134,9 +134,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     }
     
     for (let i = 0; i < 365; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateStr(new Date(Date.now() - i * 86400000));
       
       const entry = factsByDate.get(dateStr);
       
