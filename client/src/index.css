@@ -104,4 +104,27 @@
   .shadow-float {
     box-shadow: 0 12px 40px rgba(0,0,0,0.06);
   }
+  
+  .shadow-elevated {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.02);
+  }
+}
+
+/* Animations */
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); filter: blur(4px); }
+  50% { opacity: 0.7; transform: scale(1.05); filter: blur(6px); }
+}
+
+.animate-breathe {
+  animation: breathe 6s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
 }
