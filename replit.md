@@ -16,6 +16,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `pairings` — inviteCode, user1Id, user2Id, anniversaryDate (optional)
 - `facts` — text, authorId, pairingId, date, categories[]
   - `facts/{id}/reactions` — subcollection, doc ID = userId, field: type
+- `dailyAnswers` — doc ID = `{pairingId}_{date}`, fields: pairingId, date, questionText, category, answers (map of userId → answer text)
 
 ## Key Features
 
@@ -24,6 +25,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Blind Reveal**: Partner's post stays hidden until you post yours for the same day
 - **Streak Counter**: Counts consecutive days where both users posted
 - **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with optimistic UI + burst animations
+- **Daily Q&A**: Each day a categorized question (About Us, Dreams, Memories, Fun, Deep, Favorites) is shown; both partners answer independently; answers are hidden until both submit; full Q&A history in archive
 - **Rich Text Editor**: WYSIWYG contentEditable editor with B/I/U/headings, markdown storage
 - **Edit Entry**: Can edit today's entry after posting
 - **Relationship Timeline** (`/us`): Anniversary date, days-together counter, milestone celebrations, anniversary countdown
@@ -41,6 +43,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `client/src/pages/login.tsx` — Name input page
 - `client/src/components/layout.tsx` — App shell with sticky header + bottom nav
 - `client/src/pages/timeline.tsx` — Relationship timeline with milestones + anniversary
+- `client/src/lib/daily-questions.ts` — 170+ categorized couple questions, deterministic daily selection
 - `client/src/components/rich-editor.tsx` — WYSIWYG contentEditable editor
 - `client/public/sw.js` — Service worker (caches static assets only, skips Firebase)
 - `server/routes.ts` — Empty (no API routes)

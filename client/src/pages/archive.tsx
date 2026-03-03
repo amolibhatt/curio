@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { Fact, User } from "@/lib/mock-data";
+import { Fact, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser, reactingFacts }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string> }) {
+type TabMode = "discoveries" | "questions";
+
+export default function Archive({ facts, onReact, activeUser, partnerUser, reactingFacts, dailyAnswers }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[] }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
+  const [activeTab, setActiveTab] = useState<TabMode>("discoveries");
   const burstTimerRef = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
     const check = setInterval(() => {
@@ -24,14 +27,12 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
     return () => { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
   }, []);
 
-  // Apply filters
   const filteredFacts = facts.filter(fact => {
     if (filterPerson && fact.authorId !== filterPerson) return false;
     if (filterCategories.length > 0 && !fact.categories.some(c => filterCategories.includes(c))) return false;
     return true;
   });
 
-  // Group facts by date
   const groupedFacts = filteredFacts.reduce((acc, fact) => {
     if (!acc[fact.date]) {
       acc[fact.date] = [];
@@ -40,7 +41,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
     return acc;
   }, {} as Record<string, Fact[]>);
 
-  // Sort dates descending
   const sortedDates = Object.keys(groupedFacts).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   const getCategoryIcon = (category: string) => {
@@ -77,33 +77,65 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
     onReact(factId, type);
   };
 
+  const completedAnswers = dailyAnswers.filter(a => {
+    const keys = Object.keys(a.answers || {});
+    return keys.length >= 2;
+  });
+
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10 flex flex-col min-h-[calc(100vh-140px)]">
-      <header className="mb-8 md:mb-12 text-center md:text-left shrink-0">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-[2rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
-              The Archive
-            </h1>
-            <p className="text-base text-[#909090] italic font-serif mt-2">
-              Everything we've found, side by side.
-            </p>
-          </div>
-
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}
-          </button>
+      <header className="mb-6 md:mb-10 shrink-0">
+        <div className="text-center md:text-left mb-6">
+          <h1 className="text-[2rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
+            The Archive
+          </h1>
+          <p className="text-base text-[#909090] italic font-serif mt-2">
+            Everything we've shared, side by side.
+          </p>
         </div>
 
-        {/* Filters Panel */}
-        {showFilters && (
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex bg-[#FBF9F6] rounded-full p-1">
+            <button
+              onClick={() => setActiveTab("discoveries")}
+              className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all ${
+                activeTab === "discoveries" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
+              }`}
+              data-testid="tab-discoveries"
+            >
+              Discoveries
+            </button>
+            <button
+              onClick={() => setActiveTab("questions")}
+              className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all flex items-center gap-1.5 ${
+                activeTab === "questions" ? "bg-violet-600 text-white shadow-sm" : "text-[#909090] hover:text-black"
+              }`}
+              data-testid="tab-questions"
+            >
+              <MessageCircle className="w-3 h-3" />
+              Q&A
+              {completedAnswers.length > 0 && (
+                <span className={`text-[9px] font-bold ml-0.5 ${activeTab === "questions" ? "text-violet-200" : "text-[#b0b0b0]"}`}>
+                  {completedAnswers.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {activeTab === "discoveries" && (
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}
+            </button>
+          )}
+        </div>
+
+        {activeTab === "discoveries" && showFilters && (
           <div className="mt-6 p-5 bg-transparent rounded-[1.5rem] animate-in slide-in-from-top-2 duration-200">
             <div className="space-y-5">
-              {/* Person Filter */}
               <div>
                 <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Person</p>
                 <div className="flex flex-wrap gap-2">
@@ -133,7 +165,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                 </div>
               </div>
 
-              {/* Category Filter */}
               <div>
                 <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
                 <div className="flex flex-wrap gap-2">
@@ -167,288 +198,341 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
         )}
       </header>
 
-      <div className="space-y-8 md:space-y-12 flex-1 flex flex-col">
-        {sortedDates.map((date) => {
-          const dateFacts = groupedFacts[date];
-          return (
-            <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
-                <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
-                  {format(parseISO(date), 'MMMM d, yyyy')}
-                </h2>
-              </div>
-              
-              <div className="space-y-6 md:space-y-8">
-                {dateFacts.map((fact, index) => {
-                  const isMe = fact.authorId === activeUser.id;
-                  const author = isMe ? activeUser : partnerUser;
-                  const isAboutUs = fact.categories.includes('Us');
-                  
-                  const allFactsForDate = facts.filter(f => f.date === date);
-                  const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
-                  const isHidden = !isMe && !iPostedThisDate;
-                  
-                  // Check if current user has reacted
-                  const myReaction = fact.reactions?.[String(activeUser.id)];
-                  
-                  return (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.15 + 0.1 }}
-                      key={fact.id} 
-                      className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
-                    >
-                      <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
-                        <div className="relative z-10 bg-[#FBF9F6] p-1 rounded-full">
-                          <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
-                        </div>
-                        <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FBF9F6] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
-                          {author.name}
-                        </span>
+      {activeTab === "questions" ? (
+        <div className="space-y-6 flex-1 flex flex-col">
+          {completedAnswers.length > 0 ? (
+            completedAnswers.map((qa, idx) => {
+              const myAns = qa.answers[activeUser.id];
+              const partnerAns = qa.answers[partnerUser.id];
+              return (
+                <motion.div
+                  key={qa.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: idx * 0.08 }}
+                  className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5"
+                  data-testid={`card-qa-${qa.id}`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+                      {format(parseISO(qa.date), 'MMM d, yyyy')}
+                    </p>
+                    <span className="text-[9px] font-bold tracking-[0.15em] text-violet-400 uppercase">{qa.category}</span>
+                  </div>
+                  <p className="font-serif text-base text-[#1C1C1C] leading-relaxed mb-4">{qa.questionText}</p>
+                  <div className="space-y-3">
+                    {myAns && (
+                      <div className="rounded-xl bg-violet-50/50 px-4 py-3">
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-violet-400 uppercase mb-1">{activeUser.name}</p>
+                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
                       </div>
-
-                      <div className="flex-1 relative group/card perspective-1000">
-                        {isHidden ? (
-                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02] animate-breathe">
-                            <div className="absolute inset-0 backdrop-blur-sm z-0"></div>
-                            <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
-                            <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
-                              {date === todayStr
-                                ? "Sealed until you share yours"
-                                : "You didn\u2019t share that day"}
-                              <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
-                            </p>
+                    )}
+                    {partnerAns && (
+                      <div className="rounded-xl bg-blue-50/50 px-4 py-3">
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-blue-400 uppercase mb-1">{partnerUser.name}</p>
+                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 py-12">
+              <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
+                <div className="w-20 h-20 rounded-full bg-violet-50 flex items-center justify-center mb-8">
+                  <MessageCircle className="w-8 h-8 text-violet-300" strokeWidth={1.2} />
+                </div>
+                <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">No questions yet.</h3>
+                <p className="text-[#909090] text-sm md:text-base leading-relaxed">
+                  Answer today's question on the home page. Once you both answer, it'll appear here.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-8 md:space-y-12 flex-1 flex flex-col">
+          {sortedDates.map((date) => {
+            const dateFacts = groupedFacts[date];
+            return (
+              <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
+                  <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
+                    {format(parseISO(date), 'MMMM d, yyyy')}
+                  </h2>
+                </div>
+                
+                <div className="space-y-6 md:space-y-8">
+                  {dateFacts.map((fact, index) => {
+                    const isMe = fact.authorId === activeUser.id;
+                    const author = isMe ? activeUser : partnerUser;
+                    const isAboutUs = fact.categories.includes('Us');
+                    
+                    const allFactsForDate = facts.filter(f => f.date === date);
+                    const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
+                    const isHidden = !isMe && !iPostedThisDate;
+                    
+                    const myReaction = fact.reactions?.[String(activeUser.id)];
+                    
+                    return (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.15 + 0.1 }}
+                        key={fact.id} 
+                        className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
+                      >
+                        <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
+                          <div className="relative z-10 bg-[#FBF9F6] p-1 rounded-full">
+                            <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
                           </div>
-                        ) : (
-                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
-                            
-                            <div className="relative z-10">
-                              <div className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                                {formatText(fact.text)}
-                              </div>
-                            
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                {fact.categories.map((category) => (
-                                  <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
-                                    {getCategoryIcon(category)}
-                                    {category}
-                                  </div>
-                                ))}
-                              </div>
+                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FBF9F6] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
+                            {author.name}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 relative group/card perspective-1000">
+                          {isHidden ? (
+                            <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02] animate-breathe">
+                              <div className="absolute inset-0 backdrop-blur-sm z-0"></div>
+                              <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                              <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
+                                {date === todayStr
+                                  ? "Sealed until you share yours"
+                                  : "You didn\u2019t share that day"}
+                                <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
+                              </p>
+                            </div>
+                          ) : (
+                            <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
                               
-                                {!isMe && <div className="flex items-center gap-1 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-3 md:mt-0">
-                                  <div className="relative shrink-0">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'mind-blown')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'mind-blown' 
-                                          ? 'bg-black text-white' 
-                                          : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
-                                      }`}
-                                    >
-                                      <Brain className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'mind-blown' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Brain className="w-6 h-6 text-[#1C1C1C]" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'fascinating')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'fascinating' 
-                                          ? 'bg-black text-white' 
-                                          : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
-                                      }`}
-                                    >
-                                      <Sparkles className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'fascinating' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Sparkles className="w-6 h-6 text-amber-400" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'heart')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'heart' 
-                                          ? 'bg-rose-500 text-white' 
-                                          : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
-                                      }`}
-                                    >
-                                      <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'heart' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'laugh')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'laugh' 
-                                          ? 'bg-amber-100 text-amber-700' 
-                                          : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
-                                      }`}
-                                    >
-                                      <Laugh className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'laugh' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Laugh className="w-6 h-6 text-amber-500" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'thinking')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'thinking' 
-                                          ? 'bg-blue-100 text-blue-700' 
-                                          : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
-                                      }`}
-                                    >
-                                      <Lightbulb className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'thinking' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Lightbulb className="w-6 h-6 text-blue-500" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => handleReact(fact.id, 'sad')}
-                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                        myReaction === 'sad' 
-                                          ? 'bg-indigo-100 text-indigo-700' 
-                                          : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
-                                      }`}
-                                    >
-                                      <Frown className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                    </button>
-                                    <AnimatePresence>
-                                      {burstReaction?.id === fact.id && burstReaction?.type === 'sad' && (
-                                        <motion.div 
-                                          initial={{ opacity: 1, y: 0, scale: 1 }}
-                                          animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                        >
-                                          <Frown className="w-6 h-6 text-indigo-500" />
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                </div>}
-                              
-                              {/* Display existing reactions if any */}
-                              {(fact.reactions?.[String(partnerUser.id)]) && isMe && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
-                                  {fact.reactions[String(partnerUser.id)] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'sad' && <Frown className="w-3.5 h-3.5" />}
-                                  <span>{partnerUser.name} reacted</span>
+                              <div className="relative z-10">
+                                <div className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                                  {formatText(fact.text)}
                                 </div>
-                              )}
+                              
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {fact.categories.map((category) => (
+                                    <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
+                                      {getCategoryIcon(category)}
+                                      {category}
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                  {!isMe && <div className="flex items-center gap-1 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-3 md:mt-0">
+                                    <div className="relative shrink-0">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'mind-blown')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'mind-blown' 
+                                            ? 'bg-black text-white' 
+                                            : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
+                                        }`}
+                                      >
+                                        <Brain className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'mind-blown' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Brain className="w-6 h-6 text-[#1C1C1C]" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                    
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'fascinating')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'fascinating' 
+                                            ? 'bg-black text-white' 
+                                            : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
+                                        }`}
+                                      >
+                                        <Sparkles className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'fascinating' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Sparkles className="w-6 h-6 text-amber-400" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                    
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'heart')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'heart' 
+                                            ? 'bg-rose-500 text-white' 
+                                            : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
+                                        }`}
+                                      >
+                                        <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'heart' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                    
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'laugh')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'laugh' 
+                                            ? 'bg-amber-100 text-amber-700' 
+                                            : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
+                                        }`}
+                                      >
+                                        <Laugh className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'laugh' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Laugh className="w-6 h-6 text-amber-500" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                    
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'thinking')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'thinking' 
+                                            ? 'bg-blue-100 text-blue-700' 
+                                            : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
+                                        }`}
+                                      >
+                                        <Lightbulb className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'thinking' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Lightbulb className="w-6 h-6 text-blue-500" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                    
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => handleReact(fact.id, 'sad')}
+                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                          myReaction === 'sad' 
+                                            ? 'bg-indigo-100 text-indigo-700' 
+                                            : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
+                                        }`}
+                                      >
+                                        <Frown className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                      </button>
+                                      <AnimatePresence>
+                                        {burstReaction?.id === fact.id && burstReaction?.type === 'sad' && (
+                                          <motion.div 
+                                            initial={{ opacity: 1, y: 0, scale: 1 }}
+                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                          >
+                                            <Frown className="w-6 h-6 text-indigo-500" />
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                  </div>}
+                                
+                                {(fact.reactions?.[String(partnerUser.id)]) && isMe && (
+                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
+                                    {fact.reactions[String(partnerUser.id)] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
+                                    {fact.reactions[String(partnerUser.id)] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
+                                    {fact.reactions[String(partnerUser.id)] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
+                                    {fact.reactions[String(partnerUser.id)] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
+                                    {fact.reactions[String(partnerUser.id)] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
+                                    {fact.reactions[String(partnerUser.id)] === 'sad' && <Frown className="w-3.5 h-3.5" />}
+                                    <span>{partnerUser.name} reacted</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          )}
                         </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
+            );
+          })}
+          
+          {facts.length > 0 && filteredFacts.length === 0 && (
+            <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
+              <p className="text-[#909090] font-serif italic text-lg">No discoveries match.</p>
+              <button
+                onClick={() => { setFilterPerson(null); setFilterCategories([]); }}
+                className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
+                data-testid="button-clear-filters"
+              >
+                Clear filters
+              </button>
             </div>
-          );
-        })}
-        
-        {facts.length > 0 && filteredFacts.length === 0 && (
-          <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
-            <p className="text-[#909090] font-serif italic text-lg">No discoveries match.</p>
-            <button
-              onClick={() => { setFilterPerson(null); setFilterCategories([]); }}
-              className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
-              data-testid="button-clear-filters"
-            >
-              Clear filters
-            </button>
-          </div>
-        )}
+          )}
 
-        {facts.length === 0 && (
-          <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
-            <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-              <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
-                <BookOpen className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
+          {facts.length === 0 && (
+            <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
+              <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
+                <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
+                  <BookOpen className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
+                </div>
+                <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
+                <p className="text-[#909090] text-sm md:text-base leading-relaxed">
+                  Share your first discovery to begin.
+                </p>
               </div>
-              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
-              <p className="text-[#909090] text-sm md:text-base leading-relaxed">
-                Share your first discovery to begin.
-              </p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
     </div>
   );

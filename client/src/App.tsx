@@ -16,11 +16,12 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
 import { getLocalDateStr } from "./lib/date-utils";
-import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
+import type { AuthState, Fact, ReactionType, Category, DailyAnswer } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
+  const [dailyAnswers, setDailyAnswers] = useState<DailyAnswer[]>([]);
   const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
@@ -29,12 +30,16 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     const pid = pairingIdRef.current;
     if (!pid) return;
     try {
-      const data = await firestoreOps.getFactsByPairing(pid);
-      setFacts(data);
+      const [factsData, answersData] = await Promise.all([
+        firestoreOps.getFactsByPairing(pid),
+        firestoreOps.getAllDailyAnswers(pid),
+      ]);
+      setFacts(factsData);
+      setDailyAnswers(answersData);
     } catch (err: any) {
-      console.error("[Curio] Failed to fetch facts:", err);
+      console.error("[Curio] Failed to fetch data:", err);
       toast({
-        title: "Couldn't load discoveries",
+        title: "Couldn't load data",
         description: err?.message || "Check Firestore rules",
         variant: "destructive",
       });
@@ -128,6 +133,22 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     setAnniversaryDate(date);
   };
 
+  const handleSubmitAnswer = async (questionText: string, category: string, answer: string): Promise<DailyAnswer> => {
+    if (!auth.pairing) throw new Error("No pairing");
+    const date = getLocalDateStr();
+    const result = await firestoreOps.submitDailyAnswer(auth.pairing.id, date, questionText, category, auth.user.id, answer);
+    setDailyAnswers(prev => {
+      const idx = prev.findIndex(a => a.id === result.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = result;
+        return next;
+      }
+      return [result, ...prev];
+    });
+    return result;
+  };
+
   const partner = auth.partner || {
     id: "0",
     name: "Your partner",
@@ -144,6 +165,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             onEditFact={handleEditFact}
             activeUser={auth.user}
             partnerUser={partner}
+            dailyAnswers={dailyAnswers}
+            onSubmitAnswer={handleSubmitAnswer}
           />
         </Route>
         <Route path="/archive">
@@ -155,6 +178,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             activeUser={auth.user}
             partnerUser={partner}
             reactingFacts={reactingFacts}
+            dailyAnswers={dailyAnswers}
           />
         </Route>
         <Route path="/us">
@@ -172,6 +196,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             onEditFact={handleEditFact}
             activeUser={auth.user}
             partnerUser={partner}
+            dailyAnswers={dailyAnswers}
+            onSubmitAnswer={handleSubmitAnswer}
           />
         </Route>
         <Route component={NotFound} />

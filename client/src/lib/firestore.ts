@@ -11,7 +11,7 @@ import {
   addDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { User, Fact, AuthState, ReactionType, Category } from "./mock-data";
+import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer } from "./mock-data";
 
 interface ReconnectData {
   uid: string;
@@ -215,6 +215,49 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
 
 export async function setAnniversaryDate(pairingId: string, date: string): Promise<void> {
   await updateDoc(doc(db, "pairings", pairingId), { anniversaryDate: date });
+}
+
+export async function submitDailyAnswer(
+  pairingId: string,
+  date: string,
+  questionText: string,
+  category: string,
+  userId: string,
+  answer: string
+): Promise<DailyAnswer> {
+  const docId = `${pairingId}_${date}`;
+  const ref = doc(db, "dailyAnswers", docId);
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    const data = snap.data();
+    const answers = { ...data.answers, [userId]: answer };
+    await updateDoc(ref, { answers });
+    return { id: docId, pairingId, date, questionText: data.questionText, category: data.category, answers };
+  } else {
+    const answers = { [userId]: answer };
+    await setDoc(ref, { pairingId, date, questionText, category, answers });
+    return { id: docId, pairingId, date, questionText, category, answers };
+  }
+}
+
+export async function getDailyAnswerForDate(pairingId: string, date: string): Promise<DailyAnswer | null> {
+  const docId = `${pairingId}_${date}`;
+  const snap = await getDoc(doc(db, "dailyAnswers", docId));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return { id: docId, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {} };
+}
+
+export async function getAllDailyAnswers(pairingId: string): Promise<DailyAnswer[]> {
+  const q = query(collection(db, "dailyAnswers"), where("pairingId", "==", pairingId));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => {
+      const data = d.data();
+      return { id: d.id, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {} };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 

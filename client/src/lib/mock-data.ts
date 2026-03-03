@@ -18,6 +18,15 @@ export type User = {
   avatar: string;
 };
 
+export type DailyAnswer = {
+  id: string;
+  pairingId: string;
+  date: string;
+  questionText: string;
+  category: string;
+  answers: Record<string, string>;
+};
+
 export type AuthState = {
   user: User;
   pairing: { id: string; inviteCode: string; anniversaryDate?: string | null } | null;

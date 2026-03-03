@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Fact, Category, User } from "@/lib/mock-data";
+import { Fact, Category, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send } from "lucide-react";
+import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
 import { getDailyPrompt, getDailyPromptAlternatives } from "@/lib/daily-prompts";
+import { getDailyQuestion, type QuestionCategory } from "@/lib/daily-questions";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -110,13 +111,15 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
+export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [promptIndex, setPromptIndex] = useState(0);
+  const [answerText, setAnswerText] = useState("");
+  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const { toast } = useToast();
 
   const hasPartner = partnerUser.id !== "0";
@@ -149,6 +152,26 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     if (navigator.vibrate) navigator.vibrate(50);
     setNewFact(`<p>${currentPrompt}</p><p><br></p>`);
     setIsAdding(true);
+  };
+
+  const dailyQuestion = useMemo(() => getDailyQuestion(todayStr), [todayStr]);
+  const todayAnswer = dailyAnswers.find(a => a.date === todayStr);
+  const myAnswer = todayAnswer?.answers?.[activeUser.id];
+  const partnerAnswer = todayAnswer?.answers?.[partnerUser.id];
+  const bothAnswered = !!myAnswer && !!partnerAnswer;
+
+  const handleSubmitDailyAnswer = async () => {
+    if (!answerText.trim() || isSubmittingAnswer) return;
+    if (navigator.vibrate) navigator.vibrate(50);
+    setIsSubmittingAnswer(true);
+    try {
+      await onSubmitAnswer(dailyQuestion.text, dailyQuestion.category, answerText.trim());
+      setAnswerText("");
+    } catch (err: any) {
+      toast({ title: "Couldn't submit", description: err?.message || "Try again.", variant: "destructive" });
+    } finally {
+      setIsSubmittingAnswer(false);
+    }
   };
 
   const streak = useMemo(() => {
@@ -472,8 +495,71 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       </div>
 
       <div className="px-2 md:px-0">
+        <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5" data-testid="card-daily-question">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-9 h-9 rounded-full bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+              <MessageCircle className="w-4 h-4 text-violet-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase">Today's question</p>
+                <span className="text-[9px] font-bold tracking-[0.15em] text-violet-400 uppercase">{dailyQuestion.category}</span>
+              </div>
+              <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-question">
+                {dailyQuestion.text}
+              </p>
+            </div>
+          </div>
+
+          {!myAnswer ? (
+            <div className="space-y-3">
+              <textarea
+                value={answerText}
+                onChange={(e) => setAnswerText(e.target.value)}
+                placeholder="Type your answer..."
+                maxLength={500}
+                className="w-full bg-[#FBF9F6] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#b0b0b0] resize-none focus:outline-none focus:ring-1 focus:ring-violet-200 font-serif leading-relaxed"
+                rows={2}
+                data-testid="input-daily-answer"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-[#b0b0b0]">{answerText.length}/500</p>
+                <button
+                  onClick={handleSubmitDailyAnswer}
+                  disabled={!answerText.trim() || isSubmittingAnswer}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                  data-testid="button-submit-answer"
+                >
+                  {isSubmittingAnswer ? "Sending..." : "Answer"}
+                  <Send className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ) : bothAnswered ? (
+            <div className="space-y-3 animate-in fade-in duration-500">
+              <div className="rounded-xl bg-violet-50/50 px-4 py-3">
+                <p className="text-[10px] font-bold tracking-[0.15em] text-violet-400 uppercase mb-1">{activeUser.name}</p>
+                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
+              </div>
+              <div className="rounded-xl bg-blue-50/50 px-4 py-3">
+                <p className="text-[10px] font-bold tracking-[0.15em] text-blue-400 uppercase mb-1">{partnerUser.name}</p>
+                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-[#FBF9F6] px-4 py-3 flex items-center gap-3">
+              <Lock className="w-3.5 h-3.5 text-[#b0b0b0] shrink-0" />
+              <p className="text-xs text-[#909090] italic font-serif">
+                You answered! Waiting for {partnerUser.name} to reveal both.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="px-2 md:px-0">
         <div
-          className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-black/5"
+          className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5"
           data-testid="card-daily-prompt"
         >
           <div className="flex items-start gap-3 mb-4">
@@ -481,8 +567,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               <Lightbulb className="w-4 h-4 text-amber-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Today's prompt</p>
-              <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
+              <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Prompt inspiration</p>
+              <p className="font-serif text-sm md:text-base text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
                 {currentPrompt}
               </p>
             </div>
@@ -499,7 +585,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             {!myFactToday && (
               <button
                 onClick={usePrompt}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95 ml-auto"
                 data-testid="button-use-prompt"
               >
                 Use this
