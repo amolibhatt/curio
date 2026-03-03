@@ -11,7 +11,7 @@ import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
 
-import { mockFacts, currentUser, friendUser, Fact } from "./lib/mock-data";
+import { mockFacts, currentUser, friendUser, Fact, User } from "./lib/mock-data";
 
 function Router({ 
   facts, 
@@ -35,18 +35,6 @@ function Router({
       <Route path="/archive">
         <Archive facts={facts} />
       </Route>
-      <Route path="/invite">
-        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-          <h2 className="text-2xl font-bold">You've been invited!</h2>
-          <p>Join {currentUser.name} to share daily facts.</p>
-          <button 
-            onClick={() => window.location.href = '/'} 
-            className="bg-primary text-white px-6 py-2 rounded-full font-bold"
-          >
-            Accept Invite & Go to Dashboard
-          </button>
-        </div>
-      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -54,12 +42,39 @@ function Router({
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeUser, setActiveUser] = useState(currentUser);
+  const [activeUser, setActiveUser] = useState<User>(currentUser);
   const [facts, setFacts] = useState<Fact[]>(mockFacts);
 
-  const handleLogin = (userType: 'me' | 'friend') => {
-    setActiveUser(userType === 'me' ? currentUser : friendUser);
+  const handleLogin = (name: string) => {
+    // If we're on the invite page, user 1 invited us. We are user 2.
+    const isFriend = window.location.pathname.includes('/invite');
+    
+    const newUser: User = {
+      id: isFriend ? 'user_2' : 'user_1',
+      name: name,
+      // Simple avatar generation based on name
+      avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${name}&backgroundColor=${isFriend ? 'ffd5dc' : 'e5e4df'}`,
+    };
+    
+    // Update active user state
+    setActiveUser(newUser);
+    
+    // Also update the mock data users based on who logged in
+    if (isFriend) {
+      friendUser.name = name;
+      friendUser.avatar = newUser.avatar;
+    } else {
+      currentUser.name = name;
+      currentUser.avatar = newUser.avatar;
+    }
+
     setIsAuthenticated(true);
+    
+    // If they logged in from invite page, redirect them home
+    if (isFriend) {
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate')); // Tell wouter to re-render
+    }
   };
 
   const handleLogout = () => {

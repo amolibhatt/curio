@@ -1,11 +1,20 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, UserPlus, LogOut, History, Home, Compass } from "lucide-react";
+import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { currentUser } from "@/lib/mock-data";
 
 export default function Layout({ children, user }: { children: React.ReactNode, user: typeof currentUser }) {
   const [location] = useLocation();
+  const [copied, setCopied] = useState(false);
+
+  const handleShareLink = () => {
+    const inviteLink = `${window.location.origin}/invite`;
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-[#E5E4DF] flex items-center justify-center md:py-8 font-sans">
@@ -34,9 +43,22 @@ export default function Layout({ children, user }: { children: React.ReactNode, 
             <div className="w-8 h-8 rounded-full overflow-hidden border border-black/10 shrink-0">
               <img src={user.avatar} alt={user.name} className="w-full h-full object-cover bg-white" />
             </div>
-            <Button variant="outline" className="rounded-full bg-white border-black/5 shadow-sm hover:bg-black/5 text-[10px] font-bold tracking-[0.15em] text-black/70 h-9 px-4 flex items-center gap-2 transition-colors ml-1">
-              <UserPlus className="w-3.5 h-3.5" strokeWidth={2} />
-              <span>ADD</span>
+            <Button 
+              variant="outline" 
+              onClick={handleShareLink}
+              className={`rounded-full shadow-sm text-[10px] font-bold tracking-[0.15em] h-9 px-4 flex items-center gap-2 transition-all ml-1 ${copied ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-black/5 hover:bg-black/5 text-black/70'}`}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" strokeWidth={2} />
+                  <span>COPIED</span>
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="w-3.5 h-3.5" strokeWidth={2} />
+                  <span>INVITE</span>
+                </>
+              )}
             </Button>
           </div>
         </header>

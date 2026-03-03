@@ -1,22 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 
-export default function Login({ onLogin }: { onLogin: (userType: 'me' | 'friend') => void }) {
-  const [inviteLink, setInviteLink] = useState("");
-  const [copied, setCopied] = useState(false);
+export default function Login({ onLogin }: { onLogin: (name: string) => void }) {
+  const [name, setName] = useState("");
 
-  const generateLink = () => {
-    const link = `${window.location.origin}/invite?code=12345`;
-    setInviteLink(link);
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) {
+      onLogin(name.trim());
+    }
   };
 
   return (
@@ -37,23 +32,28 @@ export default function Login({ onLogin }: { onLogin: (userType: 'me' | 'friend'
           <CardHeader className="bg-[#FAFAFA] pb-6 border-b border-black/[0.03]">
             <CardTitle className="text-xl font-serif text-center">Enter the Archive</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 pt-6 pb-8 px-6">
-            <Button 
-              className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-lg shadow-black/10 transition-all active:scale-[0.98]"
-              onClick={() => onLogin('me')}
-            >
-              Sign in as You
-              <ArrowRight className="w-5 h-5 opacity-70" />
-            </Button>
+          <CardContent className="pt-6 pb-8 px-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase ml-2">Your Name</label>
+                <Input 
+                  placeholder="What should we call you?"
+                  className="h-14 rounded-[1.25rem] px-5 bg-[#FBF9F6] border-black/5 focus-visible:ring-black/20 focus-visible:border-black/20 text-base"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-            <Button 
-              variant="outline"
-              className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 border-black/10 text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-[0.98]"
-              onClick={() => onLogin('friend')}
-            >
-              Sign in as Friend
-              <ArrowRight className="w-5 h-5 opacity-50" />
-            </Button>
+              <Button 
+                type="submit"
+                disabled={!name.trim()}
+                className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-lg shadow-black/10 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+              >
+                Join Archive
+                <ArrowRight className="w-5 h-5 opacity-70" />
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
