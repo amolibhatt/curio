@@ -6,6 +6,7 @@ export type Fact = {
   authorId: string;
   date: string;
   categories: Category[];
+  reactions?: Record<string, 'mind-blown' | 'fascinating' | null>; // Maps userId to reaction type
 };
 
 export type User = {
@@ -33,14 +34,16 @@ export const mockFacts: Fact[] = [
     text: 'Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible.',
     authorId: 'user_1',
     date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], // 2 days ago
-    categories: ['History', 'Science']
+    categories: ['History', 'Science'],
+    reactions: { 'user_2': 'mind-blown' }
   },
   {
     id: 'f2',
     text: 'Octopuses have three hearts: one pumps blood around the body, while the other two pump it to the gills.',
     authorId: 'user_2',
     date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    categories: ['Science']
+    categories: ['Science'],
+    reactions: { 'user_1': 'fascinating' }
   },
   {
     id: 'f3',
@@ -54,6 +57,7 @@ export const mockFacts: Fact[] = [
     text: 'Remember when we tried to bake that cake and ended up ordering pizza? That was exactly 3 years ago today.',
     authorId: 'user_2',
     date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    categories: ['Us', 'History']
+    categories: ['Us', 'History'],
+    reactions: { 'user_1': 'mind-blown' }
   }
 ];

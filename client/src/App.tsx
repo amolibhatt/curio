@@ -15,10 +15,12 @@ import { mockFacts, currentUser, friendUser, Fact, User } from "./lib/mock-data"
 
 function Router({ 
   facts, 
-  onAddFact 
+  onAddFact,
+  onReactToFact
 }: { 
   facts: Fact[], 
-  onAddFact: (text: string, categories: string[]) => void
+  onAddFact: (text: string, categories: string[]) => void,
+  onReactToFact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void
 }) {
   const [, setLocation] = useLocation();
 
@@ -33,7 +35,7 @@ function Router({
         <Home facts={facts} onAddFact={handleAddFactAndRedirect} />
       </Route>
       <Route path="/archive">
-        <Archive facts={facts} />
+        <Archive facts={facts} onReact={onReactToFact} />
       </Route>
       <Route component={NotFound} />
     </Switch>
@@ -89,9 +91,26 @@ function App() {
       text,
       authorId: activeUser.id,
       date: new Date().toISOString().split('T')[0],
-      categories: categories as any
+      categories: categories as any,
+      reactions: {}
     };
     setFacts(prev => [newFact, ...prev]);
+  };
+
+  const handleReactToFact = (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => {
+    setFacts(prev => prev.map(fact => {
+      if (fact.id === factId) {
+        const currentReactions = fact.reactions || {};
+        return {
+          ...fact,
+          reactions: {
+            ...currentReactions,
+            [activeUser.id]: currentReactions[activeUser.id] === reaction ? null : reaction
+          }
+        };
+      }
+      return fact;
+    }));
   };
 
   if (!isAuthenticated) {
@@ -113,7 +132,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Layout user={activeUser} hasFriendJoined={hasFriendJoined}>
-          <Router facts={facts} onAddFact={handleAddFact} />
+          <Router facts={facts} onAddFact={handleAddFact} onReactToFact={handleReactToFact} />
         </Layout>
         <Toaster />
       </TooltipProvider>

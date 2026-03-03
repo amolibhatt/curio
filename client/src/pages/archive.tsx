@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Fact, currentUser, friendUser } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain } from "lucide-react";
 
-export default function Archive({ facts }: { facts: Fact[] }) {
+export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -148,6 +148,9 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                   const iPostedThisDate = dateFacts.some(f => f.authorId === currentUser.id);
                   const isHidden = !isMe && !iPostedThisDate;
                   
+                  // Check if current user has reacted
+                  const myReaction = fact.reactions?.[currentUser.id];
+                  
                   return (
                     <div 
                       key={fact.id} 
@@ -173,13 +176,50 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                               "{fact.text}"
                             </p>
                             
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              {fact.categories.map((category) => (
-                                <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold border ${getCategoryColor(category)}`}>
-                                  {getCategoryIcon(category)}
-                                  {category}
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {fact.categories.map((category) => (
+                                  <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold border ${getCategoryColor(category)}`}>
+                                    {getCategoryIcon(category)}
+                                    {category}
+                                  </div>
+                                ))}
+                              </div>
+                              
+                              {!isMe && (
+                                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity md:ml-auto">
+                                  <button
+                                    onClick={() => onReact(fact.id, 'mind-blown')}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                      myReaction === 'mind-blown' 
+                                        ? 'bg-[#1C1C1C] text-white' 
+                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20'
+                                    }`}
+                                  >
+                                    <Brain className="w-3.5 h-3.5" />
+                                    <span>Mind Blown</span>
+                                  </button>
+                                  <button
+                                    onClick={() => onReact(fact.id, 'fascinating')}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                      myReaction === 'fascinating' 
+                                        ? 'bg-[#1C1C1C] text-white' 
+                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20'
+                                    }`}
+                                  >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>Fascinating</span>
+                                  </button>
                                 </div>
-                              ))}
+                              )}
+                              
+                              {/* Display existing reactions if any */}
+                              {(fact.reactions?.['user_2']) && isMe && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto">
+                                  {fact.reactions['user_2'] === 'mind-blown' ? <Brain className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                  <span>{friendUser.name} reacted</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
