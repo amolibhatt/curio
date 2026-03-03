@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { User } from "@/lib/mock-data";
+import { getLocalDateStr } from "@/lib/date-utils";
 import { Heart, Calendar, Star, Gift, Sparkles, PartyPopper, CalendarHeart } from "lucide-react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -292,7 +293,7 @@ export default function Timeline({
             type="date"
             value={dateInput}
             onChange={(e) => setDateInput(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={getLocalDateStr()}
             className="w-full h-14 rounded-2xl border border-black/10 bg-white px-5 text-base text-[#1C1C1C] font-serif focus:outline-none focus:ring-2 focus:ring-black/10 mb-6 text-center"
             data-testid="input-anniversary-date"
           />

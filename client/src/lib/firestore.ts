@@ -60,6 +60,21 @@ export async function reconnectUser(
     await updateDoc(doc(db, "facts", factDoc.id), { authorId: newUid });
   }
 
+  const answersQuery = query(
+    collection(db, "dailyAnswers"),
+    where("pairingId", "==", pairingId)
+  );
+  const answersSnap = await getDocs(answersQuery);
+  for (const ansDoc of answersSnap.docs) {
+    const ansData = ansDoc.data();
+    if (ansData.answers && oldUid in ansData.answers) {
+      const newAnswers = { ...ansData.answers };
+      newAnswers[newUid] = newAnswers[oldUid];
+      delete newAnswers[oldUid];
+      await updateDoc(doc(db, "dailyAnswers", ansDoc.id), { answers: newAnswers });
+    }
+  }
+
   try {
     await deleteDoc(doc(db, "users", oldUid));
   } catch {}
@@ -106,20 +121,20 @@ export async function createPairing(userId: string): Promise<{ id: string; invit
   return { id: pairingRef.id, inviteCode };
 }
 
-export async function getPairingByCode(code: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null } | null> {
+export async function getPairingByCode(code: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null; anniversaryDate: string | null } | null> {
   const q = query(collection(db, "pairings"), where("inviteCode", "==", code));
   const snap = await getDocs(q);
   if (snap.empty) return null;
   const d = snap.docs[0];
   const data = d.data();
-  return { id: d.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null };
+  return { id: d.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null, anniversaryDate: data.anniversaryDate || null };
 }
 
-export async function getPairing(pairingId: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null } | null> {
+export async function getPairing(pairingId: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null; anniversaryDate: string | null } | null> {
   const snap = await getDoc(doc(db, "pairings", pairingId));
   if (!snap.exists()) return null;
   const data = snap.data();
-  return { id: snap.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null };
+  return { id: snap.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null, anniversaryDate: data.anniversaryDate || null };
 }
 
 export async function joinPairing(pairingId: string, userId: string): Promise<void> {
@@ -280,12 +295,9 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
       partner = await getUser(partnerId);
     }
 
-    const pairingSnap = await getDoc(doc(db, "pairings", pairingId));
-    const pairingData = pairingSnap.exists() ? pairingSnap.data() : null;
-
     return {
       user,
-      pairing: { id: pairing.id, inviteCode: pairing.inviteCode, anniversaryDate: pairingData?.anniversaryDate || null },
+      pairing: { id: pairing.id, inviteCode: pairing.inviteCode, anniversaryDate: pairing.anniversaryDate },
       partner,
     };
   } catch (err) {

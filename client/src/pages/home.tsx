@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
+import { Link } from "wouter";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -380,11 +380,11 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
       {myFactToday && partnerFactToday && (
         <div className="px-1 md:px-0">
-          <a href="/archive" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 text-amber-700 text-xs font-semibold hover:from-amber-100 hover:to-orange-100 transition-all" data-testid="link-view-archive">
+          <Link href="/archive" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 text-amber-700 text-xs font-semibold hover:from-amber-100 hover:to-orange-100 transition-all" data-testid="link-view-archive">
             <Sparkles className="w-3.5 h-3.5" />
             Both shared! See today's discoveries
             <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          </Link>
         </div>
       )}
 
