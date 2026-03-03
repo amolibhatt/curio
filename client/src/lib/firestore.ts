@@ -159,6 +159,24 @@ export async function getReaction(factId: string, userId: string): Promise<strin
   return snap.data().type;
 }
 
+export async function findExistingPairingForUser(uid: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null } | null> {
+  const q1 = query(collection(db, "pairings"), where("user1Id", "==", uid));
+  const snap1 = await getDocs(q1);
+  if (!snap1.empty) {
+    const d = snap1.docs[0];
+    const data = d.data();
+    return { id: d.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null };
+  }
+  const q2 = query(collection(db, "pairings"), where("user2Id", "==", uid));
+  const snap2 = await getDocs(q2);
+  if (!snap2.empty) {
+    const d = snap2.docs[0];
+    const data = d.data();
+    return { id: d.id, inviteCode: data.inviteCode, user1Id: data.user1Id, user2Id: data.user2Id || null };
+  }
+  return null;
+}
+
 export async function getAuthState(uid: string): Promise<AuthState | null> {
   try {
     const snap = await getDoc(doc(db, "users", uid));
