@@ -1,4 +1,4 @@
-const CACHE_NAME = 'curio-cache-v2';
+const CACHE_NAME = 'curio-cache-v3';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/favicon.png'
@@ -29,6 +29,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('firebase') ||
+    url.hostname.includes('firebaseio.com') ||
+    url.hostname.includes('gstatic.com') ||
+    url.hostname.includes('identitytoolkit') ||
+    url.hostname.includes('securetoken')
+  ) {
+    return;
+  }
+
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() =>
@@ -41,7 +52,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request).then((response) => {
-        if (response.ok) {
+        if (response.ok && url.origin === self.location.origin) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }

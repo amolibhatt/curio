@@ -25,9 +25,10 @@ function generateInviteCode(): string {
 export async function createUser(
   uid: string,
   name: string,
-  pairingId: string | null
+  pairingId: string,
+  isUser1: boolean
 ): Promise<User> {
-  const bgColor = pairingId ? "ffd5dc" : "e5e4df";
+  const bgColor = isUser1 ? "ffd5dc" : "d5e0ff";
   const avatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}&backgroundColor=${bgColor}`;
   const userData = { name, avatar, pairingId };
   await setDoc(doc(db, "users", uid), userData);
@@ -69,7 +70,6 @@ export async function getPairing(pairingId: string): Promise<{ id: string; invit
 
 export async function joinPairing(pairingId: string, userId: string): Promise<void> {
   await updateDoc(doc(db, "pairings", pairingId), { user2Id: userId });
-  await updateDoc(doc(db, "users", userId), { pairingId });
 }
 
 export async function createFact(
@@ -112,25 +112,31 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
   );
   const snap = await getDocs(q);
 
-  const facts: Fact[] = [];
-  for (const d of snap.docs) {
-    const data = d.data();
+  const reactionPromises = snap.docs.map(async (d) => {
     const reactionsSnap = await getDocs(collection(db, "facts", d.id, "reactions"));
     const reactions: Record<string, ReactionType | null> = {};
     reactionsSnap.forEach((r) => {
       reactions[r.id] = r.data().type as ReactionType;
     });
+    return { docId: d.id, reactions };
+  });
 
-    facts.push({
+  const reactionResults = await Promise.all(reactionPromises);
+  const reactionsMap = new Map(reactionResults.map(r => [r.docId, r.reactions]));
+
+  const facts: Fact[] = snap.docs.map(d => {
+    const data = d.data();
+    return {
       id: d.id,
       text: data.text,
       authorId: data.authorId,
       pairingId: data.pairingId,
       date: data.date,
       categories: data.categories || [],
-      reactions,
-    });
-  }
+      reactions: reactionsMap.get(d.id) || {},
+    };
+  });
+
   facts.sort((a, b) => b.date.localeCompare(a.date));
   return facts;
 }

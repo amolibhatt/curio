@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,11 +20,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [isReacting, setIsReacting] = useState(false);
+  const pairingIdRef = useRef(auth.pairing?.id);
+  pairingIdRef.current = auth.pairing?.id;
 
   const fetchFacts = useCallback(async () => {
-    if (!auth.pairing) return;
+    const pid = pairingIdRef.current;
+    if (!pid) return;
     try {
-      const data = await firestoreOps.getFactsByPairing(auth.pairing.id);
+      const data = await firestoreOps.getFactsByPairing(pid);
       setFacts(data);
     } catch (err: any) {
       console.error("[Curio] Failed to fetch facts:", err);
@@ -34,7 +37,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
         variant: "destructive",
       });
     }
-  }, [auth.pairing, toast]);
+  }, [toast]);
 
   useEffect(() => {
     fetchFacts();
@@ -63,15 +66,29 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const handleReact = async (factId: string, type: ReactionType) => {
     setIsReacting(true);
+    const userId = auth.user.id;
+
+    setFacts(prev => prev.map(f => {
+      if (f.id !== factId) return f;
+      const currentReaction = f.reactions?.[userId];
+      const newReactions = { ...f.reactions };
+      if (currentReaction === type) {
+        delete newReactions[userId];
+      } else {
+        newReactions[userId] = type;
+      }
+      return { ...f, reactions: newReactions };
+    }));
+
     try {
-      await firestoreOps.toggleReaction(factId, auth.user.id, type);
-      await fetchFacts();
+      await firestoreOps.toggleReaction(factId, userId, type);
     } catch (err: any) {
       toast({
         title: "Couldn't react",
         description: err.message || "Something went wrong.",
         variant: "destructive",
       });
+      fetchFacts().catch(() => {});
     } finally {
       setIsReacting(false);
     }
@@ -134,29 +151,29 @@ function AppContent() {
     authReady.then(() => {
       unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
         if (user) {
-        setFirebaseUid(user.uid);
-        try {
-          const state = await firestoreOps.getAuthState(user.uid);
-          if (state) {
-            setAuthState(state);
-            setNeedsName(false);
-          } else {
+          setFirebaseUid(user.uid);
+          try {
+            const state = await firestoreOps.getAuthState(user.uid);
+            if (state) {
+              setAuthState(state);
+              setNeedsName(false);
+            } else {
+              setNeedsName(true);
+              setAuthState(null);
+            }
+          } catch (err) {
+            console.error("[Curio] Auth state load error:", err);
             setNeedsName(true);
             setAuthState(null);
           }
-        } catch (err) {
-          console.error("[Curio] Auth state load error:", err);
-          setNeedsName(true);
-          setAuthState(null);
+        } else {
+          try {
+            await signInAnonymously(firebaseAuth);
+          } catch (err) {
+            console.error("[Curio] Auto sign-in failed:", err);
+            setNeedsName(true);
+          }
         }
-      } else {
-        try {
-          await signInAnonymously(firebaseAuth);
-        } catch (err) {
-          console.error("[Curio] Auto sign-in failed:", err);
-          setNeedsName(true);
-        }
-      }
         setIsLoading(false);
       });
     });
@@ -183,7 +200,7 @@ function AppContent() {
     setIsSigningUp(true);
     setSignupError(undefined);
     try {
-      const match = window.location.pathname.match(/^\/invite\/(.+)/);
+      const match = window.location.pathname.match(/^\/invite\/([a-z0-9]+)$/);
       const inviteCode = match?.[1];
 
       let uid = firebaseUid || firebaseAuth.currentUser?.uid;
@@ -205,7 +222,7 @@ function AppContent() {
           setIsSigningUp(false);
           return;
         }
-        await firestoreOps.createUser(uid, name, pairing.id);
+        await firestoreOps.createUser(uid, name, pairing.id, false);
         await firestoreOps.joinPairing(pairing.id, uid);
 
         window.history.pushState({}, "", "/");
@@ -213,10 +230,11 @@ function AppContent() {
       } else {
         const existingPairing = await firestoreOps.findExistingPairingForUser(uid);
         if (existingPairing) {
-          await firestoreOps.createUser(uid, name, existingPairing.id);
+          const isUser1 = existingPairing.user1Id === uid;
+          await firestoreOps.createUser(uid, name, existingPairing.id, isUser1);
         } else {
           const pairing = await firestoreOps.createPairing(uid);
-          await firestoreOps.createUser(uid, name, pairing.id);
+          await firestoreOps.createUser(uid, name, pairing.id, true);
         }
       }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen } from "lucide-react";
@@ -10,7 +10,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
-  const todayStr = new Date().toISOString().split('T')[0];
+  const [todayStr, setTodayStr] = useState(() => new Date().toISOString().split('T')[0]);
+  useEffect(() => {
+    const check = setInterval(() => {
+      const now = new Date().toISOString().split('T')[0];
+      if (now !== todayStr) setTodayStr(now);
+    }, 30000);
+    return () => clearInterval(check);
+  }, [todayStr]);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {

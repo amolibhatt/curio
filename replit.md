@@ -1,57 +1,69 @@
 # Curio
 
-A private PWA where two friends share one daily discovery each, maintain a streak, and browse a chronological archive.
+A private PWA where two partners share one daily discovery each, maintain a streak, and browse a chronological archive.
 
 ## Architecture
 
 - **Frontend**: React + Vite + TailwindCSS + Radix UI components
-- **Backend**: Express.js with session-based auth
-- **Database**: PostgreSQL with Drizzle ORM
-- **Routing**: wouter (client), Express (server)
-- **State**: TanStack Query for server state management
+- **Backend**: Express.js (serves static files only — no API routes)
+- **Database**: Firebase Firestore (client-side SDK)
+- **Auth**: Firebase Anonymous Auth with `browserLocalPersistence`
+- **Routing**: wouter (client)
 
-## Data Model
+## Data Model (Firestore Collections)
 
-- `users` — id, name, avatar, pairingId
-- `pairings` — id, inviteCode, user1Id, user2Id
-- `facts` — id, text, imageUrl, authorId, pairingId, date, categories (jsonb)
-- `reactions` — id, factId, userId, type
+- `users` — name, avatar, pairingId (doc ID = Firebase Auth UID)
+- `pairings` — inviteCode, user1Id, user2Id
+- `facts` — text, authorId, pairingId, date, categories[]
+  - `facts/{id}/reactions` — subcollection, doc ID = userId, field: type
 
 ## Key Features
 
 - **Pairing System**: User 1 signs up → gets invite code → shares link → User 2 joins via `/invite/:code`
-- **Daily Discovery**: Each user can post one thought per day with categories and optional image
+- **Daily Discovery**: Each user can post one thought per day with categories
 - **Blind Reveal**: Partner's post stays hidden until you post yours for the same day
 - **Streak Counter**: Counts consecutive days where both users posted
-- **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with burst animations
-- **Session Auth**: express-session with connect-pg-simple for persistent sessions
+- **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with optimistic UI + burst animations
+- **Rich Text Editor**: WYSIWYG contentEditable editor with B/I/U/headings, markdown storage
+- **Edit Entry**: Can edit today's entry after posting
+- **Anonymous Auth**: Auto sign-in, no logout, permanent session
 
 ## File Structure
 
-- `shared/schema.ts` — Drizzle schema + Zod validation
-- `server/db.ts` — Database connection
-- `server/storage.ts` — Storage interface (DatabaseStorage)
-- `server/routes.ts` — API routes with session auth
-- `client/src/App.tsx` — Main app with auth flow
-- `client/src/pages/home.tsx` — Home page with form overlay
-- `client/src/pages/archive.tsx` — Chronological archive with filters
-- `client/src/pages/login.tsx` — Login/signup page
-- `client/src/components/layout.tsx` — App shell with nav
+- `client/src/lib/firebase.ts` — Firebase app init, auth, Firestore
+- `client/src/lib/firestore.ts` — All Firestore CRUD operations
 - `client/src/lib/mock-data.ts` — Shared TypeScript types
+- `client/src/lib/format-text.tsx` — Markdown-to-React renderer
+- `client/src/App.tsx` — Main app with auth flow + data fetching
+- `client/src/pages/home.tsx` — Home page with discovery form overlay
+- `client/src/pages/archive.tsx` — Chronological archive with filters + reactions
+- `client/src/pages/login.tsx` — Name input page
+- `client/src/components/layout.tsx` — App shell with sticky header + bottom nav
+- `client/src/components/rich-editor.tsx` — WYSIWYG contentEditable editor
+- `client/public/sw.js` — Service worker (caches static assets only, skips Firebase)
+- `server/routes.ts` — Empty (no API routes)
 
 ## Design
 
 - Hyper-minimal aesthetic, cream background (#FBF9F6)
-- Serif headings, no shadows except subtle shadow-sm on white cards
+- Serif headings (Playfair Display), no shadows except subtle shadow-sm
 - Category system: Science, History, Etymology, Space, Art, Us, Random
 - "Us" category gets rose tinting throughout
+- User1 avatar: pink bg (#ffd5dc), User2 avatar: blue bg (#d5e0ff)
+
+## Firebase
+
+- **Project**: curio-1d592
+- **Hosting**: curio-1d592.web.app
+- **Firestore rules must allow**: `allow read, write: if request.auth != null;`
+- **Deploy**: `npx firebase deploy --only hosting --token "..."` from project root
 
 ## Notes
 
-- IDs are numeric integers (auto-generated). Reaction map keys are strings (JSON convention).
-- Images stored as base64 data URLs in DB (10MB Express body limit).
-- Service worker uses network-first for navigation, stale-while-revalidate for static assets, no caching for API calls.
-- Session cookie persists 30 days. Logout button in header.
-- Blind reveal uses unfiltered facts list (not filtered by person/category).
-- `insertFactSchema` allows text-only, image-only, or both via `.refine()`.
-- User 1 created with `pairingId: null` (updated after pairing created).
+- IDs are strings (Firebase auto-generated or Auth UIDs)
+- Service worker v3 skips all googleapis.com, firebase, gstatic.com, identitytoolkit, securetoken domains
+- Reactions use optimistic UI updates (instant visual feedback, Firestore write in background)
+- `todayStr` is reactive (checks every 30s for midnight rollover)
+- `fetchFacts` uses a ref for pairingId to avoid interval restarts on auth refresh
+- Reactions subcollection reads are parallelized with Promise.all
+- Recovery flow: if user doc is deleted, re-login finds existing pairing via `findExistingPairingForUser`

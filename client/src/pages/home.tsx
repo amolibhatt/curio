@@ -108,8 +108,15 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const { toast } = useToast();
-  
-  const todayStr = new Date().toISOString().split('T')[0];
+
+  const [todayStr, setTodayStr] = useState(() => new Date().toISOString().split('T')[0]);
+  useEffect(() => {
+    const check = setInterval(() => {
+      const now = new Date().toISOString().split('T')[0];
+      if (now !== todayStr) setTodayStr(now);
+    }, 30000);
+    return () => clearInterval(check);
+  }, [todayStr]);
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
   const partnerFactToday = todayFacts.find(f => f.authorId === partnerUser.id);
