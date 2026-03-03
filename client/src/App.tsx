@@ -44,6 +44,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeUser, setActiveUser] = useState<User>(currentUser);
   const [facts, setFacts] = useState<Fact[]>(mockFacts);
+  const [hasFriendJoined, setHasFriendJoined] = useState(false);
 
   const handleLogin = (name: string) => {
     // If we're on the invite page, user 1 invited us. We are user 2.
@@ -63,6 +64,7 @@ function App() {
     if (isFriend) {
       friendUser.name = name;
       friendUser.avatar = newUser.avatar;
+      setHasFriendJoined(true); // User 2 just joined!
     } else {
       currentUser.name = name;
       currentUser.avatar = newUser.avatar;
@@ -110,7 +112,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Layout user={activeUser}>
+        <Layout user={activeUser} hasFriendJoined={hasFriendJoined}>
           <Router facts={facts} onAddFact={handleAddFact} />
         </Layout>
         <Toaster />
