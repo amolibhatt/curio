@@ -1,15 +1,7 @@
-const CACHE_NAME = 'curio-cache-v3';
-const STATIC_ASSETS = [
-  '/manifest.json',
-  '/favicon.png'
-];
+const CACHE_NAME = 'curio-cache-v4';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
@@ -25,9 +17,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.startsWith('/api/')) {
-    return;
-  }
+  if (url.pathname.startsWith('/api/')) return;
 
   if (
     url.hostname.includes('googleapis.com') ||
@@ -36,30 +26,25 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('gstatic.com') ||
     url.hostname.includes('identitytoolkit') ||
     url.hostname.includes('securetoken')
-  ) {
-    return;
-  }
-
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match('/').then(r => r || new Response('Offline', { status: 503 }))
-      )
-    );
-    return;
-  }
+  ) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request).then((response) => {
+    fetch(event.request)
+      .then((response) => {
         if (response.ok && url.origin === self.location.origin) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => cached);
-
-      return cached || fetchPromise;
-    })
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          if (event.request.mode === 'navigate') {
+            return caches.match('/').then((r) => r || new Response('Offline', { status: 503 }));
+          }
+          return new Response('Offline', { status: 503 });
+        })
+      )
   );
 });

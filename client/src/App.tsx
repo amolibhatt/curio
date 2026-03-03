@@ -44,7 +44,19 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   useEffect(() => {
     fetchFacts();
     const interval = setInterval(fetchFacts, 15000);
-    return () => clearInterval(interval);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchFacts();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", (e) => {
+      if ((e as PageTransitionEvent).persisted) fetchFacts();
+    });
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchFacts]);
 
   const handleAddFact = async (text: string, categories: Category[]): Promise<void> => {
