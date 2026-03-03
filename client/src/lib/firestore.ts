@@ -10,9 +10,16 @@ import {
   query,
   where,
   addDoc,
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer } from "./mock-data";
+
+const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
+const VALID_CATEGORIES: Set<string> = new Set(['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random']);
+const MAX_FACT_LENGTH = 5000;
+const MAX_ANSWER_LENGTH = 2000;
+const MAX_NAME_LENGTH = 50;
 
 interface ReconnectData {
   uid: string;
@@ -43,6 +50,19 @@ export async function reconnectUser(
   pairingId: string,
   isUser1: boolean
 ): Promise<void> {
+  const pairingSnap = await getDoc(doc(db, "pairings", pairingId));
+  if (!pairingSnap.exists()) {
+    clearReconnectCookie();
+    throw new Error("Pairing no longer exists");
+  }
+
+  const pairingData = pairingSnap.data();
+  const expectedField = isUser1 ? "user1Id" : "user2Id";
+  if (pairingData[expectedField] !== oldUid) {
+    clearReconnectCookie();
+    throw new Error("Pairing membership mismatch");
+  }
+
   const avatar = buildAvatarUrl(name, isUser1);
 
   await setDoc(doc(db, "users", newUid), { name, avatar, pairingId });
@@ -98,6 +118,10 @@ export async function reconnectUser(
   setReconnectCookie({ uid: newUid, name, pairingId, isUser1 });
 }
 
+function clearReconnectCookie(): void {
+  document.cookie = `curio_rc=; max-age=0; path=/; SameSite=Lax`;
+}
+
 const LONG_HAIR_VARIANTS = "variant26,variant32,variant39,variant40,variant42,variant45,variant46,variant47,variant48,variant50,variant57,variant59,variant60,variant61,variant62,variant63";
 
 function buildAvatarUrl(name: string, isUser1: boolean): string {
@@ -124,10 +148,12 @@ export async function createUser(
   pairingId: string,
   isUser1: boolean
 ): Promise<User> {
-  const avatar = buildAvatarUrl(name, isUser1);
-  const userData = { name, avatar, pairingId };
+  const safeName = name.trim().slice(0, MAX_NAME_LENGTH);
+  if (safeName.length < 2) throw new Error("Name must be at least 2 characters");
+  const avatar = buildAvatarUrl(safeName, isUser1);
+  const userData = { name: safeName, avatar, pairingId };
   await setDoc(doc(db, "users", uid), userData);
-  return { id: uid, name, avatar };
+  return { id: uid, name: safeName, avatar };
 }
 
 export async function getUser(uid: string): Promise<User | null> {
@@ -174,20 +200,26 @@ export async function createFact(
   categories: Category[],
   date: string
 ): Promise<Fact> {
+  const safeText = text.slice(0, MAX_FACT_LENGTH);
+  if (!safeText.trim()) throw new Error("Discovery text is required");
+
+  const validCats = categories.filter(c => VALID_CATEGORIES.has(c));
+  if (validCats.length === 0) throw new Error("At least one valid category is required");
+
   const factRef = await addDoc(collection(db, "facts"), {
-    text,
+    text: safeText,
     authorId,
     pairingId,
     date,
-    categories,
+    categories: validCats,
   });
   return {
     id: factRef.id,
-    text,
+    text: safeText,
     authorId,
     pairingId,
     date,
-    categories,
+    categories: validCats,
     reactions: {},
   };
 }
@@ -197,7 +229,13 @@ export async function updateFact(
   text: string,
   categories: Category[]
 ): Promise<void> {
-  await updateDoc(doc(db, "facts", factId), { text, categories });
+  const safeText = text.slice(0, MAX_FACT_LENGTH);
+  if (!safeText.trim()) throw new Error("Discovery text is required");
+
+  const validCats = categories.filter(c => VALID_CATEGORIES.has(c));
+  if (validCats.length === 0) throw new Error("At least one valid category is required");
+
+  await updateDoc(doc(db, "facts", factId), { text: safeText, categories: validCats });
 }
 
 export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
@@ -211,7 +249,10 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
     const reactionsSnap = await getDocs(collection(db, "facts", d.id, "reactions"));
     const reactions: Record<string, ReactionType> = {};
     reactionsSnap.forEach((r) => {
-      reactions[r.id] = r.data().type as ReactionType;
+      const type = r.data().type;
+      if (VALID_REACTIONS.has(type)) {
+        reactions[r.id] = type as ReactionType;
+      }
     });
     return { docId: d.id, reactions };
   });
@@ -227,7 +268,7 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
       authorId: data.authorId,
       pairingId: data.pairingId,
       date: data.date,
-      categories: data.categories || [],
+      categories: (data.categories || []).filter((c: string) => VALID_CATEGORIES.has(c)),
       reactions: reactionsMap.get(d.id) || {},
     };
   });
@@ -240,13 +281,15 @@ export async function hasPostedToday(authorId: string, pairingId: string, date: 
   const q = query(
     collection(db, "facts"),
     where("pairingId", "==", pairingId),
+    where("authorId", "==", authorId),
     where("date", "==", date)
   );
   const snap = await getDocs(q);
-  return snap.docs.some(d => d.data().authorId === authorId);
+  return !snap.empty;
 }
 
-export async function setReaction(factId: string, userId: string, type: string): Promise<void> {
+export async function setReaction(factId: string, userId: string, type: ReactionType): Promise<void> {
+  if (!VALID_REACTIONS.has(type)) throw new Error("Invalid reaction type");
   await setDoc(doc(db, "facts", factId, "reactions", userId), { type });
 }
 
@@ -255,6 +298,7 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
 }
 
 export async function setAnniversaryDate(pairingId: string, date: string): Promise<void> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid date format");
   await updateDoc(doc(db, "pairings", pairingId), { anniversaryDate: date });
 }
 
@@ -266,20 +310,40 @@ export async function submitDailyAnswer(
   userId: string,
   answer: string
 ): Promise<DailyAnswer> {
+  const safeAnswer = answer.slice(0, MAX_ANSWER_LENGTH);
+  if (!safeAnswer.trim()) throw new Error("Answer is required");
+
   const docId = `${pairingId}_${date}`;
   const ref = doc(db, "dailyAnswers", docId);
-  const snap = await getDoc(ref);
 
-  if (snap.exists()) {
-    const data = snap.data();
-    await updateDoc(ref, { [`answers.${userId}`]: answer });
-    const answers = { ...data.answers, [userId]: answer };
-    return { id: docId, pairingId, date, questionText: data.questionText, category: data.category, answers };
-  } else {
-    const answers = { [userId]: answer };
-    await setDoc(ref, { pairingId, date, questionText, category, answers });
-    return { id: docId, pairingId, date, questionText, category, answers };
-  }
+  const result = await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (snap.exists()) {
+      transaction.update(ref, { [`answers.${userId}`]: safeAnswer });
+      const existingData = snap.data();
+      return {
+        id: docId,
+        pairingId: existingData.pairingId,
+        date: existingData.date,
+        questionText: existingData.questionText,
+        category: existingData.category,
+        answers: { ...existingData.answers, [userId]: safeAnswer },
+      };
+    } else {
+      const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };
+      transaction.set(ref, newData);
+      return {
+        id: docId,
+        pairingId,
+        date,
+        questionText,
+        category,
+        answers: { [userId]: safeAnswer },
+      };
+    }
+  });
+
+  return result;
 }
 
 export async function getDailyAnswerForDate(pairingId: string, date: string): Promise<DailyAnswer | null> {
@@ -331,4 +395,3 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
     return null;
   }
 }
-

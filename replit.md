@@ -64,13 +64,17 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 
 - **Project**: curio-1d592
 - **Hosting**: curio-1d592.web.app
-- **Firestore rules must allow**: `allow read, write: if request.auth != null;`
-- **Deploy**: `npx firebase deploy --only hosting --token "..."` from project root
+- **Deploy**: `npx firebase deploy --only hosting,firestore --token "..."` from project root
+- **Security rules**: Locked-down per-pairing access using `getUserPairingId()` helper function in rules
+  - Facts/dailyAnswers: read/write restricted to pairing members only
+  - Pairings: read allowed for members + unfilled pairings (invite flow)
+  - Reactions: validated against allowed types (mind-blown, fascinating, heart, laugh, thinking, sad)
+  - dailyAnswers update: only user's own answer key can be modified
 
 ## Notes
 
 - IDs are strings (Firebase auto-generated or Auth UIDs)
-- Service worker v3 skips all googleapis.com, firebase, gstatic.com, identitytoolkit, securetoken domains
+- Service worker v8 skips all googleapis.com, firebase, gstatic.com, identitytoolkit, securetoken, dicebear.com domains
 - Reactions use optimistic UI updates (instant visual feedback, Firestore write in background)
 - Reaction locking is per-fact (Set<string>), not global — users can react to different facts rapidly
 - Reactions write directly to Firestore (setReaction/removeReaction) based on optimistic state — no stale read-then-write race condition
@@ -85,4 +89,8 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - Initial data fetch shows skeleton loading state before facts/answers load
 - Editor close (Escape/X) prompts "Discard your changes?" when content has been modified
 - Daily answer textarea auto-grows with content (max 160px height)
-- Service worker cache currently v8
+- `submitDailyAnswer` uses Firestore `runTransaction` for atomic read-then-write (prevents partner answers being overwritten on concurrent submission)
+- Input validation: fact text max 5000 chars, answer text max 2000 chars, name max 50 chars, categories validated against allowed set, reaction types validated against allowed set, anniversary date format validated as YYYY-MM-DD
+- `reconnectUser` validates pairing exists and user membership matches before proceeding; clears stale cookies on failure
+- `hasPostedToday` filters authorId server-side in Firestore query (3-field query: pairingId + authorId + date)
+- Composite indexes configured in `firestore.indexes.json` for multi-field queries on facts collection

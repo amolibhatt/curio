@@ -7,6 +7,23 @@
         { "fieldPath": "pairingId", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "facts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pairingId", "order": "ASCENDING" },
+        { "fieldPath": "authorId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "facts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pairingId", "order": "ASCENDING" },
+        { "fieldPath": "authorId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
