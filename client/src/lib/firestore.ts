@@ -6,7 +6,6 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  deleteField,
   query,
   where,
   addDoc,
@@ -192,7 +191,13 @@ export async function getPairing(pairingId: string): Promise<{ id: string; invit
 }
 
 export async function joinPairing(pairingId: string, userId: string): Promise<void> {
-  await updateDoc(doc(db, "pairings", pairingId), { user2Id: userId });
+  const pairingRef = doc(db, "pairings", pairingId);
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(pairingRef);
+    if (!snap.exists()) throw new Error("Pairing not found");
+    if (snap.data().user2Id) throw new Error("This pairing is already full");
+    transaction.update(pairingRef, { user2Id: userId });
+  });
 }
 
 export async function createFact(
@@ -389,6 +394,11 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
 
     const pairing = await getPairing(pairingId);
     if (!pairing) return null;
+
+    if (pairing.user1Id !== uid && pairing.user2Id !== uid) {
+      console.error("[Curio] User not a member of their stored pairing");
+      return null;
+    }
 
     let partner: User | null = null;
     const partnerId = pairing.user1Id === uid ? pairing.user2Id : pairing.user1Id;
