@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, Compass, History, Link as LinkIcon, Check } from "lucide-react";
+import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
@@ -93,6 +93,11 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
             <Link href="/archive">
               <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
                 <History className="w-[22px] h-[22px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
+              </Button>
+            </Link>
+            <Link href="/us">
+              <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 transition-all ${location === "/us" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                <Heart className={`w-[22px] h-[22px] ${location === "/us" ? "fill-white" : ""}`} strokeWidth={location === "/us" ? 2 : 1.5} />
               </Button>
             </Link>
           </div>

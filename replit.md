@@ -13,7 +13,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 ## Data Model (Firestore Collections)
 
 - `users` — name, avatar, pairingId (doc ID = Firebase Auth UID)
-- `pairings` — inviteCode, user1Id, user2Id
+- `pairings` — inviteCode, user1Id, user2Id, anniversaryDate (optional)
 - `facts` — text, authorId, pairingId, date, categories[]
   - `facts/{id}/reactions` — subcollection, doc ID = userId, field: type
 
@@ -26,6 +26,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with optimistic UI + burst animations
 - **Rich Text Editor**: WYSIWYG contentEditable editor with B/I/U/headings, markdown storage
 - **Edit Entry**: Can edit today's entry after posting
+- **Relationship Timeline** (`/us`): Anniversary date, days-together counter, milestone celebrations, anniversary countdown
 - **Anonymous Auth**: Auto sign-in, no logout, permanent session
 
 ## File Structure
@@ -39,6 +40,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `client/src/pages/archive.tsx` — Chronological archive with filters + reactions
 - `client/src/pages/login.tsx` — Name input page
 - `client/src/components/layout.tsx` — App shell with sticky header + bottom nav
+- `client/src/pages/timeline.tsx` — Relationship timeline with milestones + anniversary
 - `client/src/components/rich-editor.tsx` — WYSIWYG contentEditable editor
 - `client/public/sw.js` — Service worker (caches static assets only, skips Firebase)
 - `server/routes.ts` — Empty (no API routes)

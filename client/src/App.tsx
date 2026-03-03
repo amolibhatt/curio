@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Layout from "./components/layout";
 import Home from "./pages/home";
 import Archive from "./pages/archive";
+import Timeline from "./pages/timeline";
 import Login from "./pages/login";
 
 import { auth as firebaseAuth, authReady } from "./lib/firebase";
@@ -107,6 +108,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     }
   };
 
+  const [anniversaryDate, setAnniversaryDate] = useState<string | null>(auth.pairing?.anniversaryDate || null);
+
+  const handleSetAnniversaryDate = async (date: string) => {
+    if (!auth.pairing) return;
+    await firestoreOps.setAnniversaryDate(auth.pairing.id, date);
+    setAnniversaryDate(date);
+  };
+
   const partner = auth.partner || {
     id: "0",
     name: "Your partner",
@@ -134,6 +143,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             activeUser={auth.user}
             partnerUser={partner}
             reactingFacts={reactingFacts}
+          />
+        </Route>
+        <Route path="/us">
+          <Timeline
+            activeUser={auth.user}
+            partnerUser={partner}
+            anniversaryDate={anniversaryDate}
+            onSetAnniversaryDate={handleSetAnniversaryDate}
           />
         </Route>
         <Route path="/invite/:code">

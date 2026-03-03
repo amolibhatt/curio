@@ -159,6 +159,9 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
   await deleteDoc(doc(db, "facts", factId, "reactions", userId));
 }
 
+export async function setAnniversaryDate(pairingId: string, date: string): Promise<void> {
+  await updateDoc(doc(db, "pairings", pairingId), { anniversaryDate: date });
+}
 
 
 export async function getAuthState(uid: string): Promise<AuthState | null> {
@@ -180,9 +183,12 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
       partner = await getUser(partnerId);
     }
 
+    const pairingSnap = await getDoc(doc(db, "pairings", pairingId));
+    const pairingData = pairingSnap.exists() ? pairingSnap.data() : null;
+
     return {
       user,
-      pairing: { id: pairing.id, inviteCode: pairing.inviteCode },
+      pairing: { id: pairing.id, inviteCode: pairing.inviteCode, anniversaryDate: pairingData?.anniversaryDate || null },
       partner,
     };
   } catch (err) {

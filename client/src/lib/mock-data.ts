@@ -20,6 +20,6 @@ export type User = {
 
 export type AuthState = {
   user: User;
-  pairing: { id: string; inviteCode: string } | null;
+  pairing: { id: string; inviteCode: string; anniversaryDate?: string | null } | null;
   partner: User | null;
 };
