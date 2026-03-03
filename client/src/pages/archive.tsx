@@ -171,10 +171,16 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                             </p>
                           </div>
                         ) : (
-                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-colors ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-sm'}`}>
-                            <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                              "{fact.text}"
-                            </p>
+                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-colors relative overflow-hidden ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.01)]'}`}>
+                            {/* Subtle category-based tint */}
+                            {!isAboutUs && fact.categories.includes('Space') && <div className="absolute inset-0 bg-blue-50/20 pointer-events-none" />}
+                            {!isAboutUs && fact.categories.includes('Science') && <div className="absolute inset-0 bg-green-50/20 pointer-events-none" />}
+                            {!isAboutUs && fact.categories.includes('Art') && <div className="absolute inset-0 bg-orange-50/20 pointer-events-none" />}
+                            
+                            <div className="relative z-10">
+                              <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                                "{fact.text}"
+                              </p>
                             
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="flex flex-wrap items-center gap-1.5">
@@ -189,22 +195,28 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                               {!isMe && (
                                 <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity md:ml-auto">
                                   <button
-                                    onClick={() => onReact(fact.id, 'mind-blown')}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'mind-blown');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                       myReaction === 'mind-blown' 
-                                        ? 'bg-[#1C1C1C] text-white' 
-                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20'
+                                        ? 'bg-[#1C1C1C] text-white shadow-soft' 
+                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20 hover:shadow-soft'
                                     }`}
                                   >
                                     <Brain className="w-3.5 h-3.5" />
                                     <span>Mind Blown</span>
                                   </button>
                                   <button
-                                    onClick={() => onReact(fact.id, 'fascinating')}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'fascinating');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                       myReaction === 'fascinating' 
-                                        ? 'bg-[#1C1C1C] text-white' 
-                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20'
+                                        ? 'bg-[#1C1C1C] text-white shadow-soft' 
+                                        : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20 hover:shadow-soft'
                                     }`}
                                   >
                                     <Sparkles className="w-3.5 h-3.5" />
@@ -215,7 +227,7 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                               
                               {/* Display existing reactions if any */}
                               {(fact.reactions?.['user_2']) && isMe && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 shadow-soft">
                                   {fact.reactions['user_2'] === 'mind-blown' ? <Brain className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
                                   <span>{friendUser.name} reacted</span>
                                 </div>

@@ -94,24 +94,31 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
 
       {/* Main Action Card */}
       {myFactToday ? (
-        <Card className="bg-white border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0">
-          <CardContent className="p-6 md:p-12 flex-1 flex flex-col justify-center items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/50 text-green-600 rounded-full flex items-center justify-center mb-4 md:mb-6">
+        <Card className="bg-white border border-black/[0.03] shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
+          {/* Waiting animation background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
+          
+          <CardContent className="p-6 md:p-12 flex-1 flex flex-col justify-center items-center text-center relative z-10">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-soft animate-in slide-in-from-bottom-2 duration-500">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-xl md:text-2xl text-black mb-2">Discovery Captured</h2>
-            <p className="text-muted-foreground text-sm md:text-base max-w-[250px] leading-relaxed">
+            <h2 className="font-serif text-xl md:text-2xl text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Discovery Captured</h2>
+            <p className="text-[#909090] text-sm md:text-base max-w-[250px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
               Your thought is safe in the archive. The reveal happens when {friendUser.name} adds theirs.
             </p>
           </CardContent>
         </Card>
       ) : !isAdding ? (
         <Card 
-          className="bg-white border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-transform hover:scale-[1.005] active:scale-[0.98] mx-2 md:mx-0"
-          onClick={() => setIsAdding(true)}
+          className="bg-white border border-black/[0.03] shadow-soft hover:shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0"
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            setIsAdding(true);
+          }}
         >
           <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center group">
-            <div className="w-20 h-20 md:w-24 md:h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mb-6 md:mb-10 transition-transform group-hover:scale-105 border border-black/[0.02]">
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mb-6 md:mb-10 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-soft border border-black/[0.02]">
               <Plus className="w-8 h-8 md:w-10 md:h-10 text-[#1C1C1C]" strokeWidth={1.5} />
             </div>
             
@@ -124,12 +131,15 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-white border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col animate-in zoom-in-95 duration-300 mx-2 md:mx-0">
+        <Card className="bg-white border border-black/[0.03] shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-500 mx-2 md:mx-0">
           <CardContent className="p-6 md:p-10 flex-1 flex flex-col relative overflow-y-auto">
             
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-max space-y-4">
+            <form onSubmit={(e) => {
+              if (navigator.vibrate) navigator.vibrate(50);
+              handleSubmit(e);
+            }} className="flex-1 flex flex-col min-h-max space-y-4">
               
-              <div className="mb-4 md:mb-6 space-y-3 relative">
+              <div className="mb-4 md:mb-6 space-y-3 relative animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
                 <div className="flex justify-between items-center w-full">
                   <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
                     SELECT CATEGORIES (1 OR MORE)
@@ -140,13 +150,16 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                     <button
                       key={name}
                       type="button"
-                      onClick={() => toggleCategory(name)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        toggleCategory(name);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap active:scale-95 ${
                         selectedCategories.includes(name)
                           ? name === 'Us' 
-                            ? 'bg-rose-50 text-rose-600 border border-rose-200' 
-                            : 'bg-black text-white border border-black'
-                          : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5'
+                            ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-soft' 
+                            : 'bg-black text-white border border-black shadow-soft'
+                          : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5 hover:shadow-sm'
                       }`}
                     >
                       <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
@@ -156,26 +169,28 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                 </div>
               </div>
 
-              <Textarea 
-                placeholder="Today I learned that..." 
-                className="flex-1 min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
-                value={newFact}
-                onChange={(e) => setNewFact(e.target.value)}
-                autoFocus
-              />
+              <div className="flex-1 relative animate-in fade-in duration-700 delay-200">
+                <Textarea 
+                  placeholder="Today I learned that..." 
+                  className="w-full h-full min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
+                  value={newFact}
+                  onChange={(e) => setNewFact(e.target.value)}
+                  autoFocus
+                />
+              </div>
               
-              <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-black/[0.05] mt-auto">
+              <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-black/[0.05] mt-auto animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
                 <Button 
                   type="button" 
                   variant="ghost" 
-                  className="text-[#909090] hover:text-black font-semibold text-xs md:text-sm tracking-wide px-2 md:px-4 h-10 md:h-12"
+                  className="text-[#909090] hover:text-black font-semibold text-xs md:text-sm tracking-wide px-2 md:px-4 h-10 md:h-12 transition-colors"
                   onClick={() => setIsAdding(false)}
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
-                  className="rounded-full px-6 md:px-8 h-10 md:h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-xs md:text-sm tracking-wide shadow-lg shadow-black/10 disabled:opacity-50" 
+                  className="rounded-full px-6 md:px-8 h-10 md:h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-xs md:text-sm tracking-wide shadow-soft hover:shadow-elevated transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:hover:shadow-soft" 
                   disabled={!newFact.trim() || selectedCategories.length === 0}
                 >
                   <Send className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
