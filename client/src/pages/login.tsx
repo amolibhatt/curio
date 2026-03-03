@@ -72,7 +72,7 @@ export default function Login({ onLogin }: { onLogin: (userType: 'me' | 'friend'
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Input readValue value={inviteLink} readOnly className="rounded-xl bg-secondary/50 font-mono text-xs" />
+                  <Input value={inviteLink} readOnly className="rounded-xl bg-secondary/50 font-mono text-xs" />
                   <Button variant={copied ? "default" : "secondary"} className="rounded-xl shrink-0" onClick={copyLink}>
                     {copied ? "Copied!" : "Copy"}
                   </Button>

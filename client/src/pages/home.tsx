@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { currentUser, friendUser, Fact } from "@/lib/mock-data";
+import { currentUser, friendUser, Fact, Category } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Send, Sparkles } from "lucide-react";
+import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle } from "lucide-react";
 
-const PROMPTS = [
-  "Tell me a historical event that sounds fake...",
-  "What's the weirdest thing about the ocean?",
-  "Drop a random space fact...",
-  "Tell me something weird about the human body...",
-  "What's a strange animal adaptation?",
-  "Share a bizarre psychological phenomenon..."
+const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
+  { name: 'Science', icon: Microscope },
+  { name: 'History', icon: Globe },
+  { name: 'Space', icon: Telescope },
+  { name: 'Art', icon: Palette },
+  { name: 'About Us', icon: Heart },
+  { name: 'Random', icon: HelpCircle },
 ];
 
-export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string) => void }) {
+export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, category: Category) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
-  const [promptIndex, setPromptIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<Category>('Science');
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
@@ -28,13 +28,9 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFact.trim()) return;
-    onAddFact(newFact);
+    onAddFact(newFact, selectedCategory);
     setNewFact("");
     setIsAdding(false);
-  };
-
-  const cyclePrompt = () => {
-    setPromptIndex((prev) => (prev + 1) % PROMPTS.length);
   };
 
   return (
@@ -92,25 +88,44 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
         </Card>
       ) : (
         <Card className="bg-white border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col animate-in zoom-in-95 duration-300 mx-2 md:mx-0">
-          <CardContent className="p-6 md:p-10 flex-1 flex flex-col relative">
+          <CardContent className="p-6 md:p-10 flex-1 flex flex-col relative overflow-y-auto">
             
-            <button 
-              onClick={cyclePrompt}
-              className="absolute top-6 right-6 md:top-8 md:right-8 flex items-center gap-1.5 text-[10px] md:text-xs font-bold tracking-wider text-[#909090] hover:text-black transition-colors uppercase"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Need an idea?
-            </button>
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-max space-y-4">
+              
+              <div className="mb-4 md:mb-6 space-y-3">
+                <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase text-center md:text-left">
+                  SELECT A CATEGORY
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  {CATEGORIES.map(({ name, icon: Icon }) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setSelectedCategory(name)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                        selectedCategory === name 
+                          ? name === 'About Us' 
+                            ? 'bg-rose-50 text-rose-600 border border-rose-200' 
+                            : 'bg-black text-white border border-black'
+                          : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${selectedCategory === name && name === 'About Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col h-full space-y-4 pt-8 md:pt-10">
               <Textarea 
-                placeholder={PROMPTS[promptIndex]} 
-                className="flex-1 min-h-[150px] md:min-h-[220px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
+                placeholder="Type your discovery here..." 
+                className="flex-1 min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
                 value={newFact}
                 onChange={(e) => setNewFact(e.target.value)}
                 autoFocus
               />
-              <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-black/[0.05]">
+              
+              <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-black/[0.05] mt-auto">
                 <Button 
                   type="button" 
                   variant="ghost" 

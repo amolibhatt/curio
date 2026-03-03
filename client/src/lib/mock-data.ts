@@ -1,8 +1,11 @@
+export type Category = 'Science' | 'History' | 'Art' | 'Space' | 'About Us' | 'Random';
+
 export type Fact = {
   id: string;
   text: string;
   authorId: string;
   date: string;
+  category: Category;
 };
 
 export type User = {
@@ -30,23 +33,27 @@ export const mockFacts: Fact[] = [
     text: 'Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible.',
     authorId: 'user_1',
     date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], // 2 days ago
+    category: 'History'
   },
   {
     id: 'f2',
     text: 'Octopuses have three hearts: one pumps blood around the body, while the other two pump it to the gills.',
     authorId: 'user_2',
     date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
+    category: 'Science'
   },
   {
     id: 'f3',
     text: 'Bananas grow curved because they reach for the sunlight, a process called negative geotropism.',
     authorId: 'user_1',
     date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // 1 day ago
+    category: 'Science'
   },
   {
     id: 'f4',
-    text: 'Wombats have cube-shaped poop to prevent it from rolling away, which they use to mark their territory.',
+    text: 'Remember when we tried to bake that cake and ended up ordering pizza? That was exactly 3 years ago today.',
     authorId: 'user_2',
     date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    category: 'About Us'
   }
 ];
