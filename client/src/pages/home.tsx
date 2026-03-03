@@ -98,10 +98,10 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
         
             <div className="space-y-1 md:space-y-3 pt-1 md:pt-2">
           <h1 className="text-[3rem] md:text-[4rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
-            Did you find a <span className="italic text-[#4A4A4A]">discovery</span> today?
+            Did you learn something <span className="italic text-[#4A4A4A]">new</span> today?
           </h1>
           <p className="text-[1.05rem] md:text-[1.15rem] text-[#909090] italic font-serif">
-            Add something fascinating to our shared cabinet of curiosities.
+            Add it to our shared cabinet of curiosities.
           </p>
         </div>
       </header>
