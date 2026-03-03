@@ -1,4 +1,4 @@
-export type Category = 'Science' | 'History' | 'Art' | 'Space' | 'About Us' | 'Random';
+export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | 'Us' | 'Random';
 
 export type Fact = {
   id: string;
@@ -54,6 +54,6 @@ export const mockFacts: Fact[] = [
     text: 'Remember when we tried to bake that cake and ended up ordering pizza? That was exactly 3 years ago today.',
     authorId: 'user_2',
     date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    category: 'About Us'
+    category: 'Us'
   }
 ];

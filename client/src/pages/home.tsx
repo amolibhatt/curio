@@ -3,14 +3,15 @@ import { currentUser, friendUser, Fact, Category } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle } from "lucide-react";
+import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA } from "lucide-react";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
-  { name: 'Science', icon: Microscope },
   { name: 'History', icon: Globe },
+  { name: 'Etymology', icon: BookA },
+  { name: 'Science', icon: Microscope },
   { name: 'Space', icon: Telescope },
   { name: 'Art', icon: Palette },
-  { name: 'About Us', icon: Heart },
+  { name: 'Us', icon: Heart },
   { name: 'Random', icon: HelpCircle },
 ];
 
@@ -104,13 +105,13 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                       onClick={() => setSelectedCategory(name)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
                         selectedCategory === name 
-                          ? name === 'About Us' 
+                          ? name === 'Us' 
                             ? 'bg-rose-50 text-rose-600 border border-rose-200' 
                             : 'bg-black text-white border border-black'
                           : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${selectedCategory === name && name === 'About Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                      <Icon className={`w-3.5 h-3.5 ${selectedCategory === name && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
                       {name}
                     </button>
                   ))}

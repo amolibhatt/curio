@@ -1,6 +1,6 @@
 import { Fact, currentUser, friendUser } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA } from "lucide-react";
 
 export default function Archive({ facts }: { facts: Fact[] }) {
   // Group facts by date
@@ -17,17 +17,18 @@ export default function Archive({ facts }: { facts: Fact[] }) {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Science': return <Microscope className="w-3.5 h-3.5" />;
       case 'History': return <Globe className="w-3.5 h-3.5" />;
+      case 'Etymology': return <BookA className="w-3.5 h-3.5" />;
+      case 'Science': return <Microscope className="w-3.5 h-3.5" />;
       case 'Space': return <Telescope className="w-3.5 h-3.5" />;
       case 'Art': return <Palette className="w-3.5 h-3.5" />;
-      case 'About Us': return <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />;
+      case 'Us': return <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />;
       default: return <HelpCircle className="w-3.5 h-3.5" />;
     }
   };
 
   const getCategoryColor = (category: string) => {
-    if (category === 'About Us') return 'bg-rose-50 text-rose-600 border-rose-100';
+    if (category === 'Us') return 'bg-rose-50 text-rose-600 border-rose-100';
     return 'bg-[#FBF9F6] text-[#737373] border-black/5';
   };
 
@@ -68,7 +69,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                 {dateFacts.map((fact) => {
                   const isMe = fact.authorId === currentUser.id;
                   const author = isMe ? currentUser : friendUser;
-                  const isAboutUs = fact.category === 'About Us';
+                  const isAboutUs = fact.category === 'Us';
                   
                   return (
                     <div 
