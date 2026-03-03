@@ -151,12 +151,12 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           {streak} DAY STREAK
         </div>
         
-            <div className="space-y-1 pt-1">
-          <h1 className="text-[2.25rem] md:text-[3rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
+            <div className="space-y-3 pt-4">
+          <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
             Found a <span className="italic text-[#4A4A4A]">spark</span>?
           </h1>
-          <p className="text-[1rem] md:text-[1.15rem] text-[#909090] italic font-serif">
-            Tell me something cool for our shared archive.
+          <p className="text-[1.15rem] md:text-[1.25rem] text-[#909090] italic font-serif">
+            Drop something cool in our shared archive.
           </p>
         </div>
       </header>
@@ -169,12 +169,12 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
           
           <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 animate-in slide-in-from-bottom-2 duration-500">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-xl md:text-2xl text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Discovery Captured</h2>
-            <p className="text-[#909090] text-sm md:text-base max-w-[250px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
-              Your thought is safe in the archive. The reveal happens when {partnerUser.name} adds theirs.
+            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Locked in.</h2>
+            <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
+              Your thought is safe. It'll reveal itself when {partnerUser.name} adds theirs.
             </p>
           </CardContent>
         </Card>
@@ -191,10 +191,10 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
             </div>
             
-            <div className="space-y-2 opacity-80 group-hover:opacity-100 transition-opacity">
-              <h2 className="font-serif text-[1.4rem] md:text-[1.5rem] text-[#1C1C1C]">Share a Discovery</h2>
-              <p className="text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                KEEP OUR CURIOSITY ALIVE
+            <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
+              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Drop a thought</h2>
+              <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
+                Add to the collection
               </p>
             </div>
           </CardContent>
@@ -233,8 +233,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                 )}
                 
                 <Textarea 
-                  placeholder={imageUrl ? "Add a caption..." : "Tell me something cool..."} 
-                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[2rem] md:text-[3rem] font-serif leading-[1.2] placeholder:text-[#909090]/50 p-0 text-[#1C1C1C] min-h-[150px]"
+                  placeholder={imageUrl ? "Add a caption..." : "What's on your mind?"} 
+                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[150px] md:min-h-[250px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
                   onPaste={handlePaste}
@@ -244,8 +244,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
               <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
                 <div className="space-y-4">
-                  <p className="text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                    Topics
+                  <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">
+                    Tags
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {CATEGORIES.map(({ name, icon: Icon }) => (
@@ -295,7 +295,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
                     disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0}
                   >
-                    Save to Archive
+                    Drop it in
                   </button>
                 </div>
               </div>
