@@ -43,8 +43,7 @@ export async function reconnectUser(
   pairingId: string,
   isUser1: boolean
 ): Promise<void> {
-  const bgColor = isUser1 ? "ffd5dc" : "d5e0ff";
-  const avatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}&backgroundColor=${bgColor}`;
+  const avatar = buildAvatarUrl(name, isUser1);
 
   await setDoc(doc(db, "users", newUid), { name, avatar, pairingId });
 
@@ -99,6 +98,17 @@ export async function reconnectUser(
   setReconnectCookie({ uid: newUid, name, pairingId, isUser1 });
 }
 
+const LONG_HAIR_VARIANTS = "variant26,variant32,variant39,variant40,variant42,variant45,variant46,variant47,variant48,variant50,variant57,variant59,variant60,variant61,variant62,variant63";
+
+function buildAvatarUrl(name: string, isUser1: boolean): string {
+  const seed = encodeURIComponent(name);
+  const bgColor = isUser1 ? "ffd5dc" : "d5e0ff";
+  if (isUser1) {
+    return `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=${bgColor}&hair=${LONG_HAIR_VARIANTS}&beardProbability=0`;
+  }
+  return `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=${bgColor}`;
+}
+
 function generateInviteCode(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let code = "";
@@ -114,8 +124,7 @@ export async function createUser(
   pairingId: string,
   isUser1: boolean
 ): Promise<User> {
-  const bgColor = isUser1 ? "ffd5dc" : "d5e0ff";
-  const avatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}&backgroundColor=${bgColor}`;
+  const avatar = buildAvatarUrl(name, isUser1);
   const userData = { name, avatar, pairingId };
   await setDoc(doc(db, "users", uid), userData);
   return { id: uid, name, avatar };
