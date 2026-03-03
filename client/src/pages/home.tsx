@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
+import { getDailyPrompt, getDailyPromptAlternatives } from "@/lib/daily-prompts";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -108,6 +109,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [promptIndex, setPromptIndex] = useState(0);
   const { toast } = useToast();
 
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
@@ -121,6 +123,24 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
   const partnerFactToday = todayFacts.find(f => f.authorId === partnerUser.id);
+
+  const allPrompts = useMemo(() => {
+    const primary = getDailyPrompt(todayStr);
+    const alts = getDailyPromptAlternatives(todayStr, 4);
+    return [primary, ...alts];
+  }, [todayStr]);
+  const currentPrompt = allPrompts[promptIndex % allPrompts.length];
+
+  const shufflePrompt = () => {
+    if (navigator.vibrate) navigator.vibrate(15);
+    setPromptIndex(prev => prev + 1);
+  };
+
+  const usePrompt = () => {
+    if (navigator.vibrate) navigator.vibrate(50);
+    setNewFact(`<p>${currentPrompt}</p><p><br></p>`);
+    setIsAdding(true);
+  };
 
   const streak = useMemo(() => {
     let currentStreak = 0;
@@ -319,27 +339,64 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </CardContent>
         </Card>
       ) : !isAdding && !isEditing ? (
-        <Card 
-          className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0 shadow-sm border border-black/5"
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(50);
-            setIsAdding(true);
-          }}
-          data-testid="card-add-discovery"
-        >
-          <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
-            <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
-              <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
+        <div className="flex-1 flex flex-col gap-3 md:gap-4 mx-2 md:mx-0">
+          <div
+            className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-black/5 animate-in fade-in slide-in-from-bottom-2 duration-500"
+            data-testid="card-daily-prompt"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Today's prompt</p>
+                <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
+                  {currentPrompt}
+                </p>
+              </div>
             </div>
-            
-            <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
-              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
-              <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                To the archive
-              </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={shufflePrompt}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-medium text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95"
+                data-testid="button-shuffle-prompt"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Another
+              </button>
+              <button
+                onClick={usePrompt}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
+                data-testid="button-use-prompt"
+              >
+                Use this
+                <ArrowRight className="w-3 h-3" />
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <Card 
+            className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] shadow-sm border border-black/5"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(50);
+              setIsAdding(true);
+            }}
+            data-testid="card-add-discovery"
+          >
+            <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
+              <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
+                <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
+              </div>
+              
+              <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
+                <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
+                <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
+                  To the archive
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
           
