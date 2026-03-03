@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { User } from "@/lib/mock-data";
-import { Heart, Calendar, Star, Gift, Sparkles, PartyPopper } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Calendar, Star, Gift, Sparkles, PartyPopper, CalendarHeart } from "lucide-react";
+import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
 type Milestone = {
@@ -49,46 +49,136 @@ function DaysCounter({ days }: { days: number }) {
   );
 }
 
-function AnniversaryCountdown({ anniversaryDate }: { anniversaryDate: string }) {
-  const countdown = useMemo(() => {
-    const now = new Date();
-    const anniv = new Date(anniversaryDate);
-    const thisYear = new Date(now.getFullYear(), anniv.getMonth(), anniv.getDate());
-    let next = thisYear;
-    if (thisYear < now) {
-      next = new Date(now.getFullYear() + 1, anniv.getMonth(), anniv.getDate());
-    }
-    const diff = next.getTime() - now.getTime();
-    const totalDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    if (totalDays === 0 || totalDays === 365 || totalDays === 366) return { days: 0, isToday: true };
-    return { days: totalDays, isToday: false };
-  }, [anniversaryDate]);
+function getMonthlyAnniversary(anniversaryDate: string) {
+  const anniv = new Date(anniversaryDate);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const annivDay = anniv.getDate();
 
-  if (countdown.isToday) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-gradient-to-br from-rose-50 to-amber-50 rounded-[2rem] p-6 md:p-8 text-center"
-      >
-        <PartyPopper className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-        <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-2">Happy Anniversary!</h3>
-        <p className="text-[#909090] text-sm font-serif italic">Today is your special day</p>
-      </motion.div>
-    );
+  let monthsCompleted = (now.getFullYear() - anniv.getFullYear()) * 12 + (now.getMonth() - anniv.getMonth());
+  if (now.getDate() < annivDay) monthsCompleted--;
+  if (monthsCompleted < 0) monthsCompleted = 0;
+
+  let nextMonthlyDate: Date;
+  const thisMonthAnniv = new Date(now.getFullYear(), now.getMonth(), annivDay);
+  if (thisMonthAnniv > now) {
+    nextMonthlyDate = thisMonthAnniv;
+  } else if (thisMonthAnniv.getTime() === now.getTime()) {
+    return { monthsCompleted, daysUntilNext: 0, isToday: true, nextMonth: monthsCompleted };
+  } else {
+    nextMonthlyDate = new Date(now.getFullYear(), now.getMonth() + 1, annivDay);
   }
+
+  const lastDayOfTargetMonth = new Date(nextMonthlyDate.getFullYear(), nextMonthlyDate.getMonth() + 1, 0).getDate();
+  if (annivDay > lastDayOfTargetMonth) {
+    nextMonthlyDate.setDate(lastDayOfTargetMonth);
+  }
+
+  const diff = Math.ceil((nextMonthlyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return { monthsCompleted, daysUntilNext: diff, isToday: false, nextMonth: monthsCompleted + 1 };
+}
+
+function getYearlyAnniversary(anniversaryDate: string) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const anniv = new Date(anniversaryDate);
+  const thisYear = new Date(now.getFullYear(), anniv.getMonth(), anniv.getDate());
+  thisYear.setHours(0, 0, 0, 0);
+
+  const yearsCompleted = now.getFullYear() - anniv.getFullYear() - (now < thisYear ? 1 : 0);
+
+  if (thisYear.getTime() === now.getTime()) {
+    return { daysUntilNext: 0, isToday: true, nextYear: yearsCompleted, yearsCompleted };
+  }
+
+  let next = thisYear;
+  if (thisYear < now) {
+    next = new Date(now.getFullYear() + 1, anniv.getMonth(), anniv.getDate());
+  }
+  const diff = Math.ceil((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return { daysUntilNext: diff, isToday: false, nextYear: yearsCompleted + 1, yearsCompleted };
+}
+
+function CountdownCards({ anniversaryDate }: { anniversaryDate: string }) {
+  const monthly = useMemo(() => getMonthlyAnniversary(anniversaryDate), [anniversaryDate]);
+  const yearly = useMemo(() => getYearlyAnniversary(anniversaryDate), [anniversaryDate]);
+
+  return (
+    <div className="grid grid-cols-2 gap-3 md:gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${monthly.isToday ? 'bg-gradient-to-br from-purple-50 to-pink-50' : 'bg-white'}`}
+        data-testid="card-monthly-countdown"
+      >
+        <CalendarHeart className={`w-5 h-5 mx-auto mb-2 ${monthly.isToday ? 'text-purple-500' : 'text-[#909090]'}`} />
+        <p className="text-[9px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-2">
+          {monthly.isToday ? `Month ${monthly.monthsCompleted}` : "Monthly"}
+        </p>
+        {monthly.isToday ? (
+          <>
+            <p className="font-serif text-lg md:text-xl text-[#1C1C1C]">Happy</p>
+            <p className="font-serif text-lg md:text-xl text-[#1C1C1C] -mt-1">Monthiversary!</p>
+          </>
+        ) : (
+          <>
+            <p className="font-serif text-3xl md:text-4xl text-[#1C1C1C] mb-0.5">{monthly.daysUntilNext}</p>
+            <p className="text-[11px] text-[#909090] font-serif italic">
+              {monthly.daysUntilNext === 1 ? "day" : "days"} to month {monthly.nextMonth}
+            </p>
+          </>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${yearly.isToday ? 'bg-gradient-to-br from-rose-50 to-amber-50' : 'bg-white'}`}
+        data-testid="card-yearly-countdown"
+      >
+        <Calendar className={`w-5 h-5 mx-auto mb-2 ${yearly.isToday ? 'text-rose-500' : 'text-[#909090]'}`} />
+        <p className="text-[9px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-2">
+          {yearly.isToday ? `Year ${yearly.yearsCompleted}` : "Anniversary"}
+        </p>
+        {yearly.isToday ? (
+          <>
+            <p className="font-serif text-lg md:text-xl text-[#1C1C1C]">Happy</p>
+            <p className="font-serif text-lg md:text-xl text-[#1C1C1C] -mt-1">Anniversary!</p>
+          </>
+        ) : (
+          <>
+            <p className="font-serif text-3xl md:text-4xl text-[#1C1C1C] mb-0.5">{yearly.daysUntilNext}</p>
+            <p className="text-[11px] text-[#909090] font-serif italic">
+              {yearly.daysUntilNext === 1 ? "day" : "days"} to year {yearly.nextYear}
+            </p>
+          </>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+function MonthBadge({ months }: { months: number }) {
+  if (months < 1) return null;
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  let label = "";
+  if (years > 0 && rem > 0) label = `${years}y ${rem}m`;
+  else if (years > 0) label = `${years} ${years === 1 ? "year" : "years"}`;
+  else label = `${rem} ${rem === 1 ? "month" : "months"}`;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="bg-white rounded-[2rem] p-6 md:p-8 text-center shadow-sm border border-black/5"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.2 }}
+      className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.1em] uppercase mt-3"
+      data-testid="badge-months"
     >
-      <Calendar className="w-6 h-6 text-[#909090] mx-auto mb-3" />
-      <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-3">Next Anniversary</p>
-      <p className="font-serif text-4xl md:text-5xl text-[#1C1C1C] mb-1">{countdown.days}</p>
-      <p className="text-sm text-[#909090] font-serif italic">days away</p>
+      <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
+      {label}
     </motion.div>
   );
 }
@@ -115,6 +205,11 @@ export default function Timeline({
     start.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
     return Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  }, [anniversaryDate]);
+
+  const monthsTogether = useMemo(() => {
+    if (!anniversaryDate) return 0;
+    return getMonthlyAnniversary(anniversaryDate).monthsCompleted;
   }, [anniversaryDate]);
 
   const { achieved, next } = useMemo(() => {
@@ -241,17 +336,18 @@ export default function Timeline({
           <p className="text-sm text-[#909090] font-serif italic mt-4" data-testid="text-since-date">
             since {new Date(anniversaryDate!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
+          <MonthBadge months={monthsTogether} />
         </motion.div>
       </header>
 
       <div className="space-y-6 px-2 md:px-0">
-        <AnniversaryCountdown anniversaryDate={anniversaryDate!} />
+        <CountdownCards anniversaryDate={anniversaryDate!} />
 
         {next && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-black/5"
           >
             <div className="flex items-center justify-between mb-4">
@@ -267,7 +363,7 @@ export default function Timeline({
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
                 className="absolute inset-y-0 left-0 bg-[#1C1C1C] rounded-full"
               />
             </div>
@@ -284,7 +380,7 @@ export default function Timeline({
                   key={milestone.days}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.05 }}
+                  transition={{ delay: 0.6 + index * 0.05 }}
                   className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-black/5"
                   data-testid={`milestone-${milestone.days}`}
                 >
