@@ -68,7 +68,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
               The Archive
             </h1>
             <p className="text-base text-[#909090] italic font-serif mt-2">
-              A living timeline of the things that made us think.
+              A quiet record of what we've shared.
             </p>
           </div>
 
@@ -417,9 +417,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                 <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-80 mix-blend-multiply" />
               </div>
               
-              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The Archive Awaits</h3>
+              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
               <p className="text-[#909090] text-sm md:text-base leading-relaxed">
-                Your shared cabinet is empty. Capture your first discovery to begin the collection.
+                Leave a thought to start the collection.
               </p>
             </div>
           </div>

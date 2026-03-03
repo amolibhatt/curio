@@ -153,10 +153,10 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         
             <div className="space-y-3 pt-4">
           <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
-            Found a <span className="italic text-[#4A4A4A]">spark</span>?
+            What's on your <span className="italic text-[#4A4A4A]">mind</span>?
           </h1>
           <p className="text-[1.15rem] md:text-[1.25rem] text-[#909090] italic font-serif">
-            Drop something cool in our shared archive.
+            Leave a thought for the archive.
           </p>
         </div>
       </header>
@@ -174,7 +174,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             </div>
             <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Locked in.</h2>
             <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
-              Your thought is safe. It'll reveal itself when {partnerUser.name} adds theirs.
+              Kept quiet until {partnerUser.name} shares theirs.
             </p>
           </CardContent>
         </Card>
@@ -192,9 +192,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             </div>
             
             <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
-              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Drop a thought</h2>
+              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a thought</h2>
               <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                Add to the collection
+                For the archive
               </p>
             </div>
           </CardContent>
@@ -220,7 +220,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
                 <Textarea 
-                  placeholder="What's on your mind?" 
+                  placeholder="Write something..." 
                   className="flex-none resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
@@ -295,7 +295,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
                     disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0}
                   >
-                    Drop it in
+                    Save it
                   </button>
                 </div>
               </div>

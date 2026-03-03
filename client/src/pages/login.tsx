@@ -24,7 +24,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
              <BookOpen className="w-10 h-10 text-black" strokeWidth={1.5} />
           </div>
           <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
-          <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">Two minds. One private cabinet of curiosities.</p>
+          <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">A quiet space for two minds.</p>
         </div>
 
         <Card className="border-none shadow-none rounded-[2.5rem] overflow-hidden bg-transparent">
@@ -32,7 +32,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Input 
-                  placeholder="What should we call you?"
+                  placeholder="What's your name?"
                   className="h-14 rounded-full px-6 bg-white border-none focus-visible:ring-black/10 focus-visible:border-black/10 text-base text-center placeholder:text-center"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -45,7 +45,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
                 disabled={!name.trim()}
                 className="w-full h-14 text-base font-medium rounded-full justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
               >
-                Join
+                Enter
                 <ArrowRight className="w-5 h-5 opacity-70" />
               </Button>
             </form>
