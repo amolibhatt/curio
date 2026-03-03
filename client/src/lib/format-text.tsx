@@ -53,12 +53,12 @@ export function formatText(text: string): React.ReactNode[] {
       key += inlineContent.length + 1;
 
       const sizes: Record<number, string> = {
-        1: 'text-[2rem] md:text-[2.5rem] font-bold',
-        2: 'text-[1.6rem] md:text-[2rem] font-bold',
-        3: 'text-[1.35rem] md:text-[1.65rem] font-semibold',
-        4: 'text-[1.15rem] md:text-[1.35rem] font-semibold',
-        5: 'text-[1rem] md:text-[1.15rem] font-medium',
-        6: 'text-[0.9rem] md:text-[1rem] font-medium text-[#737373]',
+        1: 'text-2xl md:text-3xl font-bold',
+        2: 'text-xl md:text-2xl font-bold',
+        3: 'text-lg md:text-xl font-semibold',
+        4: 'text-base md:text-lg font-semibold',
+        5: 'text-sm md:text-base font-medium uppercase tracking-wide',
+        6: 'text-xs md:text-sm font-medium uppercase tracking-wider text-[#737373]',
       };
 
       result.push(

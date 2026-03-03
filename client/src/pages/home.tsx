@@ -320,15 +320,15 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
                 {showPreview ? (
                   <div className="flex-1 min-h-[120px] p-0">
-                    <p className="text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] text-[#1C1C1C]">
+                    <div className="text-base md:text-lg font-serif leading-relaxed text-[#1C1C1C] space-y-1">
                       {newFact.trim() ? formatText(newFact) : <span className="text-[#909090]/40">Preview will appear here...</span>}
-                    </p>
+                    </div>
                   </div>
                 ) : (
                   <Textarea
                     ref={textareaRef}
                     placeholder="What caught your eye today..."
-                    className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
+                    className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-base md:text-lg font-serif leading-relaxed placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                     value={newFact}
                     onChange={(e) => setNewFact(e.target.value)}
                     onPaste={(e) => handleRichPaste(e, setNewFact)}
