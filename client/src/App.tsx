@@ -56,7 +56,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     },
   });
 
-  const partner = auth.partner || { id: 0, name: "Your partner", avatar: "" };
+  const partner = auth.partner || { id: 0, name: "Your partner", avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=e5e4df` };
 
   const handleAddFact = (text: string, categories: Category[]): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -84,6 +84,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             onReact={(factId, reaction) => { if (reaction) reactMutation.mutate({ factId, type: reaction as ReactionType }); }}
             activeUser={auth.user}
             partnerUser={partner}
+            isReacting={reactMutation.isPending}
           />
         </Route>
         <Route path="/invite/:code">

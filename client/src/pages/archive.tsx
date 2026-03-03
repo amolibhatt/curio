@@ -5,7 +5,7 @@ import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: number, reaction: string | null) => void, activeUser: User, partnerUser: User }) {
+export default function Archive({ facts, onReact, activeUser, partnerUser, isReacting }: { facts: Fact[], onReact: (factId: number, reaction: string | null) => void, activeUser: User, partnerUser: User, isReacting?: boolean }) {
   const [filterPerson, setFilterPerson] = useState<number | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -48,6 +48,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   };
 
   const handleReact = (factId: number, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
+    if (isReacting) return;
     const fact = facts.find(f => f.id === factId);
     const currentReaction = fact?.reactions?.[String(activeUser.id)];
     const isRemoving = currentReaction === type;

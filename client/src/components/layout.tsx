@@ -11,9 +11,13 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
   const [copied, setCopied] = useState(false);
 
   const handleLogout = async () => {
-    await apiRequest("POST", "/api/auth/logout");
-    queryClient.setQueryData(["/api/auth/me"], null);
-    queryClient.invalidateQueries();
+    try {
+      await apiRequest("POST", "/api/auth/logout");
+    } catch {
+    } finally {
+      queryClient.setQueryData(["/api/auth/me"], null);
+      queryClient.invalidateQueries();
+    }
   };
 
   const handleShareLink = async () => {

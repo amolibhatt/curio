@@ -208,7 +208,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           </CardContent>
         </Card>
       ) : (
-        <div className="fixed inset-0 z-50 bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
+        <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
           
           <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
             <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
@@ -235,6 +235,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
+                  maxLength={1000}
                   autoFocus
                 />
               </div>

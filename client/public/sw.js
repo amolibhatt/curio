@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() =>
-        caches.match('/') || new Response('Offline', { status: 503 })
+        caches.match('/').then(r => r || new Response('Offline', { status: 503 }))
       )
     );
     return;

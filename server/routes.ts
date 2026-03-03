@@ -128,7 +128,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to log out" });
+      }
       res.json({ ok: true });
     });
   });

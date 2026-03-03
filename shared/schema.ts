@@ -43,7 +43,7 @@ export const insertUserSchema = z.object({
 });
 
 export const insertFactSchema = z.object({
-  text: z.string().min(1, "A discovery is required"),
+  text: z.string().min(1, "A discovery is required").max(1000, "Discovery is too long"),
   categories: z.array(categoryEnum).min(1),
 });
 
