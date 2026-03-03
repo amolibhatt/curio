@@ -44,8 +44,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   };
 
   const getCategoryColor = (category: string) => {
-    if (category === 'Us') return 'bg-rose-50 text-rose-600 border-rose-100';
-    return 'bg-[#FBF9F6] text-[#737373] border-black/5';
+    if (category === 'Us') return 'bg-rose-50 text-rose-600 border-none';
+    return 'bg-[#FBF9F6] text-[#737373] border-none';
   };
 
   const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
@@ -147,7 +147,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
           const dateFacts = groupedFacts[date];
           return (
             <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-b border-black/5 md:border-none">
+              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
                 <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                   {format(parseISO(date), 'MMMM d, yyyy')}
                 </h2>
@@ -185,7 +185,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                         {!isHidden && (
                           <div className="hidden md:block absolute top-10 bottom-[-32px] right-[21px] w-[2px] z-0">
                             <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C]/10 via-[#1C1C1C]/5 to-transparent"></div>
-                            {myReaction && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]"></div>}
+                            {myReaction && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-rose-400"></div>}
                           </div>
                         )}
                       </div>
@@ -202,7 +202,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                             </p>
                           </div>
                         ) : (
-                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02] shadow-none hover:shadow-none'}`}>
+                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
                             
                             <div className="relative z-10">
                                 {fact.imageUrl && (
@@ -210,7 +210,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                     <div className="relative">
                                       <img src={fact.imageUrl} alt="Discovery" className="w-full h-auto object-cover max-h-[400px] transition-transform duration-700 group-hover/image:scale-105" />
                                       <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                                        <div className="bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full text-xs font-bold tracking-wider opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover/image:translate-y-0 shadow-lg">
+                                        <div className="bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full text-xs font-bold tracking-wider opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover/image:translate-y-0 border-none">
                                           EXPAND
                                         </div>
                                       </div>
@@ -224,7 +224,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 {fact.categories.map((category) => (
-                                  <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold border ${getCategoryColor(category)}`}>
+                                  <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
                                     {getCategoryIcon(category)}
                                     {category}
                                   </div>
@@ -421,7 +421,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
             <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-sm">
               <div className="w-48 h-48 mb-4 relative animate-float-slow">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-100/50 via-transparent to-transparent blur-xl"></div>
-                <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-90 drop-shadow-2xl mix-blend-multiply" />
+                <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-90 mix-blend-multiply" />
               </div>
               
               <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The Archive Awaits</h3>
@@ -460,7 +460,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               src={selectedImage} 
               alt="Expanded Discovery" 
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 
+              className="max-w-full max-h-full object-contain rounded-lg" 
               onClick={(e) => e.stopPropagation()}
             />
           </motion.div>

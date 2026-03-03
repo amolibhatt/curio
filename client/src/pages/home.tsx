@@ -180,7 +180,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </Card>
       ) : !isAdding ? (
         <Card 
-          className="bg-transparent border border-black/5 border-dashed hover:bg-black/[0.02] shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0"
+          className="bg-transparent border-none border-black/5 border-dashed hover:bg-black/[0.02] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0"
           onClick={() => {
             if (navigator.vibrate) navigator.vibrate(50);
             setIsAdding(true);
@@ -210,7 +210,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-700 delay-100">
                 {imageUrl && (
-                  <div className="relative mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-soft max-h-[300px] flex-shrink-0 group">
+                  <div className="relative mb-6 rounded-2xl overflow-hidden border-none max-h-[300px] flex-shrink-0 group">
                     <img src={imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
                     <button 
                       type="button" 
@@ -249,9 +249,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 active:scale-95 ${
                           selectedCategories.includes(name)
                             ? name === 'Us' 
-                              ? 'bg-rose-50 text-rose-600 border border-rose-200' 
-                              : 'bg-black text-white border border-black'
-                            : 'bg-white text-[#737373] border border-black/[0.04] hover:bg-black/[0.02]'
+                              ? 'bg-rose-50 text-rose-600 border-none' 
+                              : 'bg-black text-white border-none'
+                            : 'bg-white text-[#737373] border-none hover:bg-black/[0.02]'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
@@ -261,7 +261,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-6 border-t border-black/[0.05]">
+                <div className="flex items-center justify-between pt-6 border-none">
                   <div className="flex gap-2">
                     <Button 
                       type="button" 

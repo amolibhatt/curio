@@ -83,18 +83,6 @@
 
 /* Custom Utilities for Playful UI */
 @layer utilities {
-  .shadow-soft {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-  }
-  
-  .shadow-float {
-    box-shadow: 0 12px 40px rgba(0,0,0,0.04);
-  }
-  
-  .shadow-elevated {
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.01);
-  }
-  
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
