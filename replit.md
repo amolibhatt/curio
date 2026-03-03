@@ -67,8 +67,12 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Deploy**: `npx firebase deploy --only hosting,firestore --token "..."` from project root
 - **Security rules**: Locked-down per-pairing access using `getUserPairingId()` helper function in rules
   - Facts/dailyAnswers: read/write restricted to pairing members only
-  - Pairings: read allowed for members + unfilled pairings (invite flow)
-  - Reactions: validated against allowed types (mind-blown, fascinating, heart, laugh, thinking, sad)
+  - Pairings: read allowed for members + unfilled pairings (invite flow); create restricted to `inviteCode`, `user1Id`, `user2Id` fields only
+  - Pairing reconnect: cross-check prevents partner from hijacking the other slot (user2 can't overwrite user1Id, vice versa)
+  - Fact create: validates date (string, length 10), categories (list, 1-7 items), restricts to exactly `text`, `authorId`, `pairingId`, `date`, `categories` fields
+  - Fact authorId update (reconnect): requires pairing membership check via `getUserPairingId()`
+  - Reactions: validated against allowed types; write restricted to `type` field only
+  - dailyAnswers create: validates field types and restricts to `pairingId`, `date`, `questionText`, `category`, `answers` fields
   - dailyAnswers update: only user's own answer key can be modified
 
 ## Notes
@@ -90,8 +94,8 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - Editor close (Escape/X) prompts "Discard your changes?" when content has been modified
 - Daily answer textarea auto-grows with content (max 160px height)
 - `submitDailyAnswer` uses Firestore `runTransaction` for atomic read-then-write (prevents partner answers being overwritten on concurrent submission)
-- Input validation: fact text max 5000 chars, answer text max 2000 chars, name max 50 chars, categories validated against allowed set, reaction types validated against allowed set, anniversary date format validated as YYYY-MM-DD
-- `reconnectUser` validates pairing exists and user membership matches before proceeding; clears stale cookies on failure
+- Input validation: fact text max 5000 chars, answer text max 2000 chars, name max 50 chars, categories validated against allowed set, reaction types validated against allowed set, anniversary date fully validated (format, date validity, no future dates), fact date format validated as YYYY-MM-DD
+- `reconnectUser` validates pairing exists and user membership matches before proceeding; sanitizes name from cookie (trim + length check); clears stale cookies on failure
 - `reconnectUser` copies (not moves) old answer keys and reaction docs during UID migration — old orphaned keys are harmless since no user has the old UID; avoids PERMISSION_DENIED from rules that restrict deletions to own UID
 - `hasPostedToday` filters authorId server-side in Firestore query (3-field query: pairingId + authorId + date)
 - Composite indexes configured in `firestore.indexes.json` for multi-field queries on facts collection

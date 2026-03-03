@@ -63,9 +63,15 @@ export async function reconnectUser(
     throw new Error("Pairing membership mismatch");
   }
 
-  const avatar = buildAvatarUrl(name, isUser1);
+  const safeName = name.trim().slice(0, MAX_NAME_LENGTH);
+  if (safeName.length < 2) {
+    clearReconnectCookie();
+    throw new Error("Invalid reconnect data");
+  }
 
-  await setDoc(doc(db, "users", newUid), { name, avatar, pairingId });
+  const avatar = buildAvatarUrl(safeName, isUser1);
+
+  await setDoc(doc(db, "users", newUid), { name: safeName, avatar, pairingId });
 
   const field = isUser1 ? "user1Id" : "user2Id";
   await updateDoc(doc(db, "pairings", pairingId), { [field]: newUid });
@@ -111,7 +117,7 @@ export async function reconnectUser(
     } catch {}
   }
 
-  setReconnectCookie({ uid: newUid, name, pairingId, isUser1 });
+  setReconnectCookie({ uid: newUid, name: safeName, pairingId, isUser1 });
 }
 
 function clearReconnectCookie(): void {
@@ -196,6 +202,7 @@ export async function createFact(
   categories: Category[],
   date: string
 ): Promise<Fact> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid date format");
   const safeText = text.slice(0, MAX_FACT_LENGTH);
   if (!safeText.trim()) throw new Error("Discovery text is required");
 
@@ -295,6 +302,14 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
 
 export async function setAnniversaryDate(pairingId: string, date: string): Promise<void> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid date format");
+  const [y, m, d] = date.split('-').map(Number);
+  const parsed = new Date(y, m - 1, d);
+  if (parsed.getFullYear() !== y || parsed.getMonth() !== m - 1 || parsed.getDate() !== d) {
+    throw new Error("Invalid date");
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (parsed > today) throw new Error("Anniversary date cannot be in the future");
   await updateDoc(doc(db, "pairings", pairingId), { anniversaryDate: date });
 }
 
