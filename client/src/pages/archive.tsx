@@ -295,7 +295,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                           <div className="relative z-10 bg-[#FAF9F7] p-1 rounded-full">
                             <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
                           </div>
-                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FAF9F7] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
+                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FAF9F7] relative z-10 truncate max-w-[5rem] md:max-w-[6rem] ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
                             {author.name}
                           </span>
                         </div>
@@ -506,14 +506,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                   </div>}
                                 
                                 {(fact.reactions?.[partnerUser.id]) && isMe && (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
-                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
-                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
-                                    {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                    {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
-                                    {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
-                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5" />}
-                                    <span>{partnerUser.name} reacted</span>
+                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 max-w-full">
+                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
+                                    <span className="truncate"><span className="truncate inline-block max-w-[5rem] align-bottom">{partnerUser.name}</span> reacted</span>
                                   </div>
                                 )}
                               </div>

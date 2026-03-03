@@ -123,6 +123,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
+  const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
   const hasPartner = partnerUser.id !== "0";
@@ -155,6 +156,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     try {
       await onSubmitAnswer(dailyQuestion.text, dailyQuestion.category, answerText.trim());
       setAnswerText("");
+      if (answerTextareaRef.current) answerTextareaRef.current.style.height = '';
     } catch (err: any) {
       toast({ title: "Couldn't submit", description: err?.message || "Try again.", variant: "destructive" });
     } finally {
@@ -219,25 +221,29 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     return () => { document.body.style.overflow = ""; };
   }, [isAdding, isEditing]);
 
+  const closeEditorRef = useRef<(force?: boolean) => void>(() => {});
+
   const closeEditor = (force?: boolean) => {
     if (!force) {
       const hasContent = isEditing
-        ? (newFact.trim() !== (myFactToday?.text || '') || JSON.stringify(selectedCategories) !== JSON.stringify(myFactToday?.categories || []))
+        ? (newFact.trim() !== (myFactToday?.text || '') || [...selectedCategories].sort().join(',') !== [...(myFactToday?.categories || [])].sort().join(','))
         : (newFact.trim() || selectedCategories.length > 0);
       if (hasContent && !window.confirm("Discard your changes?")) return;
     }
     setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false);
   };
 
+  closeEditorRef.current = closeEditor;
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && (isAdding || isEditing)) {
-        closeEditor();
+        closeEditorRef.current();
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isAdding, isEditing, newFact, selectedCategories]);
+  }, [isAdding, isEditing]);
 
   const startEditing = () => {
     if (myFactToday) {
@@ -275,7 +281,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   if (isAdding || isEditing) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#FAF9F7] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
+      <div className="fixed inset-0 z-[60] bg-[#FAF9F7] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto" role="dialog" aria-modal="true" aria-label={isEditing ? "Edit discovery" : "New discovery"}>
         <div className="flex items-center justify-between p-4 md:p-6 pt-[max(env(safe-area-inset-top),1rem)] sticky top-0 z-20 bg-[#FAF9F7]/90 backdrop-blur-md">
           <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
             {isEditing ? "Edit entry" : "New entry"}
@@ -284,6 +290,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             onClick={() => closeEditor()}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
             data-testid="button-close-form"
+            aria-label="Close editor"
           >
             <X className="w-5 h-5" />
           </button>
@@ -428,6 +435,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           {!myAnswer ? (
             <div className="space-y-3">
               <textarea
+                ref={answerTextareaRef}
                 value={answerText}
                 onChange={(e) => {
                   setAnswerText(e.target.value);
