@@ -209,9 +209,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                             {!isAboutUs && fact.categories.includes('Art') && <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-transparent pointer-events-none" />}
                             {!isAboutUs && fact.categories.includes('History') && <div className="absolute inset-0 bg-gradient-to-br from-stone-50/40 to-transparent pointer-events-none" />}
                             
-                            {/* Texture overlay for cards */}
-                            <div className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
-                            
                             <div className="relative z-10">
                                 {fact.imageUrl && (
                                   <div className="mb-4 md:mb-6 rounded-xl overflow-hidden border border-black/5 shadow-soft cursor-pointer group/image" onClick={() => setSelectedImage(fact.imageUrl!)}>

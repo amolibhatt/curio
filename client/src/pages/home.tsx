@@ -201,8 +201,6 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </Card>
       ) : (
         <div className="fixed inset-0 z-50 bg-[#FBF9F6] flex flex-col animate-in fade-in duration-500 overflow-y-auto">
-          {/* Subtle noise texture */}
-          <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
           
           <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col p-6 md:p-10 relative z-10 pt-safe mt-8 md:mt-12">
             <form onSubmit={(e) => {
