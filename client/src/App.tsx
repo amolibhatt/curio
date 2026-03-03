@@ -11,7 +11,7 @@ import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
 
-import { mockFacts, currentUser, friendUser, Fact, User } from "./lib/mock-data";
+import { mockFacts, currentUser, friendUser, Fact, User, ReactionType } from "./lib/mock-data";
 
 function Router({ 
   facts, 
@@ -20,7 +20,7 @@ function Router({
 }: { 
   facts: Fact[], 
   onAddFact: (text: string, categories: string[]) => void,
-  onReactToFact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void
+  onReactToFact: (factId: string, reaction: ReactionType | null) => void
 }) {
   const [, setLocation] = useLocation();
 
@@ -97,7 +97,7 @@ function App() {
     setFacts(prev => [newFact, ...prev]);
   };
 
-  const handleReactToFact = (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => {
+  const handleReactToFact = (factId: string, reaction: ReactionType | null) => {
     setFacts(prev => prev.map(fact => {
       if (fact.id === factId) {
         const currentReactions = fact.reactions || {};
@@ -141,3 +141,4 @@ function App() {
 }
 
 export default App;
+

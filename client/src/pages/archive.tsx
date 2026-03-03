@@ -206,7 +206,6 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                                     }`}
                                   >
                                     <Brain className="w-3.5 h-3.5" />
-                                    <span>Mind Blown</span>
                                   </button>
                                   <button
                                     onClick={() => {
@@ -220,7 +219,58 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                                     }`}
                                   >
                                     <Sparkles className="w-3.5 h-3.5" />
-                                    <span>Fascinating</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'heart');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      myReaction === 'heart' 
+                                        ? 'bg-rose-500 text-white shadow-soft border-rose-500' 
+                                        : 'bg-white border border-black/10 text-[#909090] hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 hover:shadow-soft'
+                                    }`}
+                                  >
+                                    <Heart className={`w-3.5 h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'laugh');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      myReaction === 'laugh' 
+                                        ? 'bg-amber-100 border-amber-200 shadow-soft' 
+                                        : 'bg-white border border-black/10 hover:border-amber-200 hover:bg-amber-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                    }`}
+                                  >
+                                    😂
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'thinking');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      myReaction === 'thinking' 
+                                        ? 'bg-blue-100 border-blue-200 shadow-soft' 
+                                        : 'bg-white border border-black/10 hover:border-blue-200 hover:bg-blue-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                    }`}
+                                  >
+                                    🤔
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (navigator.vibrate) navigator.vibrate(50);
+                                      onReact(fact.id, 'sad');
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      myReaction === 'sad' 
+                                        ? 'bg-indigo-100 border-indigo-200 shadow-soft' 
+                                        : 'bg-white border border-black/10 hover:border-indigo-200 hover:bg-indigo-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                    }`}
+                                  >
+                                    😢
                                   </button>
                                 </div>
                               )}
@@ -228,7 +278,12 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                               {/* Display existing reactions if any */}
                               {(fact.reactions?.['user_2']) && isMe && (
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 shadow-soft">
-                                  {fact.reactions['user_2'] === 'mind-blown' ? <Brain className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                  {fact.reactions['user_2'] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
+                                  {fact.reactions['user_2'] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
+                                  {fact.reactions['user_2'] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
+                                  {fact.reactions['user_2'] === 'laugh' && <span className="text-[12px]">😂</span>}
+                                  {fact.reactions['user_2'] === 'thinking' && <span className="text-[12px]">🤔</span>}
+                                  {fact.reactions['user_2'] === 'sad' && <span className="text-[12px]">😢</span>}
                                   <span>{friendUser.name} reacted</span>
                                 </div>
                               )}

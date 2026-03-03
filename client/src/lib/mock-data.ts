@@ -1,12 +1,14 @@
 export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | 'Us' | 'Random';
 
+export type ReactionType = 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad';
+
 export type Fact = {
   id: string;
   text: string;
   authorId: string;
   date: string;
   categories: Category[];
-  reactions?: Record<string, 'mind-blown' | 'fascinating' | null>; // Maps userId to reaction type
+  reactions?: Record<string, ReactionType | null>; // Maps userId to reaction type
 };
 
 export type User = {
