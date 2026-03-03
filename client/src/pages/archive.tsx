@@ -181,13 +181,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                         <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FBF9F6] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
                           {author.name}
                         </span>
-                        {/* Connecting glowing line for timeline */}
-                        {!isHidden && (
-                          <div className="hidden md:block absolute top-10 bottom-[-32px] right-[21px] w-[2px] z-0">
-                            <div className="absolute inset-0 bg-gradient-to-b from-[#1C1C1C]/10 via-[#1C1C1C]/5 to-transparent"></div>
-                            {myReaction && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-rose-400"></div>}
-                          </div>
-                        )}
                       </div>
 
                       <div className="flex-1 relative group/card perspective-1000">
