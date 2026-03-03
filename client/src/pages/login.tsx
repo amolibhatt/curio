@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BookOpen } from "lucide-react";
 
-export default function Login({ onLogin, error }: { onLogin: (name: string) => void; error?: string }) {
+export default function Login({ onLogin, error, isLoading }: { onLogin: (name: string) => void; error?: string; isLoading?: boolean }) {
   const [name, setName] = useState("");
 
   const isInvite = window.location.pathname.startsWith("/invite/");
@@ -49,12 +49,12 @@ export default function Login({ onLogin, error }: { onLogin: (name: string) => v
 
               <Button 
                 type="submit"
-                disabled={!name.trim()}
+                disabled={!name.trim() || isLoading}
                 className="w-full h-14 text-base font-medium rounded-full justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
                 data-testid="button-submit"
               >
-                Enter
-                <ArrowRight className="w-5 h-5 opacity-70" />
+                {isLoading ? "Entering..." : "Enter"}
+                <ArrowRight className={`w-5 h-5 opacity-70 ${isLoading ? 'animate-pulse' : ''}`} />
               </Button>
             </form>
           </CardContent>

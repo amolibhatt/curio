@@ -139,7 +139,7 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
         <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
-          <Login onLogin={handleLogin} error={signupMutation.error?.message} />
+          <Login onLogin={handleLogin} error={signupMutation.error?.message} isLoading={signupMutation.isPending} />
         </div>
       </div>
     );

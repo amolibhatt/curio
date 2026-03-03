@@ -95,6 +95,14 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     prevStreakRef.current = streak;
   }, [streak]);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isAdding) setIsAdding(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isAdding]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +117,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
       setNewFact("");
       setSelectedCategories([]);
       setImageUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setIsAdding(false);
     } catch (err: any) {
       toast({
@@ -193,7 +202,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             </div>
             <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Locked in.</h2>
             <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
-              Kept quiet until {partnerUser.name} shares theirs.
+              {partnerUser.id === 0
+                ? "Your thought is saved. Invite a friend to get started."
+                : `Kept quiet until ${partnerUser.name} shares theirs.`}
             </p>
           </CardContent>
         </Card>
@@ -252,8 +263,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     <img src={imageUrl} alt="Uploaded" className="w-auto h-full max-h-[300px] object-cover" />
                     <button 
                       type="button" 
-                      onClick={() => setImageUrl(null)}
-                      className="absolute top-4 right-4 w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                      onClick={() => { setImageUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                      className="absolute top-4 right-4 w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
                     >
                       <X className="w-4 h-4" />
                     </button>

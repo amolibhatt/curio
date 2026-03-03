@@ -188,6 +188,10 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Fact not found" });
       }
 
+      if (fact.authorId === req.session.userId) {
+        return res.status(400).json({ message: "You can't react to your own thought" });
+      }
+
       const existing = await storage.getReaction(factId, req.session.userId!);
       if (existing && existing.type === parsed.data.type) {
         await storage.removeReaction(factId, req.session.userId!);

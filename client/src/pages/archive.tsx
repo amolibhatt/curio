@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, X, Laugh, Lightbulb, Frown } from "lucide-react";
@@ -11,6 +11,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   const [showFilters, setShowFilters] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [burstReaction, setBurstReaction] = useState<{id: number, type: string} | null>(null);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedImage) setSelectedImage(null);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [selectedImage]);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
@@ -217,9 +225,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                     </div>
                                   </div>
                                 )}
+                              {fact.text.trim() && (
                               <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
                                 "{fact.text}"
                               </p>
+                              )}
                             
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="flex flex-wrap items-center gap-1.5">
@@ -231,7 +241,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                 ))}
                               </div>
                               
-                                <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                                {!isMe && <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
                                   <div className="relative shrink-0">
                                     <button
                                       onClick={() => handleReact(fact.id, 'mind-blown')}
@@ -387,7 +397,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       )}
                                     </AnimatePresence>
                                   </div>
-                                </div>
+                                </div>}
                               
                               {/* Display existing reactions if any */}
                               {(fact.reactions?.[String(partnerUser.id)]) && isMe && (
