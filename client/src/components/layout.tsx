@@ -17,12 +17,12 @@ export default function Layout({ children, user }: { children: React.ReactNode, 
   };
 
   return (
-    <div className="min-h-screen bg-[#E5E4DF] flex items-center justify-center md:py-8 font-sans">
-      {/* Mobile Device Container */}
-      <div className="w-full h-[100dvh] md:h-[844px] md:max-h-[calc(100vh-4rem)] md:w-[390px] bg-[#FBF9F6] flex flex-col relative md:rounded-[3rem] md:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] md:border-8 border-[#1C1C1C] overflow-hidden md:ring-1 ring-black/5">
+    <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
+      {/* Container - Full width and height with no borders */}
+      <div className="w-full min-h-screen flex flex-col relative overflow-hidden max-w-2xl mx-auto">
         
         {/* Top Header */}
-        <header className="flex items-center justify-between p-5 pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-6 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-sm shrink-0">
+        <header className="flex items-center justify-between p-5 pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-sm shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
               <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] shadow-sm border border-black/[0.04]">
