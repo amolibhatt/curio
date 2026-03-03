@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { currentUser, friendUser, Fact, Category } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA } from "lucide-react";
+import { Clock, Plus, Send, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, ImageIcon, X } from "lucide-react";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -15,10 +15,12 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
-export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => void }) {
+export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
@@ -55,10 +57,13 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFact.trim() || selectedCategories.length === 0) return;
-    onAddFact(newFact, selectedCategories);
+    if (!newFact.trim() && !imageUrl) return;
+    if (selectedCategories.length === 0) return;
+    
+    onAddFact(newFact, selectedCategories, imageUrl || undefined);
     setNewFact("");
     setSelectedCategories([]);
+    setImageUrl(null);
     setIsAdding(false);
   };
 
@@ -68,6 +73,35 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
         ? prev.filter(c => c !== category)
         : [...prev, category]
     );
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImageUrl(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }
+      }
+    }
   };
 
   return (
@@ -131,75 +165,110 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-white border border-black/[0.03] shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-500 mx-2 md:mx-0">
-          <CardContent className="p-6 md:p-10 flex-1 flex flex-col relative overflow-y-auto">
-            
+        <div className="fixed inset-0 z-50 bg-[#FBF9F6] flex flex-col animate-in fade-in duration-500 overflow-y-auto">
+          {/* Subtle noise texture */}
+          <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
+          
+          <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col p-6 md:p-10 relative z-10 pt-safe mt-8 md:mt-12">
             <form onSubmit={(e) => {
               if (navigator.vibrate) navigator.vibrate(50);
               handleSubmit(e);
-            }} className="flex-1 flex flex-col min-h-max space-y-4">
+            }} className="flex-1 flex flex-col space-y-6 md:space-y-8">
               
-              <div className="mb-4 md:mb-6 space-y-3 relative animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
-                <div className="flex justify-between items-center w-full">
-                  <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                    SELECT CATEGORIES (1 OR MORE)
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2 justify-start">
-                  {CATEGORIES.map(({ name, icon: Icon }) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(20);
-                        toggleCategory(name);
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap active:scale-95 ${
-                        selectedCategories.includes(name)
-                          ? name === 'Us' 
-                            ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-soft' 
-                            : 'bg-black text-white border border-black shadow-soft'
-                          : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5 hover:shadow-sm'
-                      }`}
+              <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-700 delay-100">
+                {imageUrl && (
+                  <div className="relative mb-6 rounded-2xl overflow-hidden border border-black/5 shadow-soft max-h-[300px] flex-shrink-0 group">
+                    <img src={imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={() => setImageUrl(null)}
+                      className="absolute top-3 right-3 w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
                     >
-                      <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
-                      {name}
+                      <X className="w-4 h-4" />
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1 relative animate-in fade-in duration-700 delay-200">
+                  </div>
+                )}
+                
                 <Textarea 
-                  placeholder="Today I learned that..." 
-                  className="w-full h-full min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
+                  placeholder={imageUrl ? "Add a caption..." : "Today I learned that (or paste an image)..."} 
+                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-black/20 p-0 text-[#1C1C1C]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
+                  onPaste={handlePaste}
                   autoFocus
                 />
               </div>
-              
-              <div className="flex items-center justify-between pt-4 md:pt-6 border-t border-black/[0.05] mt-auto animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="text-[#909090] hover:text-black font-semibold text-xs md:text-sm tracking-wide px-2 md:px-4 h-10 md:h-12 transition-colors"
-                  onClick={() => setIsAdding(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="rounded-full px-6 md:px-8 h-10 md:h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-xs md:text-sm tracking-wide shadow-soft hover:shadow-elevated transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:hover:shadow-soft" 
-                  disabled={!newFact.trim() || selectedCategories.length === 0}
-                >
-                  <Send className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
-                  Share Discovery
-                </Button>
+
+              <div className="space-y-6 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                <div className="space-y-4">
+                  <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+                    Categorize (Select multiple)
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {CATEGORIES.map(({ name, icon: Icon }) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => {
+                          if (navigator.vibrate) navigator.vibrate(20);
+                          toggleCategory(name);
+                        }}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 active:scale-95 ${
+                          selectedCategories.includes(name)
+                            ? name === 'Us' 
+                              ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-soft' 
+                              : 'bg-black text-white border border-black shadow-soft'
+                            : 'bg-white text-[#737373] border border-black/[0.04] hover:bg-black/[0.02] hover:shadow-sm'
+                        }`}
+                      >
+                        <Icon className={`w-4 h-4 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-6 border-t border-black/[0.05]">
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      className="text-[#909090] hover:text-black font-semibold text-sm md:text-base tracking-wide px-4 h-12 md:h-14 transition-colors rounded-full"
+                      onClick={() => setIsAdding(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      ref={fileInputRef} 
+                      onChange={handleImageUpload} 
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      className="text-[#909090] hover:text-black px-4 h-12 md:h-14 transition-colors rounded-full"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Attach Image"
+                    >
+                      <ImageIcon className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="rounded-full px-8 md:px-10 h-12 md:h-14 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm md:text-base tracking-wide shadow-elevated transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none" 
+                    disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0}
+                  >
+                    <Send className="w-4 h-4 md:w-5 md:h-5 mr-2.5" />
+                    Share Discovery
+                  </Button>
+                </div>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -156,28 +156,43 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
                       key={fact.id} 
                       className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
                     >
-                      <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1">
-                        <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full border border-black/5 ${isHidden ? 'grayscale' : ''}`} />
+                      <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
+                        <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full border border-black/5 ${isHidden ? 'grayscale' : 'shadow-sm z-10'}`} />
                         <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
                           {author.name}
                         </span>
+                        {/* Connecting line for timeline */}
+                        {!isHidden && <div className="hidden md:block absolute top-8 bottom-[-24px] right-[15px] w-px bg-gradient-to-b from-black/[0.05] to-transparent z-0" />}
                       </div>
 
-                      <div className="flex-1 relative">
+                      <div className="flex-1 relative group/card perspective-1000">
                         {isHidden ? (
-                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-black/5 text-center">
-                            <p className="text-sm font-serif italic text-black/40">
-                              Hidden until you share your discovery for this day.
+                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-black/[0.03] text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.05]">
+                            <div className="absolute inset-0 backdrop-blur-sm z-0"></div>
+                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                            <p className="text-sm font-serif italic text-black/50 relative z-10 flex items-center justify-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-black/20 animate-ping" style={{ animationDuration: '1.5s' }}></span>
+                              Hidden until you share today's discovery
+                              <span className="w-1.5 h-1.5 rounded-full bg-black/20 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
                             </p>
                           </div>
                         ) : (
-                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-colors relative overflow-hidden ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.01)]'}`}>
-                            {/* Subtle category-based tint */}
-                            {!isAboutUs && fact.categories.includes('Space') && <div className="absolute inset-0 bg-blue-50/20 pointer-events-none" />}
-                            {!isAboutUs && fact.categories.includes('Science') && <div className="absolute inset-0 bg-green-50/20 pointer-events-none" />}
-                            {!isAboutUs && fact.categories.includes('Art') && <div className="absolute inset-0 bg-orange-50/20 pointer-events-none" />}
+                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden group-hover/card:shadow-elevated transform-gpu ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.01)] hover:-translate-y-1'}`}>
+                            {/* Subtle category-based tint with gradient */}
+                            {!isAboutUs && fact.categories.includes('Space') && <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/30 to-transparent pointer-events-none" />}
+                            {!isAboutUs && fact.categories.includes('Science') && <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 to-transparent pointer-events-none" />}
+                            {!isAboutUs && fact.categories.includes('Art') && <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-transparent pointer-events-none" />}
+                            {!isAboutUs && fact.categories.includes('History') && <div className="absolute inset-0 bg-gradient-to-br from-stone-50/40 to-transparent pointer-events-none" />}
+                            
+                            {/* Texture overlay for cards */}
+                            <div className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
                             
                             <div className="relative z-10">
+                              {fact.imageUrl && (
+                                <div className="mb-4 md:mb-6 rounded-xl overflow-hidden border border-black/5 shadow-soft">
+                                  <img src={fact.imageUrl} alt="Discovery" className="w-full h-auto object-cover max-h-[400px]" />
+                                </div>
+                              )}
                               <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
                                 "{fact.text}"
                               </p>
@@ -300,8 +315,31 @@ export default function Archive({ facts, onReact }: { facts: Fact[], onReact: (f
         })}
         
         {facts.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground font-serif italic">
-            The archive awaits. Capture your first discovery today.
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-1000 delay-300 relative min-h-[50vh] flex flex-col justify-center">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FBF9F6]/90 to-[#FBF9F6] z-10 pointer-events-none" />
+            
+            <div className="opacity-40 pointer-events-none absolute inset-0 overflow-hidden pt-10">
+              <div className="p-5 md:p-6 rounded-2xl md:rounded-[2rem] bg-white border border-black/[0.02] shadow-sm mb-6 transform -rotate-2">
+                <p className="font-serif leading-relaxed text-[1.1rem] text-[#1C1C1C] blur-[2px]">
+                  "Did you know that the word 'muscle' comes from the Latin 'musculus' meaning 'little mouse' because of how muscles look moving under the skin?"
+                </p>
+              </div>
+              <div className="p-5 md:p-6 rounded-2xl md:rounded-[2rem] bg-white border border-black/[0.02] shadow-sm mb-6 ml-12 transform rotate-1">
+                <p className="font-serif leading-relaxed text-[1.1rem] text-[#1C1C1C] blur-[3px]">
+                  "I finally figured out how to make that pasta dish we had in Rome."
+                </p>
+              </div>
+            </div>
+            
+            <div className="relative z-20 flex flex-col items-center justify-center text-center px-6">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-soft border border-black/[0.03] animate-bounce" style={{ animationDuration: '3s' }}>
+                <BookA className="w-8 h-8 text-[#1C1C1C]" />
+              </div>
+              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The Archive Awaits</h3>
+              <p className="text-[#909090] text-sm md:text-base max-w-[280px] leading-relaxed">
+                Your shared cabinet is empty. Capture your first discovery to begin the collection.
+              </p>
+            </div>
           </div>
         )}
       </div>

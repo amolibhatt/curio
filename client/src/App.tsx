@@ -19,13 +19,13 @@ function Router({
   onReactToFact
 }: { 
   facts: Fact[], 
-  onAddFact: (text: string, categories: string[]) => void,
+  onAddFact: (text: string, categories: string[], imageUrl?: string) => void,
   onReactToFact: (factId: string, reaction: ReactionType | null) => void
 }) {
   const [, setLocation] = useLocation();
 
-  const handleAddFactAndRedirect = (text: string, categories: string[]) => {
-    onAddFact(text, categories);
+  const handleAddFactAndRedirect = (text: string, categories: string[], imageUrl?: string) => {
+    onAddFact(text, categories, imageUrl);
     setLocation('/archive');
   };
 
@@ -85,10 +85,11 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  const handleAddFact = (text: string, categories: string[]) => {
+  const handleAddFact = (text: string, categories: string[], imageUrl?: string) => {
     const newFact: Fact = {
       id: `f_${Date.now()}`,
       text,
+      imageUrl,
       authorId: activeUser.id,
       date: new Date().toISOString().split('T')[0],
       categories: categories as any,
