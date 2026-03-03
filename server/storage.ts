@@ -8,7 +8,7 @@ import {
 import { randomBytes } from "crypto";
 
 export interface IStorage {
-  createUser(name: string, avatar: string, pairingId: number): Promise<User>;
+  createUser(name: string, avatar: string, pairingId: number | null): Promise<User>;
   getUser(id: number): Promise<User | undefined>;
 
   createPairing(userId: number): Promise<Pairing>;
@@ -27,7 +27,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async createUser(name: string, avatar: string, pairingId: number): Promise<User> {
+  async createUser(name: string, avatar: string, pairingId: number | null): Promise<User> {
     const [user] = await db.insert(users).values({ name, avatar, pairingId }).returning();
     return user;
   }

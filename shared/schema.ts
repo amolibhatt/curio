@@ -1,5 +1,4 @@
 import { pgTable, text, varchar, jsonb, integer } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const categoryEnum = z.enum(['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random']);
@@ -44,9 +43,12 @@ export const insertUserSchema = z.object({
 });
 
 export const insertFactSchema = z.object({
-  text: z.string().min(1),
+  text: z.string(),
   imageUrl: z.string().optional(),
   categories: z.array(categoryEnum).min(1),
+}).refine(data => data.text.trim().length > 0 || !!data.imageUrl, {
+  message: "A thought or image is required",
+  path: ["text"],
 });
 
 export const insertReactionSchema = z.object({

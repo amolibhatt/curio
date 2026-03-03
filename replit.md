@@ -45,3 +45,13 @@ A private PWA where two friends share one daily discovery each, maintain a strea
 - Serif headings, no shadows except subtle shadow-sm on white cards
 - Category system: Science, History, Etymology, Space, Art, Us, Random
 - "Us" category gets rose tinting throughout
+
+## Notes
+
+- IDs are numeric integers (auto-generated). Reaction map keys are strings (JSON convention).
+- Images stored as base64 data URLs in DB (10MB Express body limit).
+- Service worker uses network-first for navigation, stale-while-revalidate for static assets, no caching for API calls.
+- Session cookie persists 30 days. Logout button in header.
+- Blind reveal uses unfiltered facts list (not filtered by person/category).
+- `insertFactSchema` allows text-only, image-only, or both via `.refine()`.
+- User 1 created with `pairingId: null` (updated after pairing created).

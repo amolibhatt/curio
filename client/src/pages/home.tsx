@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,34 +29,35 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
 
-  // Calculate streak based on consecutive days where both users posted
-  const getStreak = () => {
+  const streak = useMemo(() => {
     let currentStreak = 0;
     const today = new Date();
+    
+    const factsByDate = new Map<string, { user1: boolean; user2: boolean }>();
+    for (const f of facts) {
+      const entry = factsByDate.get(f.date) || { user1: false, user2: false };
+      if (f.authorId === activeUser.id) entry.user1 = true;
+      if (f.authorId === partnerUser.id) entry.user2 = true;
+      factsByDate.set(f.date, entry);
+    }
     
     for (let i = 0; i < 365; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       
-      const factsOnDate = facts.filter(f => f.date === dateStr);
-      const user1Posted = factsOnDate.some(f => f.authorId === activeUser.id);
-      const user2Posted = factsOnDate.some(f => f.authorId === partnerUser.id);
+      const entry = factsByDate.get(dateStr);
       
-      if (user1Posted && user2Posted) {
+      if (entry?.user1 && entry?.user2) {
         currentStreak++;
       } else if (i === 0) {
-        // It's okay if today is not complete yet, streak doesn't break if today is missed (until tomorrow)
         continue;
       } else {
-        // Streak is broken
         break;
       }
     }
     return currentStreak;
-  };
-
-  const streak = getStreak();
+  }, [facts, activeUser.id, partnerUser.id]);
 
   // Trigger confetti when streak changes (excluding initial load)
   const prevStreakRef = useRef(streak);

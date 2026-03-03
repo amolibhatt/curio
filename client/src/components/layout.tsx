@@ -16,10 +16,21 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
     queryClient.invalidateQueries();
   };
 
-  const handleShareLink = () => {
+  const handleShareLink = async () => {
     if (!inviteCode) return;
     const inviteLink = `${window.location.origin}/invite/${inviteCode}`;
-    navigator.clipboard.writeText(inviteLink);
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = inviteLink;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

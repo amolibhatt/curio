@@ -50,7 +50,7 @@ export async function registerRoutes(
       }
 
       const avatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(parsed.data.name)}&backgroundColor=e5e4df`;
-      const user = await storage.createUser(parsed.data.name, avatar, 0);
+      const user = await storage.createUser(parsed.data.name, avatar, null);
       const pairing = await storage.createPairing(user.id);
 
       req.session.userId = user.id;

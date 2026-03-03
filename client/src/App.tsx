@@ -77,6 +77,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
           />
         </Route>
+        <Route path="/invite/:code">
+          <Home
+            facts={facts}
+            onAddFact={handleAddFact}
+            activeUser={auth.user}
+            partnerUser={partner}
+          />
+        </Route>
         <Route component={NotFound} />
       </Switch>
     </Layout>

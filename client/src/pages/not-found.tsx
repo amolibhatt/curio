@@ -1,21 +1,23 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import { Link } from "wouter";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
-          </p>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#FBF9F6] p-6">
+      <div className="text-center space-y-6 max-w-sm">
+        <div className="mx-auto w-16 h-16 flex items-center justify-center bg-white rounded-full shadow-sm">
+          <BookOpen className="w-8 h-8 text-black" strokeWidth={1.5} />
+        </div>
+        <h1 className="text-3xl font-serif text-[#1C1C1C]" data-testid="text-not-found">Page not found</h1>
+        <p className="text-[#909090] font-serif italic">
+          Nothing to see here.
+        </p>
+        <Link href="/">
+          <span className="inline-block mt-4 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors cursor-pointer" data-testid="link-home">
+            Back to Curio
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
