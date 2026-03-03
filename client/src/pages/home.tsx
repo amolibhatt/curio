@@ -96,9 +96,9 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
           {streak} DAY STREAK
         </div>
         
-        <div className="space-y-1 md:space-y-3 pt-1 md:pt-2">
+            <div className="space-y-1 md:space-y-3 pt-1 md:pt-2">
           <h1 className="text-[3rem] md:text-[4rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
-            Did you find a <span className="italic text-[#4A4A4A]">spark</span> today?
+            Did you find a <span className="italic text-[#4A4A4A]">discovery</span> today?
           </h1>
           <p className="text-[1.05rem] md:text-[1.15rem] text-[#909090] italic font-serif">
             Add something fascinating to our shared cabinet of curiosities.
@@ -113,7 +113,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/50 text-green-600 rounded-full flex items-center justify-center mb-4 md:mb-6">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-xl md:text-2xl text-black mb-2">Spark Captured</h2>
+            <h2 className="font-serif text-xl md:text-2xl text-black mb-2">Discovery Captured</h2>
             <p className="text-muted-foreground text-sm md:text-base max-w-[250px] leading-relaxed">
               Your thought is safe in the archive. The reveal happens when {friendUser.name} adds theirs.
             </p>
@@ -130,7 +130,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             </div>
             
             <div className="space-y-2 md:space-y-3">
-              <h2 className="font-serif text-[1.25rem] md:text-[1.4rem] text-[#1C1C1C]">Capture a Spark</h2>
+              <h2 className="font-serif text-[1.25rem] md:text-[1.4rem] text-[#1C1C1C]">Capture a Discovery</h2>
               <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
                 Add to the collection
               </p>
@@ -200,7 +200,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                   disabled={!newFact.trim() || selectedCategories.length === 0}
                 >
                   <Send className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
-                  Share Spark
+                  Share Discovery
                 </Button>
               </div>
             </form>

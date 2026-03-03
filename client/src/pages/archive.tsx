@@ -157,7 +157,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                             </svg>
                           </div>
                           <p className="text-sm font-serif italic text-black/40">
-                            Hidden until you share your spark for this day.
+                            Hidden until you share your discovery for this day.
                           </p>
                         </div>
                       ) : (
@@ -192,7 +192,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
         
         {facts.length === 0 && (
           <div className="text-center py-20 text-muted-foreground font-serif italic">
-            The archive awaits. Capture your first spark today.
+            The archive awaits. Capture your first discovery today.
           </div>
         )}
       </div>
