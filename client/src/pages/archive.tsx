@@ -224,7 +224,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                 ))}
                               </div>
                               
-                                {!isMe && <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                                {!isMe && <div className="flex items-center gap-1.5 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0">
                                   <div className="relative shrink-0">
                                     <button
                                       onClick={() => handleReact(fact.id, 'mind-blown')}
