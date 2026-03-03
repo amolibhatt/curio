@@ -42,9 +42,12 @@ function App() {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Layout>
-             <Home facts={facts} onAddFact={handleAddFact} />
-          </Layout>
+          <div className="min-h-screen bg-[#E5E4DF] flex items-center justify-center md:py-8 font-sans">
+            {/* Mobile Device Container for Login */}
+            <div className="w-full h-[100dvh] md:h-[844px] md:max-h-[calc(100vh-4rem)] md:w-[390px] bg-[#FBF9F6] flex flex-col relative md:rounded-[3rem] md:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] md:border-8 border-[#1C1C1C] overflow-hidden md:ring-1 ring-black/5">
+               <Login onLogin={handleLogin} />
+            </div>
+          </div>
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>

@@ -20,65 +20,40 @@ export default function Login({ onLogin }: { onLogin: (userType: 'me' | 'friend'
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[max(env(safe-area-inset-bottom),1rem)]">
-      <div className="w-full max-w-md space-y-8 animate-in zoom-in-95 duration-500">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
-            <Sparkles className="w-8 h-8" />
+    <div className="flex-1 bg-[#FBF9F6] flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-sm space-y-10 animate-in zoom-in-95 duration-500">
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-20 h-20 bg-white flex items-center justify-center rounded-[1.5rem] shadow-sm border border-black/[0.04] mb-6">
+             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                <path d="M12 2v20" />
+              </svg>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight">DailyFact</h1>
-          <p className="text-muted-foreground text-lg">Exchange one interesting fact a day with your best friend.</p>
+          <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
+          <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">A shared archive for your daily discoveries.</p>
         </div>
 
-        <Card className="border-border/50 shadow-float rounded-3xl overflow-hidden">
-          <CardHeader className="bg-secondary/30 pb-8 border-b border-border/50">
-            <CardTitle className="text-2xl">Sign In Demo</CardTitle>
-            <CardDescription className="text-base">Choose who you want to experience the app as.</CardDescription>
+        <Card className="border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden bg-white">
+          <CardHeader className="bg-[#FAFAFA] pb-6 border-b border-black/[0.03]">
+            <CardTitle className="text-xl font-serif text-center">Sign In Demo</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6 pt-8">
+          <CardContent className="space-y-4 pt-6 pb-8 px-6">
             <Button 
-              className="w-full h-14 text-lg rounded-xl justify-between px-6 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-lg shadow-black/10 transition-all active:scale-[0.98]"
               onClick={() => onLogin('me')}
             >
               Sign in as You
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 opacity-70" />
             </Button>
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground font-bold">Or simulate invite</span>
-              </div>
-            </div>
 
             <Button 
               variant="outline"
-              className="w-full h-14 text-lg rounded-xl justify-between px-6 border-2"
+              className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 border-black/10 text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-[0.98]"
               onClick={() => onLogin('friend')}
             >
-              Sign in as Friend (Alex)
-              <ArrowRight className="w-5 h-5" />
+              Sign in as Friend
+              <ArrowRight className="w-5 h-5 opacity-50" />
             </Button>
-
-            {/* Simulated Invite Flow */}
-            <div className="pt-4 space-y-3">
-              <p className="text-sm font-medium text-center text-muted-foreground">Want to invite someone?</p>
-              {!inviteLink ? (
-                <Button variant="secondary" className="w-full rounded-xl" onClick={generateLink}>
-                  <LinkIcon className="w-4 h-4 mr-2" />
-                  Generate Invite Link
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Input value={inviteLink} readOnly className="rounded-xl bg-secondary/50 font-mono text-xs" />
-                  <Button variant={copied ? "default" : "secondary"} className="rounded-xl shrink-0" onClick={copyLink}>
-                    {copied ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
