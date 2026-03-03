@@ -11,7 +11,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
   // Apply filters
   const filteredFacts = facts.filter(fact => {
     if (filterPerson && fact.authorId !== filterPerson) return false;
-    if (filterCategory && fact.category !== filterCategory) return false;
+    if (filterCategory && !fact.categories.includes(filterCategory as any)) return false;
     return true;
   });
 
@@ -147,22 +147,26 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                 {dateFacts.map((fact) => {
                   const isMe = fact.authorId === currentUser.id;
                   const author = isMe ? currentUser : friendUser;
-                  const isAboutUs = fact.category === 'Us';
+                  const isAboutUs = fact.categories.includes('Us');
                   
                   return (
                     <div 
                       key={fact.id} 
                       className={`bg-white rounded-[1.5rem] p-5 md:p-6 border ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'}`}
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5">
+                      <div className="flex items-start justify-between mb-4 gap-2">
+                        <div className="flex items-center gap-2.5 shrink-0 pt-0.5">
                           <img src={author.avatar} alt={author.name} className="w-6 h-6 rounded-full border border-black/5" />
                           <span className="text-xs font-semibold text-[#1C1C1C]">{author.name}</span>
                         </div>
                         
-                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border ${getCategoryColor(fact.category)}`}>
-                          {getCategoryIcon(fact.category)}
-                          {fact.category}
+                        <div className="flex flex-wrap items-center gap-1.5 justify-end">
+                          {fact.categories.map((category) => (
+                            <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
+                              {getCategoryIcon(category)}
+                              {category}
+                            </div>
+                          ))}
                         </div>
                       </div>
                       

@@ -24,11 +24,11 @@ const PROMPTS = [
   "Share a memory of us that lives rent-free in your head..."
 ];
 
-export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, category: Category) => void }) {
+export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
   const [promptIndex, setPromptIndex] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<Category>('Science');
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
@@ -38,14 +38,23 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFact.trim()) return;
-    onAddFact(newFact, selectedCategory);
+    if (!newFact.trim() || selectedCategories.length === 0) return;
+    onAddFact(newFact, selectedCategories);
     setNewFact("");
+    setSelectedCategories([]);
     setIsAdding(false);
   };
 
   const cyclePrompt = () => {
     setPromptIndex((prev) => (prev + 1) % PROMPTS.length);
+  };
+
+  const toggleCategory = (category: Category) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   return (
@@ -110,7 +119,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
               <div className="mb-4 md:mb-6 space-y-3 relative">
                 <div className="flex justify-between items-center w-full">
                   <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                    SELECT A CATEGORY
+                    SELECT CATEGORIES (1 OR MORE)
                   </p>
                   <button 
                     type="button"
@@ -125,16 +134,16 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                     <button
                       key={name}
                       type="button"
-                      onClick={() => setSelectedCategory(name)}
+                      onClick={() => toggleCategory(name)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                        selectedCategory === name 
+                        selectedCategories.includes(name)
                           ? name === 'Us' 
                             ? 'bg-rose-50 text-rose-600 border border-rose-200' 
                             : 'bg-black text-white border border-black'
                           : 'bg-[#FBF9F6] text-[#737373] border border-black/5 hover:bg-black/5'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${selectedCategory === name && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                      <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
                       {name}
                     </button>
                   ))}
@@ -160,8 +169,8 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                 </Button>
                 <Button 
                   type="submit" 
-                  className="rounded-full px-6 md:px-8 h-10 md:h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-xs md:text-sm tracking-wide shadow-lg shadow-black/10" 
-                  disabled={!newFact.trim()}
+                  className="rounded-full px-6 md:px-8 h-10 md:h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-xs md:text-sm tracking-wide shadow-lg shadow-black/10 disabled:opacity-50" 
+                  disabled={!newFact.trim() || selectedCategories.length === 0}
                 >
                   <Send className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
                   Save to Archive

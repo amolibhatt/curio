@@ -27,13 +27,13 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  const handleAddFact = (text: string, category: string) => {
+  const handleAddFact = (text: string, categories: string[]) => {
     const newFact: Fact = {
       id: `f_${Date.now()}`,
       text,
       authorId: activeUser.id,
       date: new Date().toISOString().split('T')[0],
-      category: category as any
+      categories: categories as any
     };
     setFacts(prev => [newFact, ...prev]);
   };
