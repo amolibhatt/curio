@@ -2,9 +2,10 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
+import { formatText, insertFormatting } from "@/lib/format-text";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -114,6 +115,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   }, [isAdding]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,14 +239,69 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
-                <Textarea 
-                  placeholder="What caught your eye today..." 
-                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
-                  value={newFact}
-                  onChange={(e) => setNewFact(e.target.value)}
-                  maxLength={1000}
-                  autoFocus
-                />
+                <div className="flex items-center gap-1 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '**', '**', setNewFact)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+                    title="Bold"
+                    data-testid="button-format-bold"
+                  >
+                    <Bold className="w-4 h-4" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '*', '*', setNewFact)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+                    title="Italic"
+                    data-testid="button-format-italic"
+                  >
+                    <Italic className="w-4 h-4" strokeWidth={2.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '__', '__', setNewFact)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+                    title="Underline"
+                    data-testid="button-format-underline"
+                  >
+                    <Underline className="w-4 h-4" strokeWidth={2.5} />
+                  </button>
+                  <div className="w-px h-5 bg-black/10 mx-1" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(!showPreview)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${showPreview ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
+                    title={showPreview ? "Edit" : "Preview"}
+                    data-testid="button-toggle-preview"
+                  >
+                    {showPreview ? <EyeOff className="w-4 h-4" strokeWidth={2} /> : <Eye className="w-4 h-4" strokeWidth={2} />}
+                  </button>
+                </div>
+
+                {showPreview ? (
+                  <div className="flex-1 min-h-[120px] p-0">
+                    <p className="text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] text-[#1C1C1C]">
+                      {newFact.trim() ? formatText(newFact) : <span className="text-[#909090]/40">Preview will appear here...</span>}
+                    </p>
+                  </div>
+                ) : (
+                  <Textarea
+                    ref={textareaRef}
+                    placeholder="What caught your eye today..."
+                    className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
+                    value={newFact}
+                    onChange={(e) => setNewFact(e.target.value)}
+                    maxLength={1000}
+                    autoFocus
+                  />
+                )}
+
+                {newFact.trim() && (
+                  <p className="text-[10px] text-[#909090] mt-2 tracking-wider">
+                    Use <span className="font-mono bg-black/5 px-1 rounded">**bold**</span> <span className="font-mono bg-black/5 px-1 rounded">*italic*</span> <span className="font-mono bg-black/5 px-1 rounded">__underline__</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">

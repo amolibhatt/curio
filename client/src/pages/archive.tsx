@@ -4,6 +4,7 @@ import { format, parseISO } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown } from "lucide-react";
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatText } from "@/lib/format-text";
 
 export default function Archive({ facts, onReact, activeUser, partnerUser, isReacting }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, isReacting?: boolean }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
@@ -211,7 +212,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                             
                             <div className="relative z-10">
                               <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                                "{fact.text}"
+                                "{formatText(fact.text)}"
                               </p>
                             
                             <div className="flex flex-wrap items-center justify-between gap-3">
