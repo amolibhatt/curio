@@ -480,7 +480,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               </div>
               <div>
                 <p className="text-xs font-medium text-[#1C1C1C]">You answered!</p>
-                <p className="text-[10px] text-[#909090]">Waiting for {hasPartner ? partnerUser.name : "your partner"} to unlock both</p>
+                <p className="text-[10px] text-[#909090]">{hasPartner ? `Waiting for ${partnerUser.name} to unlock both` : "Invite your partner to see their answer too"}</p>
               </div>
             </div>
           )}

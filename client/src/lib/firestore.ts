@@ -197,6 +197,30 @@ export async function createPairing(userId: string): Promise<{ id: string; invit
   return { id: pairingRef.id, inviteCode };
 }
 
+export async function createPairingAndUser(
+  uid: string,
+  name: string
+): Promise<{ pairingId: string; inviteCode: string; user: User }> {
+  const safeName = name.trim().slice(0, MAX_NAME_LENGTH);
+  if (safeName.length < 2) throw new Error("Name must be at least 2 characters");
+  const avatar = buildAvatarUrl(safeName, true);
+  const inviteCode = generateInviteCode();
+
+  const pairingRef = doc(collection(db, "pairings"));
+  const userRef = doc(db, "users", uid);
+
+  await runTransaction(db, async (transaction) => {
+    transaction.set(pairingRef, { inviteCode, user1Id: uid, user2Id: null });
+    transaction.set(userRef, { name: safeName, avatar, pairingId: pairingRef.id });
+  });
+
+  return {
+    pairingId: pairingRef.id,
+    inviteCode,
+    user: { id: uid, name: safeName, avatar },
+  };
+}
+
 export async function getPairingByCode(code: string): Promise<{ id: string; inviteCode: string; user1Id: string; user2Id: string | null; anniversaryDate: string | null } | null> {
   const q = query(collection(db, "pairings"), where("inviteCode", "==", code));
   const snap = await getDocs(q);

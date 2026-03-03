@@ -56,7 +56,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   useEffect(() => {
     fetchFacts();
-    const interval = setInterval(fetchFacts, 15000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") fetchFacts();
+    }, 15000);
 
     const onVisible = () => {
       if (document.visibilityState === "visible") fetchFacts();
@@ -344,7 +346,9 @@ function AppContent() {
 
   useEffect(() => {
     if (!authState) return;
-    const interval = setInterval(refreshAuth, 30000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") refreshAuth();
+    }, 30000);
     return () => clearInterval(interval);
   }, [authState, refreshAuth]);
 
@@ -412,9 +416,8 @@ function AppContent() {
         window.history.pushState({}, "", "/");
         window.dispatchEvent(new PopStateEvent("popstate"));
       } else {
-        const pairing = await firestoreOps.createPairing(uid);
-        await firestoreOps.createUser(uid, trimmedName, pairing.id, true);
-        pairingId = pairing.id;
+        const result = await firestoreOps.createPairingAndUser(uid, trimmedName);
+        pairingId = result.pairingId;
       }
 
       firestoreOps.setReconnectCookie({ uid, name: trimmedName, pairingId, isUser1 });
