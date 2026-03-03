@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Eye, EyeOff } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
-import { formatText, insertFormatting, insertLinePrefix, handleRichPaste } from "@/lib/format-text";
+import { formatText } from "@/lib/format-text";
+import RichEditor from "@/components/rich-editor";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -16,6 +17,91 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Us', icon: Heart },
   { name: 'Random', icon: HelpCircle },
 ];
+
+function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadingMenu }: { newFact: string, setNewFact: (v: string) => void, showHeadingMenu: boolean, setShowHeadingMenu: (v: boolean) => void }) {
+  const { editorRef, applyFormat, applyHeading, editorElement } = RichEditor({
+    value: newFact,
+    onChange: setNewFact,
+    placeholder: "What caught your eye today...",
+    maxLength: 1000,
+    autoFocus: true,
+    className: "flex-1 min-h-[120px] text-base md:text-lg font-serif leading-relaxed text-[#1C1C1C]",
+  });
+
+  return (
+    <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
+      <div className="flex items-center gap-1 mb-3">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowHeadingMenu(!showHeadingMenu)}
+            className={`h-8 px-2.5 flex items-center justify-center rounded-lg text-[11px] font-bold tracking-wide transition-colors ${showHeadingMenu ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
+            title="Text style"
+            data-testid="button-format-heading"
+          >
+            Aa
+          </button>
+          {showHeadingMenu && (
+            <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-black/5 py-1 z-30 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
+              <button
+                type="button"
+                onClick={() => { applyHeading(0); setShowHeadingMenu(false); }}
+                className="w-full px-3 py-2 text-left text-sm text-[#1C1C1C] hover:bg-black/5 transition-colors"
+                data-testid="button-style-normal"
+              >
+                Normal text
+              </button>
+              {[1, 2, 3, 4, 5, 6].map((level) => {
+                const sizes = ['text-xl font-bold', 'text-lg font-bold', 'text-base font-semibold', 'text-sm font-semibold', 'text-xs font-medium', 'text-xs font-medium text-[#737373]'];
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => { applyHeading(level); setShowHeadingMenu(false); }}
+                    className={`w-full px-3 py-2 text-left hover:bg-black/5 transition-colors ${sizes[level - 1]}`}
+                    data-testid={`button-style-h${level}`}
+                  >
+                    Heading {level}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="w-px h-5 bg-black/10 mx-0.5" />
+        <button
+          type="button"
+          onClick={() => applyFormat('bold')}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+          title="Bold"
+          data-testid="button-format-bold"
+        >
+          <Bold className="w-4 h-4" strokeWidth={2.5} />
+        </button>
+        <button
+          type="button"
+          onClick={() => applyFormat('italic')}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+          title="Italic"
+          data-testid="button-format-italic"
+        >
+          <Italic className="w-4 h-4" strokeWidth={2.5} />
+        </button>
+        <button
+          type="button"
+          onClick={() => applyFormat('underline')}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
+          title="Underline"
+          data-testid="button-format-underline"
+        >
+          <Underline className="w-4 h-4" strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {editorElement}
+    </div>
+  );
+}
 
 export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
@@ -115,9 +201,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   }, [isAdding]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,110 +323,12 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
             <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
               
-              <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
-                <div className="flex items-center gap-1 mb-3">
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setShowHeadingMenu(!showHeadingMenu)}
-                      className={`h-8 px-2.5 flex items-center justify-center rounded-lg text-[11px] font-bold tracking-wide transition-colors ${showHeadingMenu ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
-                      title="Text style"
-                      data-testid="button-format-heading"
-                    >
-                      Aa
-                    </button>
-                    {showHeadingMenu && (
-                      <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-black/5 py-1 z-30 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
-                        <button
-                          type="button"
-                          onClick={() => { textareaRef.current && insertLinePrefix(textareaRef.current, '', setNewFact); setShowHeadingMenu(false); }}
-                          className="w-full px-3 py-2 text-left text-sm text-[#1C1C1C] hover:bg-black/5 transition-colors"
-                          data-testid="button-style-normal"
-                        >
-                          Normal text
-                        </button>
-                        {[1, 2, 3, 4, 5, 6].map((level) => {
-                          const sizes = ['text-xl font-bold', 'text-lg font-bold', 'text-base font-semibold', 'text-sm font-semibold', 'text-xs font-medium', 'text-xs font-medium text-[#737373]'];
-                          return (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={() => { textareaRef.current && insertLinePrefix(textareaRef.current, '#'.repeat(level) + ' ', setNewFact); setShowHeadingMenu(false); }}
-                              className={`w-full px-3 py-2 text-left hover:bg-black/5 transition-colors ${sizes[level - 1]}`}
-                              data-testid={`button-style-h${level}`}
-                            >
-                              Heading {level}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-px h-5 bg-black/10 mx-0.5" />
-                  <button
-                    type="button"
-                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '**', '**', setNewFact)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-                    title="Bold"
-                    data-testid="button-format-bold"
-                  >
-                    <Bold className="w-4 h-4" strokeWidth={2.5} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '*', '*', setNewFact)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-                    title="Italic"
-                    data-testid="button-format-italic"
-                  >
-                    <Italic className="w-4 h-4" strokeWidth={2.5} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '__', '__', setNewFact)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-                    title="Underline"
-                    data-testid="button-format-underline"
-                  >
-                    <Underline className="w-4 h-4" strokeWidth={2.5} />
-                  </button>
-                  <div className="w-px h-5 bg-black/10 mx-0.5" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPreview(!showPreview)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${showPreview ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
-                    title={showPreview ? "Edit" : "Preview"}
-                    data-testid="button-toggle-preview"
-                  >
-                    {showPreview ? <EyeOff className="w-4 h-4" strokeWidth={2} /> : <Eye className="w-4 h-4" strokeWidth={2} />}
-                  </button>
-                </div>
-
-                {showPreview ? (
-                  <div className="flex-1 min-h-[120px] p-0">
-                    <div className="text-base md:text-lg font-serif leading-relaxed text-[#1C1C1C] space-y-1">
-                      {newFact.trim() ? formatText(newFact) : <span className="text-[#909090]/40">Preview will appear here...</span>}
-                    </div>
-                  </div>
-                ) : (
-                  <Textarea
-                    ref={textareaRef}
-                    placeholder="What caught your eye today..."
-                    className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-base md:text-lg font-serif leading-relaxed placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
-                    value={newFact}
-                    onChange={(e) => setNewFact(e.target.value)}
-                    onPaste={(e) => handleRichPaste(e, setNewFact)}
-                    maxLength={1000}
-                    autoFocus
-                  />
-                )}
-
-                {newFact.trim() && (
-                  <p className="text-[10px] text-[#909090] mt-2 tracking-wider">
-                    <span className="font-mono bg-black/5 px-1 rounded">**bold**</span> <span className="font-mono bg-black/5 px-1 rounded">*italic*</span> <span className="font-mono bg-black/5 px-1 rounded">__underline__</span> <span className="font-mono bg-black/5 px-1 rounded"># heading</span>
-                  </p>
-                )}
-              </div>
+              <RichEditorSection
+                newFact={newFact}
+                setNewFact={setNewFact}
+                showHeadingMenu={showHeadingMenu}
+                setShowHeadingMenu={setShowHeadingMenu}
+              />
 
               <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
                 <div className="space-y-4">
