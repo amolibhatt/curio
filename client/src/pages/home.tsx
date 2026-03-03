@@ -15,19 +15,9 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
-const PROMPTS = [
-  "Tell me a piece of history that feels like fiction...",
-  "What's a word with a wild origin story?",
-  "Drop a mind-bending fact about the universe...",
-  "What's something weird the human body does?",
-  "Tell me about a strange animal adaptation...",
-  "Share a memory of us that lives rent-free in your head..."
-];
-
 export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
-  const [promptIndex, setPromptIndex] = useState(0);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   
   const todayStr = new Date().toISOString().split('T')[0];
@@ -70,10 +60,6 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
     setNewFact("");
     setSelectedCategories([]);
     setIsAdding(false);
-  };
-
-  const cyclePrompt = () => {
-    setPromptIndex((prev) => (prev + 1) % PROMPTS.length);
   };
 
   const toggleCategory = (category: Category) => {
@@ -148,13 +134,6 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                   <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
                     SELECT CATEGORIES (1 OR MORE)
                   </p>
-                  <button 
-                    type="button"
-                    onClick={cyclePrompt}
-                    className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold tracking-wider text-[#909090] hover:text-black transition-colors uppercase"
-                  >
-                    Need an idea?
-                  </button>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-start">
                   {CATEGORIES.map(({ name, icon: Icon }) => (
@@ -178,7 +157,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
               </div>
 
               <Textarea 
-                placeholder={PROMPTS[promptIndex]} 
+                placeholder="Today I learned that..." 
                 className="flex-1 min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
                 value={newFact}
                 onChange={(e) => setNewFact(e.target.value)}
