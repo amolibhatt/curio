@@ -27,14 +27,13 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">Two minds. One private cabinet of curiosities.</p>
         </div>
 
-        <Card className="border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden bg-white">
+        <Card className="border-none shadow-none rounded-[2.5rem] overflow-hidden bg-transparent">
           <CardContent className="pt-8 pb-8 px-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase ml-2">Your Name</label>
                 <Input 
                   placeholder="What should we call you?"
-                  className="h-14 rounded-[1.25rem] px-5 bg-[#FBF9F6] border-black/5 focus-visible:ring-black/20 focus-visible:border-black/20 text-base"
+                  className="h-14 rounded-full px-6 bg-white border-black/5 focus-visible:ring-black/10 focus-visible:border-black/10 text-base shadow-sm"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoFocus
@@ -44,7 +43,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
               <Button 
                 type="submit"
                 disabled={!name.trim()}
-                className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-lg shadow-black/10 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+                className="w-full h-14 text-base font-medium rounded-full justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
               >
                 Join
                 <ArrowRight className="w-5 h-5 opacity-70" />

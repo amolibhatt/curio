@@ -26,17 +26,17 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
         <header className="flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] shadow-sm border border-black/[0.04] overflow-hidden">
+              <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] overflow-hidden">
                 <img src={logoImg} alt="Curio Logo" className="w-full h-full object-cover" />
               </div>
               <span className="font-serif text-[1.4rem] text-black tracking-tight mt-1">Curio</span>
             </div>
           </Link>
           
-          <div className="flex items-center gap-1.5 md:gap-3 bg-white px-1.5 py-1.5 rounded-[1.2rem] md:rounded-full shadow-sm border border-black/[0.04]">
-            <div className={`flex items-center gap-2.5 pl-2 ${!hasFriendJoined ? 'pr-2 md:pr-3 border-r border-black/[0.08]' : 'pr-1'}`}>
+          <div className="flex items-center gap-1.5 md:gap-3 bg-transparent px-1.5 py-1.5 rounded-[1.2rem] md:rounded-full">
+            <div className={`flex items-center gap-2.5 pl-2 ${!hasFriendJoined ? 'pr-2 md:pr-3' : 'pr-1'}`}>
               <span className="text-[11px] md:text-xs font-semibold text-[#1C1C1C] max-w-[80px] md:max-w-[120px] truncate">{user.name}</span>
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden border border-black/10 shrink-0 bg-white">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden shrink-0 bg-white">
                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
               </div>
             </div>
@@ -71,7 +71,7 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
         </main>
 
         {/* Mobile Bottom Nav */}
-        <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-black/5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] flex items-center justify-center gap-2 p-1.5 rounded-[2rem] z-50 w-max px-3">
+        <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl flex items-center justify-center gap-2 p-1.5 rounded-[2rem] z-50 w-max px-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 flex-1 transition-all ${location === "/" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
               <Compass className="w-[22px] h-[22px]" strokeWidth={location === "/" ? 2 : 1.5} />

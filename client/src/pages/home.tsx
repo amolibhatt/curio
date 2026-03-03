@@ -163,13 +163,13 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
       {/* Main Action Card */}
       {myFactToday ? (
-        <Card className="bg-white border border-black/[0.03] shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
+        <Card className="bg-transparent border-none shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
           {/* Waiting animation background */}
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
           
           <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 shadow-soft animate-in slide-in-from-bottom-2 duration-500">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 animate-in slide-in-from-bottom-2 duration-500">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
             <h2 className="font-serif text-xl md:text-2xl text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Discovery Captured</h2>
@@ -180,20 +180,20 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </Card>
       ) : !isAdding ? (
         <Card 
-          className="bg-white border border-black/[0.03] shadow-soft hover:shadow-elevated rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0"
+          className="bg-transparent border border-black/5 border-dashed hover:bg-black/[0.02] shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0"
           onClick={() => {
             if (navigator.vibrate) navigator.vibrate(50);
             setIsAdding(true);
           }}
         >
           <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
-            <div className="w-14 h-14 bg-[#FAFAFA] rounded-full flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-soft border border-black/[0.02]">
-              <Plus className="w-6 h-6 text-[#1C1C1C]" strokeWidth={1.5} />
+            <div className="w-14 h-14 bg-transparent rounded-full flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110">
+              <Plus className="w-6 h-6 text-[#1C1C1C]" strokeWidth={1} />
             </div>
             
-            <div className="space-y-1">
+            <div className="space-y-1 opacity-60 group-hover:opacity-100 transition-opacity">
               <h2 className="font-serif text-[1.2rem] md:text-[1.3rem] text-[#1C1C1C]">Capture a Discovery</h2>
-              <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+              <p className="text-[10px] font-bold tracking-[0.15em] text-[#1C1C1C] uppercase">
                 Add to the collection
               </p>
             </div>
@@ -249,9 +249,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 active:scale-95 ${
                           selectedCategories.includes(name)
                             ? name === 'Us' 
-                              ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-soft' 
-                              : 'bg-black text-white border border-black shadow-soft'
-                            : 'bg-white text-[#737373] border border-black/[0.04] hover:bg-black/[0.02] hover:shadow-sm'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-200' 
+                              : 'bg-black text-white border border-black'
+                            : 'bg-white text-[#737373] border border-black/[0.04] hover:bg-black/[0.02]'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
@@ -291,7 +291,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   
                   <Button 
                     type="submit" 
-                    className="rounded-full px-8 md:px-10 h-12 md:h-14 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm md:text-base tracking-wide shadow-elevated transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none" 
+                    className="rounded-full px-8 md:px-10 h-12 md:h-14 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm md:text-base tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-none" 
                     disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0}
                   >
                     <Send className="w-4 h-4 md:w-5 md:h-5 mr-2.5" />

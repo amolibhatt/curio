@@ -74,7 +74,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
 
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-white border border-black/[0.05] text-[#1C1C1C] hover:bg-black/5'}`}
+            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
           >
             <Filter className="w-3.5 h-3.5" />
             Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}
@@ -83,7 +83,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="mt-6 p-5 bg-white rounded-[1.5rem] border border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-in slide-in-from-top-2 duration-200">
+          <div className="mt-6 p-5 bg-transparent rounded-[1.5rem] animate-in slide-in-from-top-2 duration-200">
             <div className="space-y-5">
               {/* Person Filter */}
               <div>
@@ -176,7 +176,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                     >
                       <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
                         <div className="relative z-10 bg-[#FBF9F6] p-1 rounded-full">
-                          <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full border border-black/5 ${isHidden ? 'grayscale' : 'shadow-sm z-10'}`} />
+                          <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
                         </div>
                         <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FBF9F6] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
                           {author.name}
@@ -192,26 +192,21 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
 
                       <div className="flex-1 relative group/card perspective-1000">
                         {isHidden ? (
-                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-black/[0.03] text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.05] animate-breathe">
+                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02] animate-breathe">
                             <div className="absolute inset-0 backdrop-blur-sm z-0"></div>
-                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
-                            <p className="text-sm font-serif italic text-black/50 relative z-10 flex items-center justify-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-black/20 animate-ping" style={{ animationDuration: '1.5s' }}></span>
+                            <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                            <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
                               Hidden until you share today's discovery
-                              <span className="w-1.5 h-1.5 rounded-full bg-black/20 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
                             </p>
                           </div>
                         ) : (
-                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden group-hover/card:shadow-elevated transform-gpu ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.01)] hover:-translate-y-1'}`}>
-                            {/* Subtle category-based tint with gradient */}
-                            {!isAboutUs && fact.categories.includes('Space') && <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/30 to-transparent pointer-events-none" />}
-                            {!isAboutUs && fact.categories.includes('Science') && <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 to-transparent pointer-events-none" />}
-                            {!isAboutUs && fact.categories.includes('Art') && <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-transparent pointer-events-none" />}
-                            {!isAboutUs && fact.categories.includes('History') && <div className="absolute inset-0 bg-gradient-to-br from-stone-50/40 to-transparent pointer-events-none" />}
+                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02] shadow-none hover:shadow-none'}`}>
                             
                             <div className="relative z-10">
                                 {fact.imageUrl && (
-                                  <div className="mb-4 md:mb-6 rounded-xl overflow-hidden border border-black/5 shadow-soft cursor-pointer group/image" onClick={() => setSelectedImage(fact.imageUrl!)}>
+                                  <div className="mb-4 md:mb-6 rounded-xl overflow-hidden cursor-pointer group/image" onClick={() => setSelectedImage(fact.imageUrl!)}>
                                     <div className="relative">
                                       <img src={fact.imageUrl} alt="Discovery" className="w-full h-auto object-cover max-h-[400px] transition-transform duration-700 group-hover/image:scale-105" />
                                       <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors duration-300 flex items-center justify-center">
@@ -242,8 +237,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'mind-blown')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'mind-blown' 
-                                          ? 'bg-[#1C1C1C] text-white shadow-soft' 
-                                          : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20 hover:shadow-soft'
+                                          ? 'bg-black text-white' 
+                                          : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                       }`}
                                     >
                                       <Brain className="w-3.5 h-3.5" />
@@ -268,8 +263,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'fascinating')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'fascinating' 
-                                          ? 'bg-[#1C1C1C] text-white shadow-soft' 
-                                          : 'bg-white border border-black/10 text-[#909090] hover:text-black hover:border-black/20 hover:shadow-soft'
+                                          ? 'bg-black text-white' 
+                                          : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                       }`}
                                     >
                                       <Sparkles className="w-3.5 h-3.5" />
@@ -294,8 +289,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'heart')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'heart' 
-                                          ? 'bg-rose-500 text-white shadow-soft border-rose-500' 
-                                          : 'bg-white border border-black/10 text-[#909090] hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 hover:shadow-soft'
+                                          ? 'bg-rose-500 text-white' 
+                                          : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
                                       }`}
                                     >
                                       <Heart className={`w-3.5 h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
@@ -320,8 +315,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'laugh')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'laugh' 
-                                          ? 'bg-amber-100 border-amber-200 text-amber-700 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-amber-200 hover:bg-amber-50 text-[#909090] hover:text-amber-600 hover:shadow-soft'
+                                          ? 'bg-amber-100 text-amber-700' 
+                                          : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
                                       }`}
                                     >
                                       <Laugh className="w-3.5 h-3.5" />
@@ -346,8 +341,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'thinking')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'thinking' 
-                                          ? 'bg-blue-100 border-blue-200 text-blue-700 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-blue-200 hover:bg-blue-50 text-[#909090] hover:text-blue-600 hover:shadow-soft'
+                                          ? 'bg-blue-100 text-blue-700' 
+                                          : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
                                       }`}
                                     >
                                       <Lightbulb className="w-3.5 h-3.5" />
@@ -372,8 +367,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                       onClick={() => handleReact(fact.id, 'sad')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'sad' 
-                                          ? 'bg-indigo-100 border-indigo-200 text-indigo-700 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-indigo-200 hover:bg-indigo-50 text-[#909090] hover:text-indigo-600 hover:shadow-soft'
+                                          ? 'bg-indigo-100 text-indigo-700' 
+                                          : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
                                       }`}
                                     >
                                       <Frown className="w-3.5 h-3.5" />
@@ -396,7 +391,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                               
                               {/* Display existing reactions if any */}
                               {(fact.reactions?.[partnerUser.id]) && isMe && (
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.03] text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 shadow-soft">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
                                   {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
                                   {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
                                   {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
