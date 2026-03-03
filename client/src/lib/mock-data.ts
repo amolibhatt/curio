@@ -5,7 +5,6 @@ export type ReactionType = 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 't
 export type Fact = {
   id: number;
   text: string;
-  imageUrl?: string | null;
   authorId: number;
   pairingId: number;
   date: string;

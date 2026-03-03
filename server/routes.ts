@@ -146,7 +146,7 @@ export async function registerRoutes(
     try {
       const parsed = insertFactSchema.safeParse(req.body);
       if (!parsed.success) {
-        return res.status(400).json({ message: "A discovery or image is needed", errors: parsed.error.flatten() });
+        return res.status(400).json({ message: "A discovery is required" });
       }
 
       const date = new Date().toISOString().split("T")[0];
@@ -161,8 +161,7 @@ export async function registerRoutes(
         req.session.pairingId!,
         parsed.data.text,
         parsed.data.categories,
-        date,
-        parsed.data.imageUrl
+        date
       );
 
       res.json(fact);

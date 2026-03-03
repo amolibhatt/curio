@@ -28,7 +28,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   });
 
   const addFactMutation = useMutation({
-    mutationFn: async (data: { text: string; categories: Category[]; imageUrl?: string }) => {
+    mutationFn: async (data: { text: string; categories: Category[] }) => {
       const res = await apiRequest("POST", "/api/facts", data);
       return res.json();
     },
@@ -49,9 +49,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const partner = auth.partner || { id: 0, name: "Your partner", avatar: "" };
 
-  const handleAddFact = (text: string, categories: Category[], imageUrl?: string): Promise<void> => {
+  const handleAddFact = (text: string, categories: Category[]): Promise<void> => {
     return new Promise((resolve, reject) => {
-      addFactMutation.mutate({ text, categories, imageUrl }, {
+      addFactMutation.mutate({ text, categories }, {
         onSuccess: () => resolve(),
         onError: (err) => reject(err),
       });

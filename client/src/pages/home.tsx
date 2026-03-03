@@ -3,7 +3,7 @@ import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, ImageIcon, X } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 
@@ -17,12 +17,10 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
-export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => Promise<void>, activeUser: User, partnerUser: User }) {
+export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
   const todayStr = new Date().toISOString().split('T')[0];
@@ -59,9 +57,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     return currentStreak;
   }, [facts, activeUser.id, partnerUser.id]);
 
-  // Trigger confetti when streak changes (excluding initial load)
   const prevStreakRef = useRef(streak);
-  
+
   useEffect(() => {
     if (streak > prevStreakRef.current && streak > 0) {
       const duration = 3 * 1000;
@@ -107,17 +104,15 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFact.trim() && !imageUrl) return;
+    if (!newFact.trim()) return;
     if (selectedCategories.length === 0) return;
     if (isSubmitting) return;
     
     setIsSubmitting(true);
     try {
-      await onAddFact(newFact, selectedCategories, imageUrl || undefined);
+      await onAddFact(newFact, selectedCategories);
       setNewFact("");
       setSelectedCategories([]);
-      setImageUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
       setIsAdding(false);
     } catch (err: any) {
       toast({
@@ -138,38 +133,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     );
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const blob = items[i].getAsFile();
-        if (blob) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setImageUrl(reader.result as string);
-          };
-          reader.readAsDataURL(blob);
-        }
-      }
-    }
-  };
-
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-1 md:pt-4 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-3 md:gap-6">
-      {/* Header Section */}
       <header className="space-y-2 md:space-y-4 flex-shrink-0 px-2 md:px-0">
         <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
@@ -189,10 +154,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </div>
       </header>
 
-      {/* Main Action Card */}
       {myFactToday ? (
         <Card className="bg-transparent border-none shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
-          {/* Waiting animation background */}
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
           
@@ -232,7 +195,6 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
       ) : (
         <div className="fixed inset-0 z-50 bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
           
-          {/* Top Bar */}
           <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
             <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
               New entry
@@ -257,22 +219,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
-                  onPaste={handlePaste}
                   autoFocus
                 />
-                
-                {imageUrl && (
-                  <div className="relative mt-4 mb-4 rounded-2xl overflow-hidden shadow-sm border border-black/5 max-h-[300px] flex-shrink-0 group self-start">
-                    <img src={imageUrl} alt="Uploaded" className="w-auto h-full max-h-[300px] object-cover" />
-                    <button 
-                      type="button" 
-                      onClick={() => { setImageUrl(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                      className="absolute top-4 right-4 w-8 h-8 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
@@ -304,29 +252,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-8 border-t border-black/5">
-                  <div className="flex gap-2">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      ref={fileInputRef} 
-                      onChange={handleImageUpload} 
-                    />
-                    <button 
-                      type="button" 
-                      className="w-12 h-12 flex items-center justify-center rounded-full bg-white text-[#737373] hover:text-black border border-black/5 shadow-sm transition-colors"
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Attach Image"
-                    >
-                      <ImageIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
+                <div className="flex items-center justify-end pt-8 border-t border-black/5">
                   <button 
                     type="submit" 
                     className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
-                    disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0 || isSubmitting}
+                    disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting}
                     data-testid="button-save-fact"
                   >
                     {isSubmitting ? "Adding..." : "Add to archive"}

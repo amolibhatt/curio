@@ -16,7 +16,7 @@ export interface IStorage {
   getPairing(id: number): Promise<Pairing | undefined>;
   joinPairing(pairingId: number, userId: number): Promise<Pairing>;
 
-  createFact(authorId: number, pairingId: number, text: string, categories: string[], date: string, imageUrl?: string): Promise<Fact>;
+  createFact(authorId: number, pairingId: number, text: string, categories: string[], date: string): Promise<Fact>;
   getFactsByPairing(pairingId: number): Promise<FactWithReactions[]>;
   hasPostedToday(authorId: number, pairingId: number, date: string): Promise<boolean>;
 
@@ -60,10 +60,9 @@ export class DatabaseStorage implements IStorage {
     return pairing;
   }
 
-  async createFact(authorId: number, pairingId: number, text: string, categories: string[], date: string, imageUrl?: string): Promise<Fact> {
+  async createFact(authorId: number, pairingId: number, text: string, categories: string[], date: string): Promise<Fact> {
     const [fact] = await db.insert(facts).values({
       text,
-      imageUrl: imageUrl || null,
       authorId,
       pairingId,
       date,

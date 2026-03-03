@@ -43,12 +43,8 @@ export const insertUserSchema = z.object({
 });
 
 export const insertFactSchema = z.object({
-  text: z.string(),
-  imageUrl: z.string().optional(),
+  text: z.string().min(1, "A discovery is required"),
   categories: z.array(categoryEnum).min(1),
-}).refine(data => data.text.trim().length > 0 || !!data.imageUrl, {
-  message: "A discovery or image is required",
-  path: ["text"],
 });
 
 export const insertReactionSchema = z.object({

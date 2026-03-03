@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, X, Laugh, Lightbulb, Frown } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown } from "lucide-react";
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,16 +9,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   const [filterPerson, setFilterPerson] = useState<number | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [burstReaction, setBurstReaction] = useState<{id: number, type: string} | null>(null);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && selectedImage) setSelectedImage(null);
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [selectedImage]);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
@@ -213,23 +204,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                           <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
                             
                             <div className="relative z-10">
-                                {fact.imageUrl && (
-                                  <div className="mb-4 md:mb-6 rounded-xl overflow-hidden cursor-pointer group/image" onClick={() => setSelectedImage(fact.imageUrl!)}>
-                                    <div className="relative">
-                                      <img src={fact.imageUrl} alt="Discovery" className="w-full h-auto object-cover max-h-[400px] transition-transform duration-700 group-hover/image:scale-105" />
-                                      <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                                        <div className="bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full text-xs font-bold tracking-wider opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover/image:translate-y-0 border-none">
-                                          EXPAND
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              {fact.text.trim() && (
                               <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
                                 "{fact.text}"
                               </p>
-                              )}
                             
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="flex flex-wrap items-center gap-1.5">
@@ -456,39 +433,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         )}
       </div>
 
-      {/* Full-screen Image Lightbox */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-10"
-            onClick={() => setSelectedImage(null)}
-          >
-            <button 
-              className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors backdrop-blur-md"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedImage(null);
-              }}
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <motion.img 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              src={selectedImage} 
-              alt="Expanded Discovery" 
-              className="max-w-full max-h-full object-contain rounded-lg" 
-              onClick={(e) => e.stopPropagation()}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
