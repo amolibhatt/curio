@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock } from "lucide-react";
+import { Clock, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -70,35 +70,16 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
           )}
         </div>
         <div className="w-px h-5 bg-black/10 mx-0.5" />
-        <button
-          type="button"
-          onClick={() => applyFormat('bold')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-          title="Bold"
-          data-testid="button-format-bold"
-        >
+        <button type="button" onClick={() => applyFormat('bold')} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors" title="Bold" data-testid="button-format-bold">
           <Bold className="w-4 h-4" strokeWidth={2.5} />
         </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('italic')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-          title="Italic"
-          data-testid="button-format-italic"
-        >
+        <button type="button" onClick={() => applyFormat('italic')} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors" title="Italic" data-testid="button-format-italic">
           <Italic className="w-4 h-4" strokeWidth={2.5} />
         </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('underline')}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors"
-          title="Underline"
-          data-testid="button-format-underline"
-        >
+        <button type="button" onClick={() => applyFormat('underline')} className="w-8 h-8 flex items-center justify-center rounded-lg text-[#909090] hover:text-black hover:bg-black/5 transition-colors" title="Underline" data-testid="button-format-underline">
           <Underline className="w-4 h-4" strokeWidth={2.5} />
         </button>
       </div>
-
       {editorElement}
     </div>
   );
@@ -176,7 +157,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   const streak = useMemo(() => {
     let currentStreak = 0;
-    
     const factsByDate = new Map<string, { user1: boolean; user2: boolean }>();
     for (const f of facts) {
       const entry = factsByDate.get(f.date) || { user1: false, user2: false };
@@ -184,12 +164,9 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       if (f.authorId === partnerUser.id) entry.user2 = true;
       factsByDate.set(f.date, entry);
     }
-    
     for (let i = 0; i < 365; i++) {
       const dateStr = getLocalDateStr(new Date(Date.now() - i * 86400000));
-      
       const entry = factsByDate.get(dateStr);
-      
       if (entry?.user1 && entry?.user2) {
         currentStreak++;
       } else if (i === 0) {
@@ -205,63 +182,34 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   useEffect(() => {
     if (facts.length === 0) return;
-
-    if (prevStreakRef.current === null) {
-      prevStreakRef.current = streak;
-      return;
-    }
-
+    if (prevStreakRef.current === null) { prevStreakRef.current = streak; return; }
     if (streak > prevStreakRef.current && streak > 0) {
       const duration = 3 * 1000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-
       const interval = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
+        if (timeLeft <= 0) return clearInterval(interval);
         const particleCount = 50 * (timeLeft / duration);
-        confetti({
-          ...defaults, particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-          colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
-        });
-        confetti({
-          ...defaults, particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-          colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
-        });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'] });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff'] });
       }, 250);
-
       prevStreakRef.current = streak;
       return () => clearInterval(interval);
     }
-
     prevStreakRef.current = streak;
   }, [streak, facts.length]);
 
   useEffect(() => {
-    if (isAdding || isEditing) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (isAdding || isEditing) { document.body.style.overflow = "hidden"; } else { document.body.style.overflow = ""; }
     return () => { document.body.style.overflow = ""; };
   }, [isAdding, isEditing]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && (isAdding || isEditing)) {
-        setIsAdding(false);
-        setIsEditing(false);
-        setEditingFactId(null);
-        setNewFact("");
-        setSelectedCategories([]);
+        setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]);
       }
     };
     document.addEventListener("keydown", handleEscape);
@@ -282,10 +230,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFact.trim()) return;
-    if (selectedCategories.length === 0) return;
-    if (isSubmitting) return;
-    
+    if (!newFact.trim() || selectedCategories.length === 0 || isSubmitting) return;
     if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmitting(true);
     try {
@@ -295,80 +240,45 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       } else {
         await onAddFact(newFact.trim(), selectedCategories);
       }
-      setNewFact("");
-      setSelectedCategories([]);
-      setIsAdding(false);
-      setIsEditing(false);
-      setEditingFactId(null);
+      setNewFact(""); setSelectedCategories([]); setIsAdding(false); setIsEditing(false); setEditingFactId(null);
     } catch (err: any) {
-      toast({
-        title: isEditing ? "Couldn't update" : "Couldn't add",
-        description: err?.message || "Something went wrong. Try again.",
-        variant: "destructive",
-      });
+      toast({ title: isEditing ? "Couldn't update" : "Couldn't add", description: err?.message || "Something went wrong. Try again.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const toggleCategory = (category: Category) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+    setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]);
   };
 
   if (isAdding || isEditing) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
-        <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
+      <div className="fixed inset-0 z-[60] bg-[#FAF9F7] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
+        <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FAF9F7]/90 backdrop-blur-md">
           <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
             {isEditing ? "Edit entry" : "New entry"}
           </p>
-          <button 
-            onClick={() => {
-              setIsAdding(false);
-              setIsEditing(false);
-              setEditingFactId(null);
-              setNewFact("");
-              setSelectedCategories([]);
-            }}
+          <button
+            onClick={() => { setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); }}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
             data-testid="button-close-form"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
-            <RichEditorSection
-              newFact={newFact}
-              setNewFact={setNewFact}
-              showHeadingMenu={showHeadingMenu}
-              setShowHeadingMenu={setShowHeadingMenu}
-            />
-
+            <RichEditorSection newFact={newFact} setNewFact={setNewFact} showHeadingMenu={showHeadingMenu} setShowHeadingMenu={setShowHeadingMenu} />
             <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
               <div className="space-y-4">
-                <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">
-                  Tags
-                </p>
+                <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">Tags</p>
                 <div className="flex flex-wrap gap-2.5">
                   {CATEGORIES.map(({ name, icon: Icon }) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(20);
-                        toggleCategory(name);
-                      }}
+                    <button key={name} type="button" onClick={() => { if (navigator.vibrate) navigator.vibrate(20); toggleCategory(name); }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-200 active:scale-95 border ${
                         selectedCategories.includes(name)
-                          ? name === 'Us' 
-                            ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' 
-                            : 'bg-black text-white border-black shadow-sm'
+                          ? name === 'Us' ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' : 'bg-black text-white border-black shadow-sm'
                           : 'bg-white text-[#737373] border-black/5 hover:border-black/10 shadow-sm hover:shadow-md'
                       }`}
                     >
@@ -378,14 +288,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                   ))}
                 </div>
               </div>
-
               <div className="flex items-center justify-end pt-8 border-t border-black/5">
-                <button 
-                  type="submit" 
-                  className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
-                  disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting}
-                  data-testid="button-save-fact"
-                >
+                <button type="submit" className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting} data-testid="button-save-fact">
                   {isSubmitting ? (isEditing ? "Saving..." : "Adding...") : (isEditing ? "Save changes" : "Add to archive")}
                 </button>
               </div>
@@ -397,115 +301,100 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   }
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-5 md:gap-6">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-4 md:gap-5">
 
-      <header className="flex-shrink-0 px-2 md:px-0 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
-            <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
+      <header className="flex-shrink-0 px-1 md:px-0">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 ring-rose-100">
+              <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
+            </div>
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 ring-blue-100 -ml-3">
+              <img src={partnerUser.avatar} alt={partnerUser.name} className="w-full h-full" />
+            </div>
           </div>
-          <Heart className="w-4 h-4 text-rose-400 fill-rose-400 animate-in zoom-in duration-500" />
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
-            <img src={partnerUser.avatar} alt={partnerUser.name} className="w-full h-full" />
+          <div className="flex-1 min-w-0">
+            <p className="font-serif text-lg md:text-xl text-[#1C1C1C] leading-tight truncate" data-testid="text-greeting">
+              {getGreeting()} <span className="text-[#909090]">✦</span>
+            </p>
+            <p className="text-[11px] text-[#909090] font-medium mt-0.5">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </p>
           </div>
-        </div>
-
-        <h1 className="font-serif text-[1.6rem] md:text-[2.5rem] leading-tight text-[#1C1C1C] tracking-tight mb-1" data-testid="text-greeting">
-          {getGreeting()}, <span className="italic text-[#4A4A4A]">{activeUser.name}</span>
-          {hasPartner && <span className="text-[#909090]"> & </span>}
-          {hasPartner && <span className="italic text-[#4A4A4A]">{partnerUser.name}</span>}
-        </h1>
-
-        <div className="flex items-center justify-center gap-3 mt-3">
           {streak > 0 && (
-            <div className="inline-flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-[0.1em]" data-testid="badge-streak">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              {streak} DAY STREAK
+            <div className="flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-rose-500 text-white px-3 py-1.5 rounded-full shrink-0" data-testid="badge-streak">
+              <Flame className="w-3.5 h-3.5 fill-white" />
+              <span className="text-[11px] font-bold">{streak}</span>
             </div>
           )}
-          <p className="text-[11px] text-[#909090] font-medium">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-          </p>
         </div>
       </header>
 
-      <div className="px-2 md:px-0">
-        <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-black/5" data-testid="card-today-checkin">
-          <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-3 px-1">Today's check-in</p>
-          <div className="flex gap-3">
-            <div className={`flex-1 rounded-xl px-4 py-3 flex items-center gap-3 transition-colors ${
-              myFactToday ? 'bg-green-50/80' : 'bg-[#FBF9F6]'
+      <div className="grid grid-cols-2 gap-3 px-1 md:px-0">
+        <div className={`rounded-2xl p-4 flex flex-col gap-2 transition-colors ${
+          myFactToday ? 'bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-100' : 'bg-white border border-black/5'
+        }`}>
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+              myFactToday ? 'bg-emerald-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
             }`}>
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                myFactToday ? 'bg-green-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
-              }`}>
-                {myFactToday && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-              </div>
-              <div className="min-w-0">
-                <p className={`text-xs font-semibold truncate ${myFactToday ? 'text-green-700' : 'text-[#909090]'}`}>
-                  {activeUser.name}
-                </p>
-                <p className="text-[10px] text-[#b0b0b0]">
-                  {myFactToday ? "Shared" : "Not yet"}
-                </p>
-              </div>
-              {myFactToday && (
-                <button
-                  onClick={startEditing}
-                  className="ml-auto w-7 h-7 flex items-center justify-center rounded-full hover:bg-green-100 transition-colors text-green-600"
-                  data-testid="button-edit-fact"
-                >
-                  <Pencil className="w-3 h-3" />
-                </button>
-              )}
+              {myFactToday && <Check className="w-3 h-3" strokeWidth={3} />}
             </div>
-
-            <div className={`flex-1 rounded-xl px-4 py-3 flex items-center gap-3 transition-colors ${
-              partnerFactToday ? 'bg-green-50/80' : 'bg-[#FBF9F6]'
-            }`}>
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                partnerFactToday ? 'bg-green-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
-              }`}>
-                {partnerFactToday && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-              </div>
-              <div className="min-w-0">
-                <p className={`text-xs font-semibold truncate ${partnerFactToday ? 'text-green-700' : 'text-[#909090]'}`}>
-                  {hasPartner ? partnerUser.name : "Partner"}
-                </p>
-                <p className="text-[10px] text-[#b0b0b0]">
-                  {!hasPartner ? "Invite them" : partnerFactToday ? "Shared" : "Not yet"}
-                </p>
-              </div>
-            </div>
+            <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-emerald-700' : 'text-[#909090]'}`}>
+              {activeUser.name}
+            </span>
           </div>
-          {myFactToday && partnerFactToday && (
-            <a
-              href="/archive"
-              className="flex items-center justify-center gap-2 mt-3 py-2.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-colors"
-              data-testid="link-view-archive"
-            >
-              Both shared! See today's discoveries
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
+          <p className="text-[10px] text-[#b0b0b0] leading-tight">
+            {myFactToday ? "Discovery shared" : "Share yours today"}
+          </p>
+          {myFactToday && (
+            <button onClick={startEditing} className="mt-auto self-start flex items-center gap-1 text-[10px] font-semibold text-emerald-600 hover:text-emerald-700 transition-colors" data-testid="button-edit-fact">
+              <Pencil className="w-2.5 h-2.5" /> Edit
+            </button>
           )}
+        </div>
+
+        <div className={`rounded-2xl p-4 flex flex-col gap-2 transition-colors ${
+          partnerFactToday ? 'bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-100' : 'bg-white border border-black/5'
+        }`}>
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+              partnerFactToday ? 'bg-emerald-500 text-white' : 'border-2 border-dashed border-[#d0d0d0]'
+            }`}>
+              {partnerFactToday && <Check className="w-3 h-3" strokeWidth={3} />}
+            </div>
+            <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-emerald-700' : 'text-[#909090]'}`}>
+              {hasPartner ? partnerUser.name : "Partner"}
+            </span>
+          </div>
+          <p className="text-[10px] text-[#b0b0b0] leading-tight">
+            {!hasPartner ? "Invite them to join" : partnerFactToday ? "Discovery shared" : "Waiting..."}
+          </p>
         </div>
       </div>
 
-      <div className="px-2 md:px-0">
-        <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5" data-testid="card-daily-question">
+      {myFactToday && partnerFactToday && (
+        <div className="px-1 md:px-0">
+          <a href="/archive" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 text-amber-700 text-xs font-semibold hover:from-amber-100 hover:to-orange-100 transition-all" data-testid="link-view-archive">
+            <Sparkles className="w-3.5 h-3.5" />
+            Both shared! See today's discoveries
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
+
+      <div className="px-1 md:px-0">
+        <div className="bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 rounded-2xl p-5 border border-violet-100/60" data-testid="card-daily-question">
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
-              <MessageCircle className="w-4 h-4 text-violet-500" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shrink-0 shadow-sm">
+              <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase">Today's question</p>
-                <span className="text-[9px] font-bold tracking-[0.15em] text-violet-400 uppercase">{dailyQuestion.category}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-[9px] font-bold tracking-[0.25em] text-violet-500 uppercase">Today's question</p>
+                <span className="text-[9px] font-bold tracking-[0.15em] text-violet-300 uppercase">· {dailyQuestion.category}</span>
               </div>
-              <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-question">
+              <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-question">
                 {dailyQuestion.text}
               </p>
             </div>
@@ -518,92 +407,53 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                 onChange={(e) => setAnswerText(e.target.value)}
                 placeholder="Type your answer..."
                 maxLength={500}
-                className="w-full bg-[#FBF9F6] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#b0b0b0] resize-none focus:outline-none focus:ring-1 focus:ring-violet-200 font-serif leading-relaxed"
+                className="w-full bg-white/70 rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-violet-200 font-serif leading-relaxed border border-violet-100/50"
                 rows={2}
                 data-testid="input-daily-answer"
               />
               <div className="flex items-center justify-between">
-                <p className="text-[10px] text-[#b0b0b0]">{answerText.length}/500</p>
+                <p className="text-[10px] text-[#c0c0c0]">{answerText.length}/500</p>
                 <button
                   onClick={handleSubmitDailyAnswer}
                   disabled={!answerText.trim() || isSubmittingAnswer}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-700 hover:to-fuchsia-700 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                   data-testid="button-submit-answer"
                 >
                   {isSubmittingAnswer ? "Sending..." : "Answer"}
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           ) : bothAnswered ? (
-            <div className="space-y-3 animate-in fade-in duration-500">
-              <div className="rounded-xl bg-violet-50/50 px-4 py-3">
+            <div className="space-y-2.5 animate-in fade-in duration-500">
+              <div className="rounded-xl bg-white/80 px-4 py-3 border border-violet-100/40">
                 <p className="text-[10px] font-bold tracking-[0.15em] text-violet-400 uppercase mb-1">{activeUser.name}</p>
                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
               </div>
-              <div className="rounded-xl bg-blue-50/50 px-4 py-3">
+              <div className="rounded-xl bg-white/80 px-4 py-3 border border-blue-100/40">
                 <p className="text-[10px] font-bold tracking-[0.15em] text-blue-400 uppercase mb-1">{partnerUser.name}</p>
                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
               </div>
             </div>
           ) : (
-            <div className="rounded-xl bg-[#FBF9F6] px-4 py-3 flex items-center gap-3">
-              <Lock className="w-3.5 h-3.5 text-[#b0b0b0] shrink-0" />
-              <p className="text-xs text-[#909090] italic font-serif">
-                You answered! Waiting for {partnerUser.name} to reveal both.
-              </p>
+            <div className="rounded-xl bg-white/60 px-4 py-3.5 flex items-center gap-3 border border-violet-100/30">
+              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                <Lock className="w-3.5 h-3.5 text-violet-400" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-[#1C1C1C]">You answered!</p>
+                <p className="text-[10px] text-[#909090]">Waiting for {partnerUser.name} to unlock both</p>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className="px-2 md:px-0">
-        <div
-          className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5"
-          data-testid="card-daily-prompt"
-        >
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-0.5">Prompt inspiration</p>
-              <p className="font-serif text-sm md:text-base text-[#1C1C1C] leading-relaxed" data-testid="text-daily-prompt">
-                {currentPrompt}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={shufflePrompt}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-medium text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95"
-              data-testid="button-shuffle-prompt"
-            >
-              <RefreshCw className="w-3 h-3" />
-              Another
-            </button>
-            {!myFactToday && (
-              <button
-                onClick={usePrompt}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold text-[#909090] hover:text-black hover:bg-black/5 transition-all active:scale-95 ml-auto"
-                data-testid="button-use-prompt"
-              >
-                Use this
-                <ArrowRight className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
       {!myFactToday && (
-        <div className="px-2 md:px-0">
+        <div className="px-1 md:px-0">
           <button
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(50);
-              setIsAdding(true);
-            }}
-            className="w-full bg-[#1C1C1C] text-white rounded-[1.25rem] py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:bg-black shadow-sm"
+            onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
+            className="w-full bg-gradient-to-r from-[#1C1C1C] to-[#333] text-white rounded-2xl py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:from-black hover:to-[#222] shadow-sm"
             data-testid="card-add-discovery"
           >
             <Send className="w-4 h-4" />
@@ -611,6 +461,32 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </button>
         </div>
       )}
+
+      <div className="px-1 md:px-0">
+        <div className="bg-white rounded-2xl p-4 border border-black/5" data-testid="card-daily-prompt">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+              <Lightbulb className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-bold tracking-[0.25em] text-[#b0b0b0] uppercase mb-0.5">Inspiration</p>
+              <p className="font-serif text-sm text-[#737373] leading-relaxed" data-testid="text-daily-prompt">
+                {currentPrompt}
+              </p>
+              <div className="flex items-center gap-2 mt-2.5">
+                <button onClick={shufflePrompt} className="flex items-center gap-1 text-[10px] font-medium text-[#b0b0b0] hover:text-[#737373] transition-all active:scale-95" data-testid="button-shuffle-prompt">
+                  <RefreshCw className="w-3 h-3" /> Shuffle
+                </button>
+                {!myFactToday && (
+                  <button onClick={usePrompt} className="flex items-center gap-1 text-[10px] font-semibold text-[#1C1C1C] hover:text-black transition-all active:scale-95 ml-auto" data-testid="button-use-prompt">
+                    Use this <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
