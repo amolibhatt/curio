@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, Compass, History, Link as LinkIcon, Check, LogOut } from "lucide-react";
+import { BookOpen, Compass, History, Link as LinkIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
 
-export default function Layout({ children, user, hasFriendJoined = false, inviteCode, onLogout }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string, onLogout?: () => void }) {
+export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -13,10 +13,6 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
   }, [location]);
-
-  const handleLogout = () => {
-    onLogout?.();
-  };
 
   const handleShareLink = async () => {
     if (!inviteCode) return;
@@ -52,13 +48,6 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
           </Link>
           
           <div className="flex items-center gap-1.5 md:gap-3 bg-transparent px-1.5 py-1.5 rounded-[1.2rem] md:rounded-full">
-            <div className={`flex items-center gap-2.5 pl-2 ${!hasFriendJoined ? 'pr-2 md:pr-3' : 'pr-1'}`}>
-              <span className="text-[11px] md:text-xs font-semibold text-[#1C1C1C] max-w-[80px] md:max-w-[120px] truncate">{user.name}</span>
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden shrink-0 bg-white">
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-              </div>
-            </div>
-            
             {!hasFriendJoined && inviteCode && (
               <Button 
                 variant="ghost" 
@@ -79,15 +68,12 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
                 )}
               </Button>
             )}
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="rounded-full h-9 w-9 p-0 text-[#909090] hover:text-black hover:bg-black/5"
-              data-testid="button-logout"
-              title="Log out"
-            >
-              <LogOut className="w-4 h-4" strokeWidth={2} />
-            </Button>
+            <div className="flex items-center gap-2.5 pl-2 pr-1">
+              <span className="text-[11px] md:text-xs font-semibold text-[#1C1C1C] max-w-[80px] md:max-w-[120px] truncate">{user.name}</span>
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-white">
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              </div>
+            </div>
           </div>
         </header>
 

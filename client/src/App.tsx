@@ -16,7 +16,7 @@ import * as firestoreOps from "./lib/firestore";
 
 import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
 
-function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () => void }) {
+function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [isReacting, setIsReacting] = useState(false);
@@ -25,7 +25,6 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
     if (!auth.pairing) return;
     try {
       const data = await firestoreOps.getFactsByPairing(auth.pairing.id);
-      console.log("[Curio] Fetched facts:", data.length, "pairing:", auth.pairing.id);
       setFacts(data);
     } catch (err: any) {
       console.error("[Curio] Failed to fetch facts:", err);
@@ -85,7 +84,7 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
   };
 
   return (
-    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode} onLogout={onLogout}>
+    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
       <Switch>
         <Route path="/">
           <Home
@@ -123,29 +122,38 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
 }
 
 function AppContent() {
-  const { toast } = useToast();
   const [authState, setAuthState] = useState<AuthState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [needsName, setNeedsName] = useState(false);
+  const [firebaseUid, setFirebaseUid] = useState<string | null>(null);
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [signupError, setSignupError] = useState<string | undefined>();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
+        setFirebaseUid(user.uid);
         try {
           const state = await firestoreOps.getAuthState(user.uid);
           if (state) {
             setAuthState(state);
+            setNeedsName(false);
           } else {
-            console.log("[Curio] Firebase user exists but no Firestore profile yet, uid:", user.uid);
+            setNeedsName(true);
             setAuthState(null);
           }
         } catch (err) {
-          console.error("[Curio] Failed to load auth state from Firestore:", err);
+          console.error("[Curio] Auth state load error:", err);
+          setNeedsName(true);
           setAuthState(null);
         }
       } else {
-        setAuthState(null);
+        try {
+          await signInAnonymously(firebaseAuth);
+        } catch (err) {
+          console.error("[Curio] Auto sign-in failed:", err);
+          setNeedsName(true);
+        }
       }
       setIsLoading(false);
     });
@@ -155,8 +163,10 @@ function AppContent() {
   const refreshAuth = useCallback(async () => {
     const user = firebaseAuth.currentUser;
     if (user) {
-      const state = await firestoreOps.getAuthState(user.uid);
-      setAuthState(state);
+      try {
+        const state = await firestoreOps.getAuthState(user.uid);
+        if (state) setAuthState(state);
+      } catch {}
     }
   }, []);
 
@@ -173,13 +183,11 @@ function AppContent() {
       const match = window.location.pathname.match(/^\/invite\/(.+)/);
       const inviteCode = match?.[1];
 
-      let uid: string;
-      const currentUser = firebaseAuth.currentUser;
-      if (currentUser) {
-        uid = currentUser.uid;
-      } else {
+      let uid = firebaseUid || firebaseAuth.currentUser?.uid;
+      if (!uid) {
         const cred = await signInAnonymously(firebaseAuth);
         uid = cred.user.uid;
+        setFirebaseUid(uid);
       }
 
       if (inviteCode) {
@@ -206,19 +214,11 @@ function AppContent() {
 
       const state = await firestoreOps.getAuthState(uid);
       setAuthState(state);
+      setNeedsName(false);
     } catch (err: any) {
       setSignupError(err.message || "Something went wrong");
     } finally {
       setIsSigningUp(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await firebaseAuth.signOut();
-    } catch {
-    } finally {
-      setAuthState(null);
     }
   };
 
@@ -230,7 +230,7 @@ function AppContent() {
     );
   }
 
-  if (!authState) {
+  if (!authState || needsName) {
     return (
       <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
         <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
@@ -240,7 +240,7 @@ function AppContent() {
     );
   }
 
-  return <AuthenticatedApp auth={authState} onLogout={handleLogout} />;
+  return <AuthenticatedApp auth={authState} />;
 }
 
 function App() {
