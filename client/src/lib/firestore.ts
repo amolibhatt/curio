@@ -183,6 +183,10 @@ export async function getUser(uid: string): Promise<User | null> {
   return { id: uid, name: data.name, avatar: data.avatar };
 }
 
+export async function deleteUser(uid: string): Promise<void> {
+  await deleteDoc(doc(db, "users", uid));
+}
+
 export async function createPairing(userId: string): Promise<{ id: string; inviteCode: string }> {
   const inviteCode = generateInviteCode();
   const pairingRef = await addDoc(collection(db, "pairings"), {

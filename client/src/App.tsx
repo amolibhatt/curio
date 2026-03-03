@@ -372,14 +372,29 @@ function AppContent() {
           return;
         }
         if (pairing.user2Id) {
-          setSignupError("This pairing is already full");
-          setIsSigningUp(false);
-          return;
+          if (pairing.user2Id === uid) {
+            isUser1 = false;
+            pairingId = pairing.id;
+            const existingUser = await firestoreOps.getUser(uid);
+            if (!existingUser) {
+              await firestoreOps.createUser(uid, trimmedName, pairing.id, false);
+            }
+          } else {
+            setSignupError("This pairing is already full");
+            setIsSigningUp(false);
+            return;
+          }
+        } else {
+          await firestoreOps.createUser(uid, trimmedName, pairing.id, false);
+          try {
+            await firestoreOps.joinPairing(pairing.id, uid);
+          } catch (joinErr: any) {
+            try { await firestoreOps.deleteUser(uid); } catch {}
+            throw joinErr;
+          }
+          isUser1 = false;
+          pairingId = pairing.id;
         }
-        await firestoreOps.createUser(uid, trimmedName, pairing.id, false);
-        await firestoreOps.joinPairing(pairing.id, uid);
-        isUser1 = false;
-        pairingId = pairing.id;
 
         window.history.pushState({}, "", "/");
         window.dispatchEvent(new PopStateEvent("popstate"));

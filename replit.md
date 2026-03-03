@@ -66,10 +66,12 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Hosting**: curio-1d592.web.app
 - **Deploy**: `npx firebase deploy --only hosting,firestore --token "..."` from project root
 - **Security rules**: Locked-down per-pairing access using `getUserPairingId()` helper function in rules
+  - Users: create restricted to `name`, `avatar`, `pairingId` fields with type/size validation; update restricted to only `name` and `avatar` (pairingId immutable after creation) — prevents pairingId hijacking attack
   - Facts/dailyAnswers: read/write restricted to pairing members only
   - Pairings: read allowed for members + unfilled pairings (invite flow) + users whose user doc points to the pairing (reconnect); create restricted to `inviteCode`, `user1Id`, `user2Id` fields only; create enforces `user2Id == null`, inviteCode is string 1-32 chars
   - Pairing join: `affectedKeys().hasOnly(['user2Id'])` prevents modifying other fields during join
   - Pairing reconnect: cross-check prevents partner from hijacking the other slot (user2 can't overwrite user1Id, vice versa)
+  - Anniversary date: validated as string with size 10 in pairing update rules
   - Fact create: validates date (string, length 10), categories (list, 1-7 items), restricts to exactly `text`, `authorId`, `pairingId`, `date`, `categories` fields
   - Fact update: re-validates text (string, 1-5000 chars) and categories (list, 1-7 items) on edit
   - Fact authorId update (reconnect): requires pairing membership check via `getUserPairingId()`
@@ -106,5 +108,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - Fact update rule restricts author edits to only `text` and `categories` fields — prevents malicious pairingId/date/authorId changes
 - `handleEditFact` stores sanitized (truncated + validated) values in local state, not raw component values
 - `handleLogin` trims name before length check to prevent whitespace-only names passing validation
+- `handleLogin` invite flow: if `joinPairing` fails, cleans up the user doc to prevent orphaned state; if `user2Id` already matches current uid (retry case), skips join and proceeds
+- `deleteUser` utility function exported from firestore.ts for cleanup operations
 - `handleSubmitAnswer` triggers a background `fetchFacts()` after Q&A submission to pick up partner's answer sooner
 - `fetchFacts` error toast only shows on initial load, not during periodic 15s polling — prevents toast spam when Firestore is temporarily unreachable
