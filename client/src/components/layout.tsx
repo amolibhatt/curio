@@ -1,58 +1,39 @@
-import { Link, useLocation } from "wouter";
-import { BookOpen, UserPlus, LogOut, History, Home } from "lucide-react";
+import { Link } from "wouter";
+import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { currentUser, friendUser } from "@/lib/mock-data";
 
-export default function Layout({ children, onLogout, user }: { children: React.ReactNode, onLogout: () => void, user: typeof currentUser }) {
-  const [location] = useLocation();
-
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#F8F7F4] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FBF9F6] flex flex-col font-sans">
       {/* Top Header */}
-      <header className="flex items-center justify-between p-6 md:p-8 pt-[max(env(safe-area-inset-top),1.5rem)] z-10 sticky top-0 bg-[#F8F7F4]/80 backdrop-blur-md">
+      <header className="flex items-center justify-between p-6 md:px-12 md:py-8 pt-[max(env(safe-area-inset-top),1.5rem)] z-10 sticky top-0">
         <Link href="/">
-          <div className="flex items-center gap-3 cursor-pointer">
-            <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-black/5">
-              <BookOpen className="w-5 h-5 text-black" strokeWidth={1.5} />
+          <div className="flex items-center gap-4 cursor-pointer">
+            <div className="bg-white w-12 h-12 flex items-center justify-center rounded-[1rem] shadow-sm border border-black/[0.04]">
+              {/* Custom Book Icon matching the image closely */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                <path d="M12 2v20" />
+              </svg>
             </div>
-            <span className="font-serif text-2xl text-black tracking-tight">Curio</span>
+            <span className="font-serif text-[1.6rem] text-black tracking-tight mt-1">Curio</span>
           </div>
         </Link>
         
-        <div className="flex items-center gap-4">
-          <Button variant="outline" className="rounded-full bg-white border-transparent shadow-sm hover:bg-white/90 text-xs font-bold tracking-widest text-black/80 h-10 px-5 hidden sm:flex">
-            <UserPlus className="w-4 h-4 mr-2" />
+        <div className="flex items-center">
+          <Button variant="outline" className="rounded-full bg-white border-black/5 shadow-sm hover:bg-black/5 text-[11px] font-bold tracking-[0.15em] text-black/70 h-[2.75rem] px-5 flex items-center gap-2.5 transition-colors">
+            <UserPlus className="w-4 h-4" strokeWidth={2} />
             INVITE
-          </Button>
-          <Button variant="outline" size="icon" className="rounded-full bg-white border-transparent shadow-sm hover:bg-white/90 sm:hidden">
-            <UserPlus className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5" onClick={onLogout}>
-             <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 pb-24 md:pb-12 overflow-y-auto">
-        <div className="max-w-2xl mx-auto w-full p-6 md:p-8">
+        <div className="max-w-3xl mx-auto w-full px-6 md:px-12">
           {children}
         </div>
       </main>
-
-      {/* Mobile Bottom Nav - Only show if not matching the exact screenshot, but keep for usability */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-lg border border-black/5 shadow-float flex items-center justify-center gap-2 p-2 rounded-full z-50">
-        <Link href="/">
-          <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 ${location === "/" ? "bg-black/5 text-black" : "text-muted-foreground"}`}>
-            <Home className="w-5 h-5" strokeWidth={location === "/" ? 2 : 1.5} />
-          </Button>
-        </Link>
-        <Link href="/archive">
-          <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 ${location === "/archive" ? "bg-black/5 text-black" : "text-muted-foreground"}`}>
-            <History className="w-5 h-5" strokeWidth={location === "/archive" ? 2 : 1.5} />
-          </Button>
-        </Link>
-      </nav>
     </div>
   );
 }

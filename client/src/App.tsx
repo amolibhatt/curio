@@ -40,8 +40,12 @@ function App() {
   if (!isAuthenticated) {
     return (
       <QueryClientProvider client={queryClient}>
-         <Login onLogin={handleLogin} />
-         <Toaster />
+        <TooltipProvider>
+          <Layout>
+             <Home facts={facts} onAddFact={handleAddFact} />
+          </Layout>
+          <Toaster />
+        </TooltipProvider>
       </QueryClientProvider>
     );
   }
@@ -49,7 +53,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Layout onLogout={handleLogout} user={activeUser}>
+        <Layout>
           <Switch>
             <Route path="/">
               <Home facts={facts} onAddFact={handleAddFact} />
@@ -58,7 +62,6 @@ function App() {
               <Archive facts={facts} />
             </Route>
             <Route path="/invite">
-              {/* Simulate hitting an invite link */}
               <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
                 <h2 className="text-2xl font-bold">You've been invited!</h2>
                 <p>Join {currentUser.name} to share daily facts.</p>
