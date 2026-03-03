@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
-import { formatText, insertFormatting } from "@/lib/format-text";
+import { formatText, insertFormatting, insertLinePrefix } from "@/lib/format-text";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -116,6 +116,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -240,6 +241,44 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
                 <div className="flex items-center gap-1 mb-3">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowHeadingMenu(!showHeadingMenu)}
+                      className={`h-8 px-2.5 flex items-center justify-center rounded-lg text-[11px] font-bold tracking-wide transition-colors ${showHeadingMenu ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
+                      title="Text style"
+                      data-testid="button-format-heading"
+                    >
+                      Aa
+                    </button>
+                    {showHeadingMenu && (
+                      <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-black/5 py-1 z-30 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
+                        <button
+                          type="button"
+                          onClick={() => { textareaRef.current && insertLinePrefix(textareaRef.current, '', setNewFact); setShowHeadingMenu(false); }}
+                          className="w-full px-3 py-2 text-left text-sm text-[#1C1C1C] hover:bg-black/5 transition-colors"
+                          data-testid="button-style-normal"
+                        >
+                          Normal text
+                        </button>
+                        {[1, 2, 3, 4, 5, 6].map((level) => {
+                          const sizes = ['text-xl font-bold', 'text-lg font-bold', 'text-base font-semibold', 'text-sm font-semibold', 'text-xs font-medium', 'text-xs font-medium text-[#737373]'];
+                          return (
+                            <button
+                              key={level}
+                              type="button"
+                              onClick={() => { textareaRef.current && insertLinePrefix(textareaRef.current, '#'.repeat(level) + ' ', setNewFact); setShowHeadingMenu(false); }}
+                              className={`w-full px-3 py-2 text-left hover:bg-black/5 transition-colors ${sizes[level - 1]}`}
+                              data-testid={`button-style-h${level}`}
+                            >
+                              Heading {level}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-px h-5 bg-black/10 mx-0.5" />
                   <button
                     type="button"
                     onClick={() => textareaRef.current && insertFormatting(textareaRef.current, '**', '**', setNewFact)}
@@ -267,7 +306,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   >
                     <Underline className="w-4 h-4" strokeWidth={2.5} />
                   </button>
-                  <div className="w-px h-5 bg-black/10 mx-1" />
+                  <div className="w-px h-5 bg-black/10 mx-0.5" />
                   <button
                     type="button"
                     onClick={() => setShowPreview(!showPreview)}
@@ -299,7 +338,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
                 {newFact.trim() && (
                   <p className="text-[10px] text-[#909090] mt-2 tracking-wider">
-                    Use <span className="font-mono bg-black/5 px-1 rounded">**bold**</span> <span className="font-mono bg-black/5 px-1 rounded">*italic*</span> <span className="font-mono bg-black/5 px-1 rounded">__underline__</span>
+                    <span className="font-mono bg-black/5 px-1 rounded">**bold**</span> <span className="font-mono bg-black/5 px-1 rounded">*italic*</span> <span className="font-mono bg-black/5 px-1 rounded">__underline__</span> <span className="font-mono bg-black/5 px-1 rounded"># heading</span>
                   </p>
                 )}
               </div>
