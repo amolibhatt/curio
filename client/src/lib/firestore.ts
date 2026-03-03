@@ -6,6 +6,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   query,
   where,
   addDoc,
@@ -68,10 +69,10 @@ export async function reconnectUser(
   for (const ansDoc of answersSnap.docs) {
     const ansData = ansDoc.data();
     if (ansData.answers && oldUid in ansData.answers) {
-      const newAnswers = { ...ansData.answers };
-      newAnswers[newUid] = newAnswers[oldUid];
-      delete newAnswers[oldUid];
-      await updateDoc(doc(db, "dailyAnswers", ansDoc.id), { answers: newAnswers });
+      await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
+        [`answers.${newUid}`]: ansData.answers[oldUid],
+        [`answers.${oldUid}`]: deleteField(),
+      });
     }
   }
 

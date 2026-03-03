@@ -15,7 +15,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
   const [activeTab, setActiveTab] = useState<TabMode>("discoveries");
-  const burstTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const burstTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     const check = setInterval(() => {
       const now = getLocalDateStr();
@@ -108,14 +108,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             <button
               onClick={() => setActiveTab("questions")}
               className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all flex items-center gap-1.5 ${
-                activeTab === "questions" ? "bg-violet-600 text-white shadow-sm" : "text-[#909090] hover:text-black"
+                activeTab === "questions" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
               }`}
               data-testid="tab-questions"
             >
               <MessageCircle className="w-3 h-3" />
               Q&A
               {completedAnswers.length > 0 && (
-                <span className={`text-[9px] font-bold ml-0.5 ${activeTab === "questions" ? "text-violet-200" : "text-[#b0b0b0]"}`}>
+                <span className={`text-[9px] font-bold ml-0.5 ${activeTab === "questions" ? "text-white/50" : "text-[#b0b0b0]"}`}>
                   {completedAnswers.length}
                 </span>
               )}
@@ -218,19 +218,19 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                     <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
                       {format(parseISO(qa.date), 'MMM d, yyyy')}
                     </p>
-                    <span className="text-[9px] font-bold tracking-[0.15em] text-violet-400 uppercase">{qa.category}</span>
+                    <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">{qa.category}</span>
                   </div>
                   <p className="font-serif text-base text-[#1C1C1C] leading-relaxed mb-4">{qa.questionText}</p>
                   <div className="space-y-3">
                     {myAns && (
-                      <div className="rounded-xl bg-violet-50/50 px-4 py-3">
-                        <p className="text-[10px] font-bold tracking-[0.15em] text-violet-400 uppercase mb-1">{activeUser.name}</p>
+                      <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
                         <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
                       </div>
                     )}
                     {partnerAns && (
-                      <div className="rounded-xl bg-blue-50/50 px-4 py-3">
-                        <p className="text-[10px] font-bold tracking-[0.15em] text-blue-400 uppercase mb-1">{partnerUser.name}</p>
+                      <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
                         <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
                       </div>
                     )}
@@ -241,8 +241,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
           ) : (
             <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 py-12">
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-                <div className="w-20 h-20 rounded-full bg-violet-50 flex items-center justify-center mb-8">
-                  <MessageCircle className="w-8 h-8 text-violet-300" strokeWidth={1.2} />
+                <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
+                  <MessageCircle className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
                 </div>
                 <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">No questions yet.</h3>
                 <p className="text-[#909090] text-sm md:text-base leading-relaxed">

@@ -55,40 +55,53 @@ function parseLocalDate(dateStr: string) {
   return new Date(y, m - 1, d);
 }
 
+function effectiveDay(annivDay: number, year: number, month: number): number {
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return Math.min(annivDay, lastDay);
+}
+
 function getMonthlyAnniversary(anniversaryDate: string) {
   const anniv = parseLocalDate(anniversaryDate);
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const annivDay = anniv.getDate();
 
+  const effToday = effectiveDay(annivDay, now.getFullYear(), now.getMonth());
   let monthsCompleted = (now.getFullYear() - anniv.getFullYear()) * 12 + (now.getMonth() - anniv.getMonth());
-  if (now.getDate() < annivDay) monthsCompleted--;
+  if (now.getDate() < effToday) monthsCompleted--;
   if (monthsCompleted < 0) monthsCompleted = 0;
 
+  const thisMonthAnniv = new Date(now.getFullYear(), now.getMonth(), effToday);
   let nextMonthlyDate: Date;
-  const thisMonthAnniv = new Date(now.getFullYear(), now.getMonth(), annivDay);
   if (thisMonthAnniv > now) {
     nextMonthlyDate = thisMonthAnniv;
   } else if (thisMonthAnniv.getTime() === now.getTime()) {
     return { monthsCompleted, daysUntilNext: 0, isToday: true, nextMonth: monthsCompleted };
   } else {
-    nextMonthlyDate = new Date(now.getFullYear(), now.getMonth() + 1, annivDay);
-  }
-
-  const lastDayOfTargetMonth = new Date(nextMonthlyDate.getFullYear(), nextMonthlyDate.getMonth() + 1, 0).getDate();
-  if (annivDay > lastDayOfTargetMonth) {
-    nextMonthlyDate.setDate(lastDayOfTargetMonth);
+    const nextM = now.getMonth() + 1;
+    const nextY = now.getFullYear() + (nextM > 11 ? 1 : 0);
+    const nextMNorm = nextM % 12;
+    const effNext = effectiveDay(annivDay, nextY, nextMNorm);
+    nextMonthlyDate = new Date(nextY, nextMNorm, effNext);
   }
 
   const diff = Math.round((nextMonthlyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return { monthsCompleted, daysUntilNext: Math.max(0, diff), isToday: false, nextMonth: monthsCompleted + 1 };
 }
 
+function effectiveAnnivForYear(anniv: Date, year: number): Date {
+  const d = new Date(year, anniv.getMonth(), anniv.getDate());
+  if (d.getMonth() !== anniv.getMonth()) {
+    return new Date(year, anniv.getMonth() + 1, 0);
+  }
+  return d;
+}
+
 function getYearlyAnniversary(anniversaryDate: string) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const anniv = parseLocalDate(anniversaryDate);
-  const thisYear = new Date(now.getFullYear(), anniv.getMonth(), anniv.getDate());
+  const thisYear = effectiveAnnivForYear(anniv, now.getFullYear());
   thisYear.setHours(0, 0, 0, 0);
 
   const yearsCompleted = now.getFullYear() - anniv.getFullYear() - (now < thisYear ? 1 : 0);
@@ -99,7 +112,8 @@ function getYearlyAnniversary(anniversaryDate: string) {
 
   let next = thisYear;
   if (thisYear < now) {
-    next = new Date(now.getFullYear() + 1, anniv.getMonth(), anniv.getDate());
+    next = effectiveAnnivForYear(anniv, now.getFullYear() + 1);
+    next.setHours(0, 0, 0, 0);
   }
   const diff = Math.round((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return { daysUntilNext: Math.max(0, diff), isToday: false, nextYear: yearsCompleted + 1, yearsCompleted };
