@@ -188,6 +188,27 @@ function AppContent() {
               setAuthState(state);
               setNeedsName(false);
             } else {
+              const cookie = firestoreOps.getReconnectCookie();
+              if (cookie && cookie.uid !== user.uid) {
+                try {
+                  await firestoreOps.reconnectUser(
+                    user.uid,
+                    cookie.uid,
+                    cookie.name,
+                    cookie.pairingId,
+                    cookie.isUser1
+                  );
+                  const reconnectedState = await firestoreOps.getAuthState(user.uid);
+                  if (reconnectedState) {
+                    setAuthState(reconnectedState);
+                    setNeedsName(false);
+                    setIsLoading(false);
+                    return;
+                  }
+                } catch (err) {
+                  console.error("[Curio] Reconnect failed:", err);
+                }
+              }
               setNeedsName(true);
               setAuthState(null);
             }
@@ -240,6 +261,9 @@ function AppContent() {
         setFirebaseUid(uid);
       }
 
+      let isUser1 = true;
+      let pairingId: string;
+
       if (inviteCode) {
         const pairing = await firestoreOps.getPairingByCode(inviteCode);
         if (!pairing) {
@@ -254,13 +278,18 @@ function AppContent() {
         }
         await firestoreOps.createUser(uid, name, pairing.id, false);
         await firestoreOps.joinPairing(pairing.id, uid);
+        isUser1 = false;
+        pairingId = pairing.id;
 
         window.history.pushState({}, "", "/");
         window.dispatchEvent(new PopStateEvent("popstate"));
       } else {
         const pairing = await firestoreOps.createPairing(uid);
         await firestoreOps.createUser(uid, name, pairing.id, true);
+        pairingId = pairing.id;
       }
+
+      firestoreOps.setReconnectCookie({ uid, name, pairingId, isUser1 });
 
       const state = await firestoreOps.getAuthState(uid);
       setAuthState(state);

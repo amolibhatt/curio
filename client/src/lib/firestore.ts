@@ -13,6 +13,60 @@ import {
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category } from "./mock-data";
 
+interface ReconnectData {
+  uid: string;
+  name: string;
+  pairingId: string;
+  isUser1: boolean;
+}
+
+export function setReconnectCookie(data: ReconnectData): void {
+  const json = encodeURIComponent(JSON.stringify(data));
+  document.cookie = `curio_rc=${json}; max-age=31536000; path=/; SameSite=Lax`;
+}
+
+export function getReconnectCookie(): ReconnectData | null {
+  const match = document.cookie.match(/curio_rc=([^;]+)/);
+  if (!match) return null;
+  try {
+    return JSON.parse(decodeURIComponent(match[1]));
+  } catch {
+    return null;
+  }
+}
+
+export async function reconnectUser(
+  newUid: string,
+  oldUid: string,
+  name: string,
+  pairingId: string,
+  isUser1: boolean
+): Promise<void> {
+  const bgColor = isUser1 ? "ffd5dc" : "d5e0ff";
+  const avatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name)}&backgroundColor=${bgColor}`;
+
+  await setDoc(doc(db, "users", newUid), { name, avatar, pairingId });
+
+  const field = isUser1 ? "user1Id" : "user2Id";
+  await updateDoc(doc(db, "pairings", pairingId), { [field]: newUid });
+
+  const factsQuery = query(
+    collection(db, "facts"),
+    where("pairingId", "==", pairingId),
+    where("authorId", "==", oldUid)
+  );
+  const factsSnap = await getDocs(factsQuery);
+  for (const factDoc of factsSnap.docs) {
+    await updateDoc(doc(db, "facts", factDoc.id), { authorId: newUid });
+  }
+
+  try {
+    await deleteDoc(doc(db, "users", oldUid));
+  } catch {}
+
+  setReconnectCookie({ uid: newUid, name, pairingId, isUser1 });
+}
+
 function generateInviteCode(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let code = "";
