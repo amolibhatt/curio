@@ -33,7 +33,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
               <div className="space-y-2">
                 <Input 
                   placeholder="What should we call you?"
-                  className="h-14 rounded-full px-6 bg-white border-none focus-visible:ring-black/10 focus-visible:border-black/10 text-base"
+                  className="h-14 rounded-full px-6 bg-white border-none focus-visible:ring-black/10 focus-visible:border-black/10 text-base text-center placeholder:text-center"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoFocus

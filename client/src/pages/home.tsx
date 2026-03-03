@@ -219,9 +219,18 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             }} className="flex-1 flex flex-col space-y-8 md:space-y-12">
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
+                <Textarea 
+                  placeholder="What's on your mind?" 
+                  className="flex-none resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
+                  value={newFact}
+                  onChange={(e) => setNewFact(e.target.value)}
+                  onPaste={handlePaste}
+                  autoFocus
+                />
+                
                 {imageUrl && (
-                  <div className="relative mb-8 rounded-2xl overflow-hidden shadow-sm border border-black/5 max-h-[400px] flex-shrink-0 group">
-                    <img src={imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
+                  <div className="relative mt-4 mb-4 rounded-2xl overflow-hidden shadow-sm border border-black/5 max-h-[300px] flex-shrink-0 group self-start">
+                    <img src={imageUrl} alt="Uploaded" className="w-auto h-full max-h-[300px] object-cover" />
                     <button 
                       type="button" 
                       onClick={() => setImageUrl(null)}
@@ -231,15 +240,6 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     </button>
                   </div>
                 )}
-                
-                <Textarea 
-                  placeholder={imageUrl ? "Add a caption..." : "What's on your mind?"} 
-                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[150px] md:min-h-[250px]"
-                  value={newFact}
-                  onChange={(e) => setNewFact(e.target.value)}
-                  onPaste={handlePaste}
-                  autoFocus
-                />
               </div>
 
               <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">

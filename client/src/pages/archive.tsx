@@ -60,8 +60,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
   };
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10">
-      <header className="mb-8 md:mb-12 text-center md:text-left">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10 flex flex-col min-h-[calc(100vh-140px)]">
+      <header className="mb-8 md:mb-12 text-center md:text-left shrink-0">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
@@ -142,7 +142,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         )}
       </header>
 
-      <div className="space-y-8 md:space-y-12">
+      <div className="space-y-8 md:space-y-12 flex-1 flex flex-col">
         {sortedDates.map((date) => {
           const dateFacts = groupedFacts[date];
           return (
@@ -408,13 +408,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         })}
         
         {facts.length === 0 && (
-          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-1000 delay-300 relative min-h-[50vh] flex flex-col justify-center items-center">
+          <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 relative py-12">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FBF9F6]/90 to-[#FBF9F6] z-10 pointer-events-none" />
             
-            <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-sm">
-              <div className="w-48 h-48 mb-4 relative animate-float-slow">
+            <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 max-w-sm mt-[-10vh]">
+              <div className="w-40 h-40 md:w-48 md:h-48 mb-6 relative animate-float-slow">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-100/50 via-transparent to-transparent blur-xl"></div>
-                <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-90 mix-blend-multiply" />
+                <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-80 mix-blend-multiply" />
               </div>
               
               <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The Archive Awaits</h3>
