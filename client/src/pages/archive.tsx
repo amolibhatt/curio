@@ -292,10 +292,10 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                           </span>
                         </div>
 
-                        <div className="flex-1 relative group/card perspective-1000">
+                        <div className="flex-1 relative group/card">
                           {isHidden ? (
-                            <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02] animate-breathe">
-                              <div className="absolute inset-0 backdrop-blur-sm z-0"></div>
+                            <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02]">
+                              <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
                               <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
                               <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
@@ -372,7 +372,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             transition={{ duration: 0.8, ease: "easeOut" }}
                                             className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
                                           >
-                                            <Sparkles className="w-6 h-6 text-amber-400" />
+                                            <Sparkles className="w-6 h-6 text-[#1C1C1C]" />
                                           </motion.div>
                                         )}
                                       </AnimatePresence>

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, BookOpen, Heart } from "lucide-react";
 
 export default function Login({ onLogin, error, isLoading }: { onLogin: (name: string) => void; error?: string; isLoading?: boolean }) {
@@ -35,8 +34,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
           )}
         </div>
 
-        <Card className="border-none shadow-none rounded-[2.5rem] overflow-hidden bg-transparent">
-          <CardContent className="pt-8 pb-8 px-6">
+        <div className="pt-8 pb-8 px-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Input 
@@ -64,8 +62,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
                 <ArrowRight className={`w-5 h-5 opacity-70 ${isLoading ? 'animate-pulse' : ''}`} />
               </Button>
             </form>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { User } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Heart, Calendar, Star, Gift, Sparkles, PartyPopper, CalendarHeart } from "lucide-react";
@@ -119,9 +119,9 @@ function getYearlyAnniversary(anniversaryDate: string) {
   return { daysUntilNext: Math.max(0, diff), isToday: false, nextYear: yearsCompleted + 1, yearsCompleted };
 }
 
-function CountdownCards({ anniversaryDate }: { anniversaryDate: string }) {
-  const monthly = useMemo(() => getMonthlyAnniversary(anniversaryDate), [anniversaryDate]);
-  const yearly = useMemo(() => getYearlyAnniversary(anniversaryDate), [anniversaryDate]);
+function CountdownCards({ anniversaryDate, todayStr }: { anniversaryDate: string; todayStr: string }) {
+  const monthly = useMemo(() => getMonthlyAnniversary(anniversaryDate), [anniversaryDate, todayStr]);
+  const yearly = useMemo(() => getYearlyAnniversary(anniversaryDate), [anniversaryDate, todayStr]);
 
   return (
     <div className="grid grid-cols-2 gap-3 md:gap-4">
@@ -218,6 +218,15 @@ export default function Timeline({
   const [isSaving, setIsSaving] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
+  useEffect(() => {
+    const check = setInterval(() => {
+      const now = getLocalDateStr();
+      if (now !== todayStr) setTodayStr(now);
+    }, 30000);
+    return () => clearInterval(check);
+  }, [todayStr]);
+
   const daysTogether = useMemo(() => {
     if (!anniversaryDate) return 0;
     const start = parseLocalDate(anniversaryDate);
@@ -225,12 +234,12 @@ export default function Timeline({
     start.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
     return Math.max(0, Math.round((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-  }, [anniversaryDate]);
+  }, [anniversaryDate, todayStr]);
 
   const monthsTogether = useMemo(() => {
     if (!anniversaryDate) return 0;
     return getMonthlyAnniversary(anniversaryDate).monthsCompleted;
-  }, [anniversaryDate]);
+  }, [anniversaryDate, todayStr]);
 
   const { achieved, next } = useMemo(() => {
     const achieved = MILESTONES.filter(m => daysTogether >= m.days);
@@ -363,7 +372,7 @@ export default function Timeline({
       </header>
 
       <div className="space-y-6 px-2 md:px-0">
-        <CountdownCards anniversaryDate={anniversaryDate!} />
+        <CountdownCards anniversaryDate={anniversaryDate!} todayStr={todayStr} />
 
         {next && (
           <motion.div

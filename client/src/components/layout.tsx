@@ -77,13 +77,13 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
           </div>
         </header>
 
-        <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-[calc(5rem+env(safe-area-inset-bottom,0px))] relative">
+        <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-[calc(5rem+env(safe-area-inset-bottom,0px))] relative scrollbar-none">
           <div className="w-full px-3 md:px-5 h-full flex flex-col">
             {children}
           </div>
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 flex items-center justify-center z-50 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 px-4">
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl flex items-center justify-center z-50 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 px-4">
           <div className="bg-white/95 backdrop-blur-xl flex items-center justify-center gap-1 p-1.5 rounded-2xl w-max px-2 shadow-lg shadow-black/5 border border-black/[0.03]">
             <Link href="/">
               <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>

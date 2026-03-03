@@ -75,7 +75,8 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - Reaction locking is per-fact (Set<string>), not global — users can react to different facts rapidly
 - Reactions write directly to Firestore (setReaction/removeReaction) based on optimistic state — no stale read-then-write race condition
 - All date strings use local timezone via `getLocalDateStr()` from `date-utils.ts` — never `toISOString().split('T')[0]`
-- `todayStr` is reactive (checks every 30s for midnight rollover)
+- `todayStr` is reactive across all pages (home, archive, timeline) — checks every 30s for midnight rollover
+- Timeline countdowns and day counter depend on `todayStr` for midnight reactivity
 - `fetchFacts` uses a ref for pairingId to avoid interval restarts on auth refresh
 - Reactions subcollection reads are parallelized with Promise.all
 - Burst animation timeout is cleaned up on component unmount via ref

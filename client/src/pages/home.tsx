@@ -29,11 +29,29 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
     className: "flex-1 min-h-[120px] text-base md:text-lg font-serif leading-relaxed text-[#1C1C1C]",
   });
 
+  const headingMenuRef = useRef<HTMLDivElement>(null);
+  const headingBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!showHeadingMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        headingMenuRef.current && !headingMenuRef.current.contains(e.target as Node) &&
+        headingBtnRef.current && !headingBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowHeadingMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showHeadingMenu, setShowHeadingMenu]);
+
   return (
     <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
       <div className="flex items-center gap-1 mb-3">
         <div className="relative">
           <button
+            ref={headingBtnRef}
             type="button"
             onClick={() => setShowHeadingMenu(!showHeadingMenu)}
             className={`h-8 px-2.5 flex items-center justify-center rounded-lg text-[11px] font-bold tracking-wide transition-colors ${showHeadingMenu ? 'text-black bg-black/5' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
@@ -43,7 +61,7 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
             Aa
           </button>
           {showHeadingMenu && (
-            <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-black/5 py-1 z-30 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
+            <div ref={headingMenuRef} className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-black/5 py-1 z-30 min-w-[140px] animate-in fade-in zoom-in-95 duration-150">
               <button
                 type="button"
                 onClick={() => { applyHeading(0); setShowHeadingMenu(false); }}
