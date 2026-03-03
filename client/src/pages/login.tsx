@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 
-import logoImg from "../assets/images/logo.png";
+import logoImg from "../assets/images/logo-av-clean.png";
 
 export default function Login({ onLogin }: { onLogin: (name: string) => void }) {
   const [name, setName] = useState("");
@@ -20,8 +20,8 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
     <div className="flex-1 bg-[#FBF9F6] flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-10 animate-in zoom-in-95 duration-500">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-24 h-24 bg-white flex items-center justify-center rounded-[1.5rem] shadow-sm border border-black/[0.04] mb-6 overflow-hidden">
-             <img src={logoImg} alt="Curio Logo" className="w-full h-full object-cover" />
+          <div className="mx-auto w-24 h-24 flex items-center justify-center mb-6 overflow-hidden">
+             <img src={logoImg} alt="Logo" className="w-full h-full object-cover mix-blend-multiply" />
           </div>
           <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">Two minds. One private cabinet of curiosities.</p>
