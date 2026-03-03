@@ -121,7 +121,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
       setIsAdding(false);
     } catch (err: any) {
       toast({
-        title: "Couldn't save",
+        title: "Couldn't add",
         description: err?.message || "Something went wrong. Try again.",
         variant: "destructive",
       });
@@ -181,10 +181,10 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         
             <div className="space-y-3 pt-4">
           <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
-            What's on your <span className="italic text-[#4A4A4A]">mind</span>?
+            What did you <span className="italic text-[#4A4A4A]">discover</span>?
           </h1>
           <p className="text-[1.15rem] md:text-[1.25rem] text-[#909090] italic font-serif">
-            Leave a thought for the archive.
+            One curiosity a day for the cabinet.
           </p>
         </div>
       </header>
@@ -200,11 +200,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Locked in.</h2>
+            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Sealed.</h2>
             <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
               {partnerUser.id === 0
-                ? "Your thought is saved. Invite a friend to get started."
-                : `Kept quiet until ${partnerUser.name} shares theirs.`}
+                ? "Your discovery is safe. Invite someone to start the exchange."
+                : `Waiting for ${partnerUser.name} to share theirs.`}
             </p>
           </CardContent>
         </Card>
@@ -222,9 +222,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             </div>
             
             <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
-              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a thought</h2>
+              <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
               <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                For the archive
+                To the cabinet
               </p>
             </div>
           </CardContent>
@@ -253,7 +253,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
                 <Textarea 
-                  placeholder="Write something..." 
+                  placeholder="What caught your eye today..." 
                   className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
@@ -329,7 +329,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0 || isSubmitting}
                     data-testid="button-save-fact"
                   >
-                    {isSubmitting ? "Saving..." : "Save it"}
+                    {isSubmitting ? "Adding..." : "Add to cabinet"}
                   </button>
                 </div>
               </div>

@@ -47,7 +47,7 @@ export const insertFactSchema = z.object({
   imageUrl: z.string().optional(),
   categories: z.array(categoryEnum).min(1),
 }).refine(data => data.text.trim().length > 0 || !!data.imageUrl, {
-  message: "A thought or image is required",
+  message: "A discovery or image is required",
   path: ["text"],
 });
 

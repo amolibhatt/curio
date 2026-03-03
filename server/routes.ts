@@ -146,14 +146,14 @@ export async function registerRoutes(
     try {
       const parsed = insertFactSchema.safeParse(req.body);
       if (!parsed.success) {
-        return res.status(400).json({ message: "Invalid fact data", errors: parsed.error.flatten() });
+        return res.status(400).json({ message: "A discovery or image is needed", errors: parsed.error.flatten() });
       }
 
       const date = new Date().toISOString().split("T")[0];
 
       const alreadyPosted = await storage.hasPostedToday(req.session.userId!, req.session.pairingId!, date);
       if (alreadyPosted) {
-        return res.status(400).json({ message: "You've already shared a thought today" });
+        return res.status(400).json({ message: "You've already shared a discovery today" });
       }
 
       const fact = await storage.createFact(
@@ -189,7 +189,7 @@ export async function registerRoutes(
       }
 
       if (fact.authorId === req.session.userId) {
-        return res.status(400).json({ message: "You can't react to your own thought" });
+        return res.status(400).json({ message: "You can't react to your own discovery" });
       }
 
       const existing = await storage.getReaction(factId, req.session.userId!);

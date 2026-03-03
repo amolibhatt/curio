@@ -73,10 +73,10 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
-              The Archive
+              The Cabinet
             </h1>
             <p className="text-base text-[#909090] italic font-serif mt-2">
-              A quiet record of what we've shared.
+              Everything we've found, side by side.
             </p>
           </div>
 
@@ -125,7 +125,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
 
               {/* Category Filter */}
               <div>
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category (Select multiple)</p>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilterCategories([])}
@@ -204,7 +204,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                             <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
                               {date === new Date().toISOString().split('T')[0]
-                                ? "Hidden until you share yours"
+                                ? "Sealed until you share yours"
                                 : "You didn\u2019t share that day"}
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
                             </p>
@@ -426,7 +426,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         
         {facts.length > 0 && filteredFacts.length === 0 && (
           <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
-            <p className="text-[#909090] font-serif italic text-lg">No matching entries.</p>
+            <p className="text-[#909090] font-serif italic text-lg">No discoveries match.</p>
             <button
               onClick={() => { setFilterPerson(null); setFilterCategories([]); }}
               className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
@@ -447,9 +447,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                 <img src={emptyArchiveImg} alt="Empty Archive" className="w-full h-full object-contain relative z-10 opacity-80 mix-blend-multiply" />
               </div>
               
-              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
+              <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">The cabinet is empty.</h3>
               <p className="text-[#909090] text-sm md:text-base leading-relaxed">
-                Leave a thought to start the collection.
+                Share your first discovery to begin.
               </p>
             </div>
           </div>
