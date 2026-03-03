@@ -23,6 +23,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const [facts, setFacts] = useState<Fact[]>([]);
   const [dailyAnswers, setDailyAnswers] = useState<DailyAnswer[]>([]);
   const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
+  const [initialLoading, setInitialLoading] = useState(true);
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
 
@@ -43,6 +44,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
         description: err?.message || "Check Firestore rules",
         variant: "destructive",
       });
+    } finally {
+      setInitialLoading(false);
     }
   }, [toast]);
 
@@ -174,6 +177,30 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     name: "Your partner",
     avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=d5e0ff`,
   };
+
+  if (initialLoading) {
+    return (
+      <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
+        <div className="animate-in fade-in duration-500 max-w-2xl mx-auto flex flex-col pt-6 md:pt-10 gap-4 px-1">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-11 h-11 rounded-full bg-black/[0.04] animate-pulse" />
+              <div className="w-11 h-11 rounded-full bg-black/[0.04] animate-pulse -ml-3" />
+            </div>
+            <div className="flex-1">
+              <div className="h-5 w-32 bg-black/[0.04] rounded-lg animate-pulse" />
+              <div className="h-3 w-24 bg-black/[0.04] rounded-lg animate-pulse mt-1.5" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl p-4 h-24 bg-black/[0.03] animate-pulse" />
+            <div className="rounded-2xl p-4 h-24 bg-black/[0.03] animate-pulse" />
+          </div>
+          <div className="rounded-2xl p-5 h-40 bg-black/[0.03] animate-pulse" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
@@ -308,6 +335,10 @@ function AppContent() {
   }, [authState, refreshAuth]);
 
   const handleLogin = async (name: string) => {
+    if (!name || name.length < 2) {
+      setSignupError("Name must be at least 2 characters");
+      return;
+    }
     setIsSigningUp(true);
     setSignupError(undefined);
     try {

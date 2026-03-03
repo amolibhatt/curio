@@ -80,3 +80,9 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `fetchFacts` uses a ref for pairingId to avoid interval restarts on auth refresh
 - Reactions subcollection reads are parallelized with Promise.all
 - Burst animation timeout is cleaned up on component unmount via ref
+- Archive dates use local `new Date(y, m-1, d)` — never `parseISO()` which creates UTC dates causing off-by-one in western timezones
+- Login and handleLogin enforce min 2-char names both at UI and handler level
+- Initial data fetch shows skeleton loading state before facts/answers load
+- Editor close (Escape/X) prompts "Discard your changes?" when content has been modified
+- Daily answer textarea auto-grows with content (max 160px height)
+- Service worker cache currently v8

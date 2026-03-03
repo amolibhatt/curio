@@ -214,15 +214,25 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     return () => { document.body.style.overflow = ""; };
   }, [isAdding, isEditing]);
 
+  const closeEditor = (force?: boolean) => {
+    if (!force) {
+      const hasContent = isEditing
+        ? (newFact.trim() !== (myFactToday?.text || '') || JSON.stringify(selectedCategories) !== JSON.stringify(myFactToday?.categories || []))
+        : (newFact.trim() || selectedCategories.length > 0);
+      if (hasContent && !window.confirm("Discard your changes?")) return;
+    }
+    setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false);
+  };
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && (isAdding || isEditing)) {
-        setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false);
+        closeEditor();
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isAdding, isEditing]);
+  }, [isAdding, isEditing, newFact, selectedCategories]);
 
   const startEditing = () => {
     if (myFactToday) {
@@ -245,7 +255,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       } else {
         await onAddFact(newFact.trim(), selectedCategories);
       }
-      setNewFact(""); setSelectedCategories([]); setIsAdding(false); setIsEditing(false); setEditingFactId(null); setShowHeadingMenu(false);
+      closeEditor(true);
     } catch (err: any) {
       toast({ title: isEditing ? "Couldn't update" : "Couldn't add", description: err?.message || "Something went wrong. Try again.", variant: "destructive" });
     } finally {
@@ -265,7 +275,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             {isEditing ? "Edit entry" : "New entry"}
           </p>
           <button
-            onClick={() => { setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false); }}
+            onClick={() => closeEditor()}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
             data-testid="button-close-form"
           >
@@ -409,7 +419,12 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             <div className="space-y-3">
               <textarea
                 value={answerText}
-                onChange={(e) => setAnswerText(e.target.value)}
+                onChange={(e) => {
+                  setAnswerText(e.target.value);
+                  const el = e.target;
+                  el.style.height = 'auto';
+                  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                }}
                 placeholder="Type your answer..."
                 maxLength={500}
                 className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
@@ -447,7 +462,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               </div>
               <div>
                 <p className="text-xs font-medium text-[#1C1C1C]">You answered!</p>
-                <p className="text-[10px] text-[#909090]">Waiting for {partnerUser.name} to unlock both</p>
+                <p className="text-[10px] text-[#909090]">Waiting for {hasPartner ? partnerUser.name : "your partner"} to unlock both</p>
               </div>
             </div>
           )}

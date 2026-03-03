@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Fact, User, DailyAnswer } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
@@ -186,7 +186,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                             : [...prev, cat]
                         );
                       }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                       data-testid={`filter-category-${cat.toLowerCase()}`}
                     >
                       {cat}
@@ -216,7 +216,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                      {format(parseISO(qa.date), 'MMM d, yyyy')}
+                      {(() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()}
                     </p>
                     <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">{qa.category}</span>
                   </div>
@@ -262,7 +262,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
               <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
                 <div className="sticky top-0 z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5">
                   <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
-                    {format(parseISO(date), 'MMMM d, yyyy')}
+                    {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}
                   </h2>
                 </div>
                 

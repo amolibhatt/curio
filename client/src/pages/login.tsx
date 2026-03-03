@@ -10,8 +10,9 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      onLogin(name.trim());
+    const trimmed = name.trim();
+    if (trimmed && trimmed.length >= 2) {
+      onLogin(trimmed);
     }
   };
 
