@@ -173,7 +173,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
                   disabled={!newFact.trim() || selectedCategories.length === 0}
                 >
                   <Send className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" />
-                  Save to Archive
+                  Share Spark
                 </Button>
               </div>
             </form>

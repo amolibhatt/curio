@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,6 +12,45 @@ import Archive from "./pages/archive";
 import Login from "./pages/login";
 
 import { mockFacts, currentUser, friendUser, Fact } from "./lib/mock-data";
+
+function Router({ 
+  facts, 
+  onAddFact 
+}: { 
+  facts: Fact[], 
+  onAddFact: (text: string, categories: string[]) => void
+}) {
+  const [, setLocation] = useLocation();
+
+  const handleAddFactAndRedirect = (text: string, categories: string[]) => {
+    onAddFact(text, categories);
+    setLocation('/archive');
+  };
+
+  return (
+    <Switch>
+      <Route path="/">
+        <Home facts={facts} onAddFact={handleAddFactAndRedirect} />
+      </Route>
+      <Route path="/archive">
+        <Archive facts={facts} />
+      </Route>
+      <Route path="/invite">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
+          <h2 className="text-2xl font-bold">You've been invited!</h2>
+          <p>Join {currentUser.name} to share daily facts.</p>
+          <button 
+            onClick={() => window.location.href = '/'} 
+            className="bg-primary text-white px-6 py-2 rounded-full font-bold"
+          >
+            Accept Invite & Go to Dashboard
+          </button>
+        </div>
+      </Route>
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,27 +97,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Layout user={activeUser}>
-          <Switch>
-            <Route path="/">
-              <Home facts={facts} onAddFact={handleAddFact} />
-            </Route>
-            <Route path="/archive">
-              <Archive facts={facts} />
-            </Route>
-            <Route path="/invite">
-              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-                <h2 className="text-2xl font-bold">You've been invited!</h2>
-                <p>Join {currentUser.name} to share daily facts.</p>
-                <button 
-                  onClick={() => window.location.href = '/'} 
-                  className="bg-primary text-white px-6 py-2 rounded-full font-bold"
-                >
-                  Accept Invite & Go to Dashboard
-                </button>
-              </div>
-            </Route>
-            <Route component={NotFound} />
-          </Switch>
+          <Router facts={facts} onAddFact={handleAddFact} />
         </Layout>
         <Toaster />
       </TooltipProvider>
