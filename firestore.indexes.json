@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "facts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pairingId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
