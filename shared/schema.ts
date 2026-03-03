@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, jsonb, integer, unique } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 export const categoryEnum = z.enum(['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random']);
@@ -36,7 +36,9 @@ export const reactions = pgTable("reactions", {
   factId: integer("fact_id").notNull(),
   userId: integer("user_id").notNull(),
   type: text("type").notNull(),
-});
+}, (table) => [
+  unique("reactions_fact_user_unique").on(table.factId, table.userId),
+]);
 
 export const insertUserSchema = z.object({
   name: z.string().min(1).max(50),

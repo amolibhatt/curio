@@ -101,9 +101,12 @@ export class DatabaseStorage implements IStorage {
   async setReaction(factId: number, userId: number, type: string): Promise<void> {
     const existing = await this.getReaction(factId, userId);
     if (existing) {
-      await db.update(reactions).set({ type }).where(eq(reactions.id, existing.id));
+      await db.update(reactions).set({ type }).where(and(eq(reactions.factId, factId), eq(reactions.userId, userId)));
     } else {
-      await db.insert(reactions).values({ factId, userId, type });
+      await db.insert(reactions).values({ factId, userId, type }).onConflictDoUpdate({
+        target: [reactions.factId, reactions.userId],
+        set: { type },
+      });
     }
   }
 

@@ -10,6 +10,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [burstReaction, setBurstReaction] = useState<{id: number, type: string} | null>(null);
+  const todayStr = new Date().toISOString().split('T')[0];
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
@@ -199,7 +200,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                             <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
                             <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
-                              {date === new Date().toISOString().split('T')[0]
+                              {date === todayStr
                                 ? "Sealed until you share yours"
                                 : "You didn\u2019t share that day"}
                               <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>

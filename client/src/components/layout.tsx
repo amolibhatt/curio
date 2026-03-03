@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { BookOpen, Compass, History, Link as LinkIcon, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,11 @@ import { User } from "@/lib/mock-data";
 export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [location]);
 
   const handleLogout = async () => {
     try {
@@ -93,7 +98,7 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto w-full h-full pb-24 relative">
+        <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-24 relative">
           <div className="w-full px-5 h-full flex flex-col">
             {children}
           </div>

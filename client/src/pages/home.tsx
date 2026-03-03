@@ -25,6 +25,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   const todayStr = new Date().toISOString().split('T')[0];
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === activeUser.id);
+  const partnerFactToday = todayFacts.find(f => f.authorId === partnerUser.id);
 
   const streak = useMemo(() => {
     let currentStreak = 0;
@@ -123,7 +124,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmitting(true);
     try {
-      await onAddFact(newFact, selectedCategories);
+      await onAddFact(newFact.trim(), selectedCategories);
       setNewFact("");
       setSelectedCategories([]);
       setIsAdding(false);
@@ -150,7 +151,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-1 md:pt-4 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-3 md:gap-6">
       <header className="space-y-2 md:space-y-4 flex-shrink-0 px-2 md:px-0">
         {streak > 0 && (
-          <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]">
+          <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]" data-testid="badge-streak">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
@@ -158,8 +159,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             {streak} DAY STREAK
           </div>
         )}
-        
-            <div className="space-y-3 pt-4">
+        <div className="space-y-3 pt-4">
           <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
             What did you <span className="italic text-[#4A4A4A]">discover</span>?
           </h1>
@@ -175,14 +175,18 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
           
           <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500">
+            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500 ${partnerFactToday ? 'bg-amber-50/80 text-amber-600' : 'bg-green-50/80 text-green-600'}`}>
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Sealed.</h2>
-            <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200">
-              {partnerUser.id === 0
-                ? "Your discovery is safe. Invite someone to start the exchange."
-                : `Waiting for ${partnerUser.name} to share theirs.`}
+            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100" data-testid="text-sealed-title">
+              {partnerFactToday ? "Both shared!" : "Sealed."}
+            </h2>
+            <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200" data-testid="text-sealed-message">
+              {partnerFactToday
+                ? "Head to the archive to see today\u2019s discoveries."
+                : partnerUser.id === 0
+                  ? "Your discovery is safe. Invite someone to start the exchange."
+                  : `Waiting for ${partnerUser.name} to share theirs.`}
             </p>
           </CardContent>
         </Card>
@@ -193,6 +197,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             if (navigator.vibrate) navigator.vibrate(50);
             setIsAdding(true);
           }}
+          data-testid="card-add-discovery"
         >
           <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
             <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
@@ -221,6 +226,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                 setSelectedCategories([]);
               }}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
+              data-testid="button-close-form"
             >
               <X className="w-5 h-5" />
             </button>
