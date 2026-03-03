@@ -306,7 +306,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   }
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-4 md:gap-5">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-4 md:gap-5">
 
       <header className="flex-shrink-0 px-1 md:px-0">
         <div className="flex items-center gap-4 mb-4">
@@ -470,8 +470,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       <div className="px-1 md:px-0">
         <div className="bg-white rounded-2xl p-4 border border-black/5" data-testid="card-daily-prompt">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Lightbulb className="w-4 h-4 text-amber-400" />
+            <div className="w-8 h-8 rounded-lg bg-[#F0EEEA] flex items-center justify-center shrink-0 mt-0.5">
+              <Lightbulb className="w-4 h-4 text-[#8B7E74]" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-bold tracking-[0.25em] text-[#b0b0b0] uppercase mb-0.5">Inspiration</p>

@@ -256,9 +256,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
         <div className="space-y-8 md:space-y-12 flex-1 flex flex-col">
           {sortedDates.map((date) => {
             const dateFacts = groupedFacts[date];
+            const allFactsForDate = facts.filter(f => f.date === date);
+            const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
             return (
               <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
+                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5 border-none md:border-none">
                   <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                     {format(parseISO(date), 'MMMM d, yyyy')}
                   </h2>
@@ -269,9 +271,6 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                     const isMe = fact.authorId === activeUser.id;
                     const author = isMe ? activeUser : partnerUser;
                     const isAboutUs = fact.categories.includes('Us');
-                    
-                    const allFactsForDate = facts.filter(f => f.date === date);
-                    const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
                     const isHidden = !isMe && !iPostedThisDate;
                     
                     const myReaction = fact.reactions?.[String(activeUser.id)];

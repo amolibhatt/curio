@@ -13,22 +13,22 @@ type Milestone = {
 };
 
 const MILESTONES: Milestone[] = [
-  { days: 1, label: "Day One", icon: Heart, color: "text-rose-500" },
-  { days: 7, label: "One Week", icon: Star, color: "text-amber-500" },
-  { days: 30, label: "One Month", icon: Sparkles, color: "text-purple-500" },
-  { days: 50, label: "50 Days", icon: Star, color: "text-blue-500" },
-  { days: 100, label: "100 Days", icon: PartyPopper, color: "text-amber-600" },
-  { days: 150, label: "150 Days", icon: Star, color: "text-teal-500" },
-  { days: 200, label: "200 Days", icon: Gift, color: "text-rose-500" },
-  { days: 250, label: "250 Days", icon: Star, color: "text-indigo-500" },
-  { days: 300, label: "300 Days", icon: Sparkles, color: "text-amber-500" },
-  { days: 365, label: "One Year", icon: PartyPopper, color: "text-rose-600" },
-  { days: 500, label: "500 Days", icon: Gift, color: "text-purple-600" },
-  { days: 730, label: "Two Years", icon: PartyPopper, color: "text-amber-600" },
-  { days: 1000, label: "1000 Days", icon: Star, color: "text-rose-500" },
-  { days: 1095, label: "Three Years", icon: PartyPopper, color: "text-purple-500" },
-  { days: 1461, label: "Four Years", icon: PartyPopper, color: "text-blue-600" },
-  { days: 1826, label: "Five Years", icon: Gift, color: "text-amber-600" },
+  { days: 1, label: "Day One", icon: Heart, color: "text-[#1C1C1C]" },
+  { days: 7, label: "One Week", icon: Star, color: "text-[#1C1C1C]" },
+  { days: 30, label: "One Month", icon: Sparkles, color: "text-[#1C1C1C]" },
+  { days: 50, label: "50 Days", icon: Star, color: "text-[#1C1C1C]" },
+  { days: 100, label: "100 Days", icon: PartyPopper, color: "text-[#1C1C1C]" },
+  { days: 150, label: "150 Days", icon: Star, color: "text-[#1C1C1C]" },
+  { days: 200, label: "200 Days", icon: Gift, color: "text-[#1C1C1C]" },
+  { days: 250, label: "250 Days", icon: Star, color: "text-[#1C1C1C]" },
+  { days: 300, label: "300 Days", icon: Sparkles, color: "text-[#1C1C1C]" },
+  { days: 365, label: "One Year", icon: PartyPopper, color: "text-[#1C1C1C]" },
+  { days: 500, label: "500 Days", icon: Gift, color: "text-[#1C1C1C]" },
+  { days: 730, label: "Two Years", icon: PartyPopper, color: "text-[#1C1C1C]" },
+  { days: 1000, label: "1000 Days", icon: Star, color: "text-[#1C1C1C]" },
+  { days: 1095, label: "Three Years", icon: PartyPopper, color: "text-[#1C1C1C]" },
+  { days: 1461, label: "Four Years", icon: PartyPopper, color: "text-[#1C1C1C]" },
+  { days: 1826, label: "Five Years", icon: Gift, color: "text-[#1C1C1C]" },
 ];
 
 function DaysCounter({ days }: { days: number }) {
@@ -129,10 +129,10 @@ function CountdownCards({ anniversaryDate }: { anniversaryDate: string }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${monthly.isToday ? 'bg-gradient-to-br from-purple-50 to-pink-50' : 'bg-white'}`}
+        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${monthly.isToday ? 'bg-[#F0EEEA]' : 'bg-white'}`}
         data-testid="card-monthly-countdown"
       >
-        <CalendarHeart className={`w-5 h-5 mx-auto mb-2 ${monthly.isToday ? 'text-purple-500' : 'text-[#909090]'}`} />
+        <CalendarHeart className={`w-5 h-5 mx-auto mb-2 ${monthly.isToday ? 'text-[#1C1C1C]' : 'text-[#909090]'}`} />
         <p className="text-[9px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-2">
           {monthly.isToday ? `Month ${monthly.monthsCompleted}` : "Monthly"}
         </p>
@@ -155,10 +155,10 @@ function CountdownCards({ anniversaryDate }: { anniversaryDate: string }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${yearly.isToday ? 'bg-gradient-to-br from-rose-50 to-amber-50' : 'bg-white'}`}
+        className={`rounded-[1.5rem] p-5 md:p-6 text-center shadow-sm border border-black/5 ${yearly.isToday ? 'bg-[#F0EEEA]' : 'bg-white'}`}
         data-testid="card-yearly-countdown"
       >
-        <Calendar className={`w-5 h-5 mx-auto mb-2 ${yearly.isToday ? 'text-rose-500' : 'text-[#909090]'}`} />
+        <Calendar className={`w-5 h-5 mx-auto mb-2 ${yearly.isToday ? 'text-[#1C1C1C]' : 'text-[#909090]'}`} />
         <p className="text-[9px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-2">
           {yearly.isToday ? `Year ${yearly.yearsCompleted}` : "Anniversary"}
         </p>
@@ -336,7 +336,7 @@ export default function Timeline({
   }
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10 pb-[max(env(safe-area-inset-bottom),6rem)]">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10">
       <header className="text-center mb-8 md:mb-12">
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
