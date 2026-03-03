@@ -34,7 +34,34 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
   const todayFacts = facts.filter(f => f.date === todayStr);
   const myFactToday = todayFacts.find(f => f.authorId === currentUser.id);
 
-  const streak = 0;
+  // Calculate streak based on consecutive days where both users posted
+  const getStreak = () => {
+    let currentStreak = 0;
+    const today = new Date();
+    
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      
+      const factsOnDate = facts.filter(f => f.date === dateStr);
+      const user1Posted = factsOnDate.some(f => f.authorId === 'user_1');
+      const user2Posted = factsOnDate.some(f => f.authorId === 'user_2');
+      
+      if (user1Posted && user2Posted) {
+        currentStreak++;
+      } else if (i === 0) {
+        // It's okay if today is not complete yet, streak doesn't break if today is missed (until tomorrow)
+        continue;
+      } else {
+        // Streak is broken
+        break;
+      }
+    }
+    return currentStreak;
+  };
+
+  const streak = getStreak();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

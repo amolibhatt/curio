@@ -139,28 +139,48 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                   const author = isMe ? currentUser : friendUser;
                   const isAboutUs = fact.categories.includes('Us');
                   
+                  // Blind reveal logic: if this is a friend's fact, check if I also posted on this date
+                  const iPostedThisDate = dateFacts.some(f => f.authorId === currentUser.id);
+                  const isHidden = !isMe && !iPostedThisDate;
+                  
                   return (
                     <div 
                       key={fact.id} 
-                      className={`bg-white rounded-[1.5rem] p-5 flex flex-col justify-between border ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'}`}
+                      className={`bg-white rounded-[1.5rem] p-5 flex flex-col justify-between border transition-all ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'} ${isHidden ? 'bg-black/5 border-transparent shadow-none' : ''}`}
                     >
-                      <p className={`font-serif leading-relaxed mb-6 ${isAboutUs ? 'text-rose-950 text-lg' : 'text-[#1C1C1C] text-lg'}`}>
-                        "{fact.text}"
-                      </p>
+                      {isHidden ? (
+                        <div className="flex flex-col items-center justify-center py-6 mb-6 text-center space-y-3">
+                          <div className="w-10 h-10 bg-black/5 rounded-full flex items-center justify-center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/40">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                          </div>
+                          <p className="text-sm font-serif italic text-black/40">
+                            Hidden until you share your spark for this day.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className={`font-serif leading-relaxed mb-6 ${isAboutUs ? 'text-rose-950 text-lg' : 'text-[#1C1C1C] text-lg'}`}>
+                          "{fact.text}"
+                        </p>
+                      )}
 
                       <div className="flex items-end justify-between gap-2 mt-auto">
                         <div className="flex items-center gap-2 shrink-0">
-                          <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full border border-black/5" />
-                          <span className="text-[11px] font-semibold text-[#1C1C1C]">{author.name}</span>
+                          <img src={author.avatar} alt={author.name} className={`w-5 h-5 rounded-full border border-black/5 ${isHidden ? 'opacity-50 grayscale' : ''}`} />
+                          <span className={`text-[11px] font-semibold ${isHidden ? 'text-black/40' : 'text-[#1C1C1C]'}`}>{author.name}</span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-1 justify-end">
-                          {fact.categories.map((category) => (
-                            <div key={category} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
-                              {category}
-                            </div>
-                          ))}
-                        </div>
+                        {!isHidden && (
+                          <div className="flex flex-wrap items-center gap-1 justify-end">
+                            {fact.categories.map((category) => (
+                              <div key={category} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
+                                {category}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
