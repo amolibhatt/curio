@@ -22,7 +22,7 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
       <div className="w-full min-h-screen flex flex-col relative overflow-hidden max-w-2xl mx-auto">
         
         {/* Top Header */}
-        <header className="flex items-center justify-between p-5 pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-sm shrink-0">
+        <header className="flex items-center justify-between p-5 pt-[max(env(safe-area-inset-top),1.5rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
               <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] shadow-sm border border-black/[0.04]">

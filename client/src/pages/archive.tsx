@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Fact, User } from "@/lib/mock-data";
 import { format, parseISO } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, X } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, X, Laugh, Lightbulb, Frown } from "lucide-react";
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: string, reaction: 'mind-blown' | 'fascinating' | null) => void, activeUser: User, partnerUser: User }) {
+export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -61,7 +61,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
 
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10">
-      <header className="mb-8 md:mb-12 text-center md:text-left px-4 md:px-0">
+      <header className="mb-8 md:mb-12 text-center md:text-left">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
@@ -142,12 +142,12 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
         )}
       </header>
 
-      <div className="space-y-8 md:space-y-12 px-4 md:px-0">
+      <div className="space-y-8 md:space-y-12">
         {sortedDates.map((date) => {
           const dateFacts = groupedFacts[date];
           return (
             <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-4 px-4 md:mx-0 md:px-0 border-b border-black/5 md:border-none">
+              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-b border-black/5 md:border-none">
                 <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                   {format(parseISO(date), 'MMMM d, yyyy')}
                 </h2>
@@ -236,8 +236,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                 ))}
                               </div>
                               
-                                <div className="flex items-center gap-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto">
-                                  <div className="relative">
+                                <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                                  <div className="relative shrink-0">
                                     <button
                                       onClick={() => handleReact(fact.id, 'mind-blown')}
                                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
@@ -318,13 +318,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'laugh')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'laugh' 
-                                          ? 'bg-amber-100 border-amber-200 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-amber-200 hover:bg-amber-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                          ? 'bg-amber-100 border-amber-200 text-amber-700 shadow-soft' 
+                                          : 'bg-white border border-black/10 hover:border-amber-200 hover:bg-amber-50 text-[#909090] hover:text-amber-600 hover:shadow-soft'
                                       }`}
                                     >
-                                      😂
+                                      <Laugh className="w-3.5 h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'laugh' && (
@@ -333,9 +333,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                           animate={{ opacity: 0, y: -40, scale: 1.5 }}
                                           exit={{ opacity: 0 }}
                                           transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none text-2xl"
+                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
                                         >
-                                          😂
+                                          <Laugh className="w-6 h-6 text-amber-500" />
                                         </motion.div>
                                       )}
                                     </AnimatePresence>
@@ -344,13 +344,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'thinking')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'thinking' 
-                                          ? 'bg-blue-100 border-blue-200 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-blue-200 hover:bg-blue-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                          ? 'bg-blue-100 border-blue-200 text-blue-700 shadow-soft' 
+                                          : 'bg-white border border-black/10 hover:border-blue-200 hover:bg-blue-50 text-[#909090] hover:text-blue-600 hover:shadow-soft'
                                       }`}
                                     >
-                                      🤔
+                                      <Lightbulb className="w-3.5 h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'thinking' && (
@@ -359,9 +359,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                           animate={{ opacity: 0, y: -40, scale: 1.5 }}
                                           exit={{ opacity: 0 }}
                                           transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none text-2xl"
+                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
                                         >
-                                          🤔
+                                          <Lightbulb className="w-6 h-6 text-blue-500" />
                                         </motion.div>
                                       )}
                                     </AnimatePresence>
@@ -370,13 +370,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'sad')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[14px] transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'sad' 
-                                          ? 'bg-indigo-100 border-indigo-200 shadow-soft' 
-                                          : 'bg-white border border-black/10 hover:border-indigo-200 hover:bg-indigo-50 hover:shadow-soft grayscale hover:grayscale-0'
+                                          ? 'bg-indigo-100 border-indigo-200 text-indigo-700 shadow-soft' 
+                                          : 'bg-white border border-black/10 hover:border-indigo-200 hover:bg-indigo-50 text-[#909090] hover:text-indigo-600 hover:shadow-soft'
                                       }`}
                                     >
-                                      😢
+                                      <Frown className="w-3.5 h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'sad' && (
@@ -385,9 +385,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                           animate={{ opacity: 0, y: -40, scale: 1.5 }}
                                           exit={{ opacity: 0 }}
                                           transition={{ duration: 0.8, ease: "easeOut" }}
-                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none text-2xl"
+                                          className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
                                         >
-                                          😢
+                                          <Frown className="w-6 h-6 text-indigo-500" />
                                         </motion.div>
                                       )}
                                     </AnimatePresence>
