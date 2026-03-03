@@ -78,8 +78,8 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
   };
 
   const completedAnswers = dailyAnswers.filter(a => {
-    const keys = Object.keys(a.answers || {});
-    return keys.length >= 2;
+    const answers = a.answers || {};
+    return activeUser.id in answers && partnerUser.id in answers;
   });
 
   return (

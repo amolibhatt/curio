@@ -62,6 +62,17 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
       textToInsert = plain;
     }
 
+    if (maxLength && editorRef.current) {
+      const currentMd = htmlContentToMarkdown(editorRef.current.innerHTML);
+      const sel = window.getSelection();
+      const selectedText = sel && sel.rangeCount > 0 ? sel.toString() : '';
+      const remaining = maxLength - currentMd.length + selectedText.length;
+      if (remaining <= 0) return;
+      if (textToInsert.length > remaining) {
+        textToInsert = textToInsert.slice(0, remaining);
+      }
+    }
+
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     sel.deleteFromDocument();
@@ -72,7 +83,7 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
 
     sel.collapseToEnd();
     handleInput();
-  }, [handleInput]);
+  }, [handleInput, maxLength]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {

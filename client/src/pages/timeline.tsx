@@ -264,7 +264,7 @@ export default function Timeline({
       });
       setShowDatePicker(false);
     } catch {
-      setShowDatePicker(false);
+      alert("Couldn't save the date. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -407,7 +407,7 @@ export default function Timeline({
                   key={milestone.days}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + index * 0.05 }}
+                  transition={{ delay: Math.min(0.6 + index * 0.05, 1.2) }}
                   className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-black/5"
                   data-testid={`milestone-${milestone.days}`}
                 >

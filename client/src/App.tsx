@@ -129,6 +129,11 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const [anniversaryDate, setAnniversaryDate] = useState<string | null>(auth.pairing?.anniversaryDate || null);
 
+  useEffect(() => {
+    const incoming = auth.pairing?.anniversaryDate || null;
+    setAnniversaryDate(prev => prev !== incoming ? incoming : prev);
+  }, [auth.pairing?.anniversaryDate]);
+
   const handleSetAnniversaryDate = async (date: string) => {
     if (!auth.pairing) return;
     await firestoreOps.setAnniversaryDate(auth.pairing.id, date);
