@@ -131,7 +131,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   const usePrompt = () => {
     if (navigator.vibrate) navigator.vibrate(50);
-    setNewFact(`<p>${currentPrompt}</p><p><br></p>`);
+    setNewFact(currentPrompt);
     setIsAdding(true);
   };
 
@@ -156,6 +156,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   };
 
   const streak = useMemo(() => {
+    if (!hasPartner) return 0;
     let currentStreak = 0;
     const factsByDate = new Map<string, { user1: boolean; user2: boolean }>();
     for (const f of facts) {
@@ -164,19 +165,23 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       if (f.authorId === partnerUser.id) entry.user2 = true;
       factsByDate.set(f.date, entry);
     }
+    let skippedToday = false;
     for (let i = 0; i < 365; i++) {
-      const dateStr = getLocalDateStr(new Date(Date.now() - i * 86400000));
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = getLocalDateStr(d);
       const entry = factsByDate.get(dateStr);
       if (entry?.user1 && entry?.user2) {
         currentStreak++;
-      } else if (i === 0) {
+      } else if (i === 0 && !skippedToday) {
+        skippedToday = true;
         continue;
       } else {
         break;
       }
     }
     return currentStreak;
-  }, [facts, activeUser.id, partnerUser.id]);
+  }, [facts, activeUser.id, partnerUser.id, hasPartner]);
 
   const prevStreakRef = useRef<number | null>(null);
 

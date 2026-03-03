@@ -360,11 +360,11 @@ export default function Timeline({
                 <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase mb-1">Next Milestone</p>
                 <p className="font-serif text-xl md:text-2xl text-[#1C1C1C]">{next.label}</p>
               </div>
-              <div className={`w-12 h-12 rounded-full bg-[#FBF9F6] flex items-center justify-center ${next.color}`}>
+              <div className={`w-12 h-12 rounded-full bg-[#FAF9F7] flex items-center justify-center ${next.color}`}>
                 <next.icon className="w-5 h-5" />
               </div>
             </div>
-            <div className="relative h-2 bg-[#FBF9F6] rounded-full overflow-hidden">
+            <div className="relative h-2 bg-[#FAF9F7] rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -389,7 +389,7 @@ export default function Timeline({
                   className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-black/5"
                   data-testid={`milestone-${milestone.days}`}
                 >
-                  <div className={`w-10 h-10 rounded-full bg-[#FBF9F6] flex items-center justify-center shrink-0 ${milestone.color}`}>
+                  <div className={`w-10 h-10 rounded-full bg-[#FAF9F7] flex items-center justify-center shrink-0 ${milestone.color}`}>
                     <milestone.icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">

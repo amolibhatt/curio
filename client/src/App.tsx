@@ -53,14 +53,16 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     const onVisible = () => {
       if (document.visibilityState === "visible") fetchFacts();
     };
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) fetchFacts();
+    };
     document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("pageshow", (e) => {
-      if ((e as PageTransitionEvent).persisted) fetchFacts();
-    });
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onPageShow);
     };
   }, [fetchFacts]);
 
@@ -341,7 +343,7 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF9F7] flex items-center justify-center">
         <div className="animate-pulse font-serif text-2xl text-[#909090]">Curio</div>
       </div>
     );
@@ -349,7 +351,7 @@ function AppContent() {
 
   if (!authState || needsName) {
     return (
-      <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
+      <div className="min-h-screen bg-[#FAF9F7] flex items-center justify-center font-sans">
         <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
           <Login onLogin={handleLogin} error={signupError} isLoading={isSigningUp} />
         </div>

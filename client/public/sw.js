@@ -1,4 +1,4 @@
-const CACHE_NAME = 'curio-cache-v5';
+const CACHE_NAME = 'curio-cache-v6';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -25,7 +25,8 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('gstatic.com') ||
     url.hostname.includes('identitytoolkit') ||
-    url.hostname.includes('securetoken')
+    url.hostname.includes('securetoken') ||
+    url.hostname.includes('dicebear.com')
   ) return;
 
   event.respondWith(

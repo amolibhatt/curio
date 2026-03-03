@@ -3,7 +3,7 @@ import { Link } from "wouter";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#FBF9F6] p-6">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#FAF9F7] p-6">
       <div className="text-center space-y-6 max-w-sm">
         <div className="mx-auto w-16 h-16 flex items-center justify-center bg-white rounded-full shadow-sm">
           <BookOpen className="w-8 h-8 text-black" strokeWidth={1.5} />

@@ -41,7 +41,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
     return acc;
   }, {} as Record<string, Fact[]>);
 
-  const sortedDates = Object.keys(groupedFacts).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const sortedDates = Object.keys(groupedFacts).sort((a, b) => b.localeCompare(a));
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -57,7 +57,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
 
   const getCategoryColor = (category: string) => {
     if (category === 'Us') return 'bg-rose-50 text-rose-600 border-none';
-    return 'bg-[#FBF9F6] text-[#737373] border-none';
+    return 'bg-[#FAF9F7] text-[#737373] border-none';
   };
 
   const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
@@ -95,7 +95,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="flex bg-[#FBF9F6] rounded-full p-1">
+          <div className="flex bg-[#FAF9F7] rounded-full p-1">
             <button
               onClick={() => setActiveTab("discoveries")}
               className={`px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all ${
@@ -141,14 +141,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilterPerson(null)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-everyone"
                   >
                     Everyone
                   </button>
                   <button
                     onClick={() => setFilterPerson(activeUser.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-me"
                   >
                     Me
@@ -156,7 +156,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                   {partnerUser.id !== "0" && (
                     <button
                       onClick={() => setFilterPerson(partnerUser.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                       data-testid="filter-partner"
                     >
                       {partnerUser.name}
@@ -170,7 +170,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilterCategories([])}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-category-all"
                   >
                     All Categories
@@ -185,7 +185,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                             : [...prev, cat]
                         );
                       }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
                       data-testid={`filter-category-${cat.toLowerCase()}`}
                     >
                       {cat}
@@ -257,7 +257,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             const dateFacts = groupedFacts[date];
             return (
               <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
+                <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-5 px-5 md:-mx-8 md:px-8 border-none md:border-none">
                   <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                     {format(parseISO(date), 'MMMM d, yyyy')}
                   </h2>
@@ -284,10 +284,10 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                         className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
                       >
                         <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
-                          <div className="relative z-10 bg-[#FBF9F6] p-1 rounded-full">
+                          <div className="relative z-10 bg-[#FAF9F7] p-1 rounded-full">
                             <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
                           </div>
-                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FBF9F6] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
+                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FAF9F7] relative z-10 ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
                             {author.name}
                           </span>
                         </div>
@@ -332,6 +332,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-black text-white' 
                                             : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                         }`}
+                                        data-testid={`button-react-mind-blown-${fact.id}`}
                                       >
                                         <Brain className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                       </button>
@@ -358,6 +359,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-black text-white' 
                                             : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                         }`}
+                                        data-testid={`button-react-fascinating-${fact.id}`}
                                       >
                                         <Sparkles className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                       </button>
@@ -384,6 +386,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-rose-500 text-white' 
                                             : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
                                         }`}
+                                        data-testid={`button-react-heart-${fact.id}`}
                                       >
                                         <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
                                       </button>
@@ -410,6 +413,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-amber-100 text-amber-700' 
                                             : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
                                         }`}
+                                        data-testid={`button-react-laugh-${fact.id}`}
                                       >
                                         <Laugh className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                       </button>
@@ -436,6 +440,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-blue-100 text-blue-700' 
                                             : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
                                         }`}
+                                        data-testid={`button-react-thinking-${fact.id}`}
                                       >
                                         <Lightbulb className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                       </button>
@@ -462,6 +467,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                             ? 'bg-indigo-100 text-indigo-700' 
                                             : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
                                         }`}
+                                        data-testid={`button-react-sad-${fact.id}`}
                                       >
                                         <Frown className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                       </button>
