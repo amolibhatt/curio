@@ -232,8 +232,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
       ) : (
         <div className="fixed inset-0 z-50 bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
           
-          {/* Top Nav for Form */}
-          <div className="flex justify-end p-4 md:p-6 sticky top-0 z-20">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
+            <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
+              New entry
+            </p>
             <button 
               onClick={() => setIsAdding(false)}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
@@ -242,7 +245,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             </button>
           </div>
 
-          <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10 mt-4 md:mt-8">
+          <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
             <form onSubmit={(e) => {
               if (navigator.vibrate) navigator.vibrate(50);
               handleSubmit(e);
@@ -251,7 +254,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               <div className="flex-1 flex flex-col animate-in slide-in-from-bottom-4 duration-500 delay-100">
                 <Textarea 
                   placeholder="Write something..." 
-                  className="flex-none resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
+                  className="flex-1 resize-none bg-transparent border-none focus-visible:ring-0 text-[1.75rem] md:text-[2.5rem] font-serif leading-[1.3] placeholder:text-[#909090]/40 p-0 text-[#1C1C1C] min-h-[120px]"
                   value={newFact}
                   onChange={(e) => setNewFact(e.target.value)}
                   onPaste={handlePaste}
