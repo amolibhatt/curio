@@ -121,19 +121,18 @@ export default function Archive({ facts }: { facts: Fact[] }) {
         )}
       </header>
 
-      <div className="space-y-12 px-2 md:px-0">
+      <div className="space-y-8 md:space-y-12 px-4 md:px-0">
         {sortedDates.map((date) => {
           const dateFacts = groupedFacts[date];
           return (
-            <div key={date} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex items-center gap-4">
-                <h2 className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase whitespace-nowrap">
+            <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+              <div className="sticky top-[88px] md:top-[104px] z-10 bg-[#FBF9F6]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-4 px-4 md:mx-0 md:px-0 border-b border-black/5 md:border-none">
+                <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
                   {format(parseISO(date), 'MMMM d, yyyy')}
                 </h2>
-                <div className="h-px bg-black/5 flex-1" />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="space-y-6 md:space-y-8">
                 {dateFacts.map((fact) => {
                   const isMe = fact.authorId === currentUser.id;
                   const author = isMe ? currentUser : friendUser;
@@ -146,39 +145,36 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                   return (
                     <div 
                       key={fact.id} 
-                      className={`bg-white rounded-[1.5rem] p-5 flex flex-col justify-between border transition-all ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'} ${isHidden ? 'bg-black/5 border-transparent shadow-none' : ''}`}
+                      className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
                     >
-                      {isHidden ? (
-                        <div className="flex flex-col items-center justify-center py-6 mb-6 text-center space-y-3">
-                          <div className="w-10 h-10 bg-black/5 rounded-full flex items-center justify-center">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/40">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                          </div>
-                          <p className="text-sm font-serif italic text-black/40">
-                            Hidden until you share your discovery for this day.
-                          </p>
-                        </div>
-                      ) : (
-                        <p className={`font-serif leading-relaxed mb-6 ${isAboutUs ? 'text-rose-950 text-lg' : 'text-[#1C1C1C] text-lg'}`}>
-                          "{fact.text}"
-                        </p>
-                      )}
+                      <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1">
+                        <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full border border-black/5 ${isHidden ? 'grayscale' : ''}`} />
+                        <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
+                          {author.name}
+                        </span>
+                      </div>
 
-                      <div className="flex items-end justify-between gap-2 mt-auto">
-                        <div className="flex items-center gap-2 shrink-0">
-                          <img src={author.avatar} alt={author.name} className={`w-5 h-5 rounded-full border border-black/5 ${isHidden ? 'opacity-50 grayscale' : ''}`} />
-                          <span className={`text-[11px] font-semibold ${isHidden ? 'text-black/40' : 'text-[#1C1C1C]'}`}>{author.name}</span>
-                        </div>
-                        
-                        {!isHidden && (
-                          <div className="flex flex-wrap items-center gap-1 justify-end">
-                            {fact.categories.map((category) => (
-                              <div key={category} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
-                                {category}
-                              </div>
-                            ))}
+                      <div className="flex-1 relative">
+                        {isHidden ? (
+                          <div className="py-4 md:py-6 px-5 rounded-2xl bg-black/5 text-center">
+                            <p className="text-sm font-serif italic text-black/40">
+                              Hidden until you share your discovery for this day.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-colors ${isAboutUs ? 'bg-rose-50/50 hover:bg-rose-50' : 'bg-white hover:bg-[#FAFAFA] border border-black/[0.02] shadow-sm'}`}>
+                            <p className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                              "{fact.text}"
+                            </p>
+                            
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {fact.categories.map((category) => (
+                                <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold border ${getCategoryColor(category)}`}>
+                                  {getCategoryIcon(category)}
+                                  {category}
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
