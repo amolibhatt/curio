@@ -382,9 +382,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                   {fact.reactions[String(partnerUser.id)] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
                                   {fact.reactions[String(partnerUser.id)] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
                                   {fact.reactions[String(partnerUser.id)] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                  {fact.reactions[String(partnerUser.id)] === 'laugh' && <span className="text-[12px]">😂</span>}
-                                  {fact.reactions[String(partnerUser.id)] === 'thinking' && <span className="text-[12px]">🤔</span>}
-                                  {fact.reactions[String(partnerUser.id)] === 'sad' && <span className="text-[12px]">😢</span>}
+                                  {fact.reactions[String(partnerUser.id)] === 'laugh' && <Laugh className="w-3.5 h-3.5" />}
+                                  {fact.reactions[String(partnerUser.id)] === 'thinking' && <Lightbulb className="w-3.5 h-3.5" />}
+                                  {fact.reactions[String(partnerUser.id)] === 'sad' && <Frown className="w-3.5 h-3.5" />}
                                   <span>{partnerUser.name} reacted</span>
                                 </div>
                               )}

@@ -38,6 +38,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
                   className="h-14 rounded-full px-6 bg-white border-none focus-visible:ring-black/10 focus-visible:border-black/10 text-base text-center placeholder:text-center"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  maxLength={50}
                   data-testid="input-name"
                   autoFocus
                 />

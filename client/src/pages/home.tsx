@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -58,8 +57,14 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   }, [facts, activeUser.id, partnerUser.id]);
 
   const prevStreakRef = useRef(streak);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      prevStreakRef.current = streak;
+      return;
+    }
     if (streak > prevStreakRef.current && streak > 0) {
       const duration = 3 * 1000;
       const animationEnd = Date.now() + duration;
@@ -94,7 +99,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isAdding) setIsAdding(false);
+      if (e.key === "Escape" && isAdding) {
+        setIsAdding(false);
+        setNewFact("");
+        setSelectedCategories([]);
+      }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
@@ -200,7 +209,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
               New entry
             </p>
             <button 
-              onClick={() => setIsAdding(false)}
+              onClick={() => {
+                setIsAdding(false);
+                setNewFact("");
+                setSelectedCategories([]);
+              }}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
             >
               <X className="w-5 h-5" />
