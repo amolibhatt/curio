@@ -2,7 +2,7 @@ import React from "react";
 
 function formatInline(text: string, keyOffset: number = 0): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const regex = /(\*\*(.+?)\*\*)|(__(.+?)__)|(\*(.+?)\*)/g;
+  const regex = /(\*\*\*(.+?)\*\*\*)|(\*\*(.+?)\*\*)|(__(.+?)__)|(\*(.+?)\*)/g;
   let lastIndex = 0;
   let match;
   let key = keyOffset;
@@ -13,11 +13,13 @@ function formatInline(text: string, keyOffset: number = 0): React.ReactNode[] {
     }
 
     if (match[1]) {
-      parts.push(<strong key={key++}>{match[2]}</strong>);
+      parts.push(<strong key={key++}><em>{match[2]}</em></strong>);
     } else if (match[3]) {
-      parts.push(<u key={key++}>{match[4]}</u>);
+      parts.push(<strong key={key++}>{match[4]}</strong>);
     } else if (match[5]) {
-      parts.push(<em key={key++}>{match[6]}</em>);
+      parts.push(<u key={key++}>{match[6]}</u>);
+    } else if (match[7]) {
+      parts.push(<em key={key++}>{match[8]}</em>);
     }
 
     lastIndex = match.index + match[0].length;
@@ -37,8 +39,13 @@ export function formatText(text: string): React.ReactNode[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
 
+    if (/^(\*\*\*|---|___)$/.test(line.trim())) {
+      result.push(<hr key={`hr-${i}`} className="border-black/10 my-2" />);
+      continue;
+    }
+
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
       const content = headingMatch[2];
@@ -59,17 +66,49 @@ export function formatText(text: string): React.ReactNode[] {
           {inlineContent}
         </span>
       );
-    } else if (line.trim() === '') {
-      result.push(<br key={`br-${i}`} />);
-    } else {
-      const inlineContent = formatInline(line, key);
+      continue;
+    }
+
+    const bulletMatch = line.match(/^[\*\-\+]\s+(.+)$/);
+    if (bulletMatch) {
+      const content = bulletMatch[1];
+      const inlineContent = formatInline(content, key);
       key += inlineContent.length + 1;
       result.push(
-        <span key={`p-${i}`} className="block">
+        <span key={`li-${i}`} className="block pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-[#909090]">
           {inlineContent}
         </span>
       );
+      continue;
     }
+
+    const numberedMatch = line.match(/^(\d+)\.\s+(.+)$/);
+    if (numberedMatch) {
+      const num = numberedMatch[1];
+      const content = numberedMatch[2];
+      const inlineContent = formatInline(content, key);
+      key += inlineContent.length + 1;
+      result.push(
+        <span key={`ol-${i}`} className="block pl-5 relative">
+          <span className="absolute left-0 text-[#909090]">{num}.</span>
+          {inlineContent}
+        </span>
+      );
+      continue;
+    }
+
+    if (line.trim() === '') {
+      result.push(<br key={`br-${i}`} />);
+      continue;
+    }
+
+    const inlineContent = formatInline(line, key);
+    key += inlineContent.length + 1;
+    result.push(
+      <span key={`p-${i}`} className="block">
+        {inlineContent}
+      </span>
+    );
   }
 
   return result;
@@ -134,6 +173,8 @@ function processNode(node: Node): string {
       return `##### ${childContent}\n`;
     case 'h6':
       return `###### ${childContent}\n`;
+    case 'hr':
+      return '\n***\n';
     case 'br':
       return '\n';
     case 'p':
@@ -176,29 +217,32 @@ export function handleRichPaste(
   setText: (val: string) => void
 ): boolean {
   const html = e.clipboardData.getData('text/html');
-  if (!html) return false;
 
-  const plain = e.clipboardData.getData('text/plain');
-  const markdown = htmlToMarkdown(html);
+  if (html) {
+    const markdown = htmlToMarkdown(html);
+    const plain = e.clipboardData.getData('text/plain');
 
-  if (markdown === plain.trim()) return false;
+    if (markdown !== plain.trim()) {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const current = textarea.value;
 
-  e.preventDefault();
-  const textarea = e.currentTarget;
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const current = textarea.value;
+      const newText = current.slice(0, start) + markdown + current.slice(end);
+      setText(newText);
 
-  const newText = current.slice(0, start) + markdown + current.slice(end);
-  setText(newText);
+      requestAnimationFrame(() => {
+        textarea.focus();
+        const newPos = start + markdown.length;
+        textarea.setSelectionRange(newPos, newPos);
+      });
 
-  requestAnimationFrame(() => {
-    textarea.focus();
-    const newPos = start + markdown.length;
-    textarea.setSelectionRange(newPos, newPos);
-  });
+      return true;
+    }
+  }
 
-  return true;
+  return false;
 }
 
 export function insertLinePrefix(
