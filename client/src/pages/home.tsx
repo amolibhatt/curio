@@ -15,9 +15,19 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
+const PROMPTS = [
+  "Tell me a piece of history that feels like fiction...",
+  "What's a word with a wild origin story?",
+  "Drop a mind-bending fact about the universe...",
+  "What's something weird the human body does?",
+  "Tell me about a strange animal adaptation...",
+  "Share a memory of us that lives rent-free in your head..."
+];
+
 export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (text: string, category: Category) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
+  const [promptIndex, setPromptIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<Category>('Science');
   
   const todayStr = new Date().toISOString().split('T')[0];
@@ -34,6 +44,10 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
     setIsAdding(false);
   };
 
+  const cyclePrompt = () => {
+    setPromptIndex((prev) => (prev + 1) % PROMPTS.length);
+  };
+
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-2 md:pt-8 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-6 md:gap-10">
       {/* Header Section */}
@@ -48,10 +62,10 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
         
         <div className="space-y-1 md:space-y-3 pt-1 md:pt-2">
           <h1 className="text-[3rem] md:text-[4rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
-            Found a <span className="italic text-[#4A4A4A]">spark?</span>
+            Did you find a <span className="italic text-[#4A4A4A]">spark</span> today?
           </h1>
           <p className="text-[1.05rem] md:text-[1.15rem] text-[#909090] italic font-serif">
-            Tell me something cool for our shared archive.
+            Add something fascinating to our shared cabinet of curiosities.
           </p>
         </div>
       </header>
@@ -63,9 +77,9 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/50 text-green-600 rounded-full flex items-center justify-center mb-4 md:mb-6">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-xl md:text-2xl text-black mb-2">Discovery Shared</h2>
+            <h2 className="font-serif text-xl md:text-2xl text-black mb-2">Spark Captured</h2>
             <p className="text-muted-foreground text-sm md:text-base max-w-[250px] leading-relaxed">
-              Your spark has been added to the archive. Waiting for {friendUser.name}...
+              Your thought is safe in the archive. The reveal happens when {friendUser.name} adds theirs.
             </p>
           </CardContent>
         </Card>
@@ -80,9 +94,9 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             </div>
             
             <div className="space-y-2 md:space-y-3">
-              <h2 className="font-serif text-[1.25rem] md:text-[1.4rem] text-[#1C1C1C]">Share a Discovery</h2>
+              <h2 className="font-serif text-[1.25rem] md:text-[1.4rem] text-[#1C1C1C]">Capture a Spark</h2>
               <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                Keep our curiosity alive
+                Add to the collection
               </p>
             </div>
           </CardContent>
@@ -93,11 +107,20 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
             
             <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-max space-y-4">
               
-              <div className="mb-4 md:mb-6 space-y-3">
-                <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase text-center md:text-left">
-                  SELECT A CATEGORY
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              <div className="mb-4 md:mb-6 space-y-3 relative">
+                <div className="flex justify-between items-center w-full">
+                  <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+                    SELECT A CATEGORY
+                  </p>
+                  <button 
+                    type="button"
+                    onClick={cyclePrompt}
+                    className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold tracking-wider text-[#909090] hover:text-black transition-colors uppercase"
+                  >
+                    Need an idea?
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-start">
                   {CATEGORIES.map(({ name, icon: Icon }) => (
                     <button
                       key={name}
@@ -119,7 +142,7 @@ export default function Home({ facts, onAddFact }: { facts: Fact[], onAddFact: (
               </div>
 
               <Textarea 
-                placeholder="Type your discovery here..." 
+                placeholder={PROMPTS[promptIndex]} 
                 className="flex-1 min-h-[120px] md:min-h-[180px] resize-none bg-transparent border-none focus-visible:ring-0 text-xl md:text-2xl font-serif leading-relaxed placeholder:text-[#D0D0D0] p-0"
                 value={newFact}
                 onChange={(e) => setNewFact(e.target.value)}

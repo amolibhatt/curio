@@ -30,12 +30,12 @@ export default function Login({ onLogin }: { onLogin: (userType: 'me' | 'friend'
               </svg>
           </div>
           <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
-          <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">A shared archive for your daily discoveries.</p>
+          <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">Two minds. One private cabinet of curiosities.</p>
         </div>
 
         <Card className="border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden bg-white">
           <CardHeader className="bg-[#FAFAFA] pb-6 border-b border-black/[0.03]">
-            <CardTitle className="text-xl font-serif text-center">Sign In Demo</CardTitle>
+            <CardTitle className="text-xl font-serif text-center">Enter the Archive</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-6 pb-8 px-6">
             <Button 

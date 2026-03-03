@@ -39,7 +39,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
           The Archive
         </h1>
         <p className="text-base text-[#909090] italic font-serif mt-2">
-          A timeline of our shared curiosity.
+          A living timeline of the things that made us think.
         </p>
       </header>
 
@@ -104,7 +104,7 @@ export default function Archive({ facts }: { facts: Fact[] }) {
         
         {facts.length === 0 && (
           <div className="text-center py-20 text-muted-foreground font-serif italic">
-            The archive is empty. Start your first streak today.
+            The archive awaits. Capture your first spark today.
           </div>
         )}
       </div>
