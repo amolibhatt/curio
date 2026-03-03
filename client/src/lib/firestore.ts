@@ -36,7 +36,16 @@ export function getReconnectCookie(): ReconnectData | null {
   const match = document.cookie.match(/curio_rc=([^;]+)/);
   if (!match) return null;
   try {
-    return JSON.parse(decodeURIComponent(match[1]));
+    const data = JSON.parse(decodeURIComponent(match[1]));
+    if (
+      typeof data?.uid !== 'string' || !data.uid ||
+      typeof data?.name !== 'string' || !data.name ||
+      typeof data?.pairingId !== 'string' || !data.pairingId ||
+      typeof data?.isUser1 !== 'boolean'
+    ) {
+      return null;
+    }
+    return data as ReconnectData;
   } catch {
     return null;
   }
@@ -49,19 +58,6 @@ export async function reconnectUser(
   pairingId: string,
   isUser1: boolean
 ): Promise<void> {
-  const pairingSnap = await getDoc(doc(db, "pairings", pairingId));
-  if (!pairingSnap.exists()) {
-    clearReconnectCookie();
-    throw new Error("Pairing no longer exists");
-  }
-
-  const pairingData = pairingSnap.data();
-  const expectedField = isUser1 ? "user1Id" : "user2Id";
-  if (pairingData[expectedField] !== oldUid) {
-    clearReconnectCookie();
-    throw new Error("Pairing membership mismatch");
-  }
-
   const safeName = name.trim().slice(0, MAX_NAME_LENGTH);
   if (safeName.length < 2) {
     clearReconnectCookie();
@@ -71,6 +67,29 @@ export async function reconnectUser(
   const avatar = buildAvatarUrl(safeName, isUser1);
 
   await setDoc(doc(db, "users", newUid), { name: safeName, avatar, pairingId });
+
+  let pairingData;
+  try {
+    const pairingSnap = await getDoc(doc(db, "pairings", pairingId));
+    if (!pairingSnap.exists()) {
+      await deleteDoc(doc(db, "users", newUid));
+      clearReconnectCookie();
+      throw new Error("Pairing no longer exists");
+    }
+    pairingData = pairingSnap.data();
+  } catch (err: any) {
+    if (err?.message === "Pairing no longer exists") throw err;
+    try { await deleteDoc(doc(db, "users", newUid)); } catch {}
+    clearReconnectCookie();
+    throw new Error("Cannot access pairing");
+  }
+
+  const expectedField = isUser1 ? "user1Id" : "user2Id";
+  if (pairingData[expectedField] !== oldUid) {
+    try { await deleteDoc(doc(db, "users", newUid)); } catch {}
+    clearReconnectCookie();
+    throw new Error("Pairing membership mismatch");
+  }
 
   const field = isUser1 ? "user1Id" : "user2Id";
   await updateDoc(doc(db, "pairings", pairingId), { [field]: newUid });

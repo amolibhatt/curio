@@ -67,13 +67,15 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Deploy**: `npx firebase deploy --only hosting,firestore --token "..."` from project root
 - **Security rules**: Locked-down per-pairing access using `getUserPairingId()` helper function in rules
   - Facts/dailyAnswers: read/write restricted to pairing members only
-  - Pairings: read allowed for members + unfilled pairings (invite flow); create restricted to `inviteCode`, `user1Id`, `user2Id` fields only
+  - Pairings: read allowed for members + unfilled pairings (invite flow) + users whose user doc points to the pairing (reconnect); create restricted to `inviteCode`, `user1Id`, `user2Id` fields only; create enforces `user2Id == null`, inviteCode is string 1-32 chars
+  - Pairing join: `affectedKeys().hasOnly(['user2Id'])` prevents modifying other fields during join
   - Pairing reconnect: cross-check prevents partner from hijacking the other slot (user2 can't overwrite user1Id, vice versa)
   - Fact create: validates date (string, length 10), categories (list, 1-7 items), restricts to exactly `text`, `authorId`, `pairingId`, `date`, `categories` fields
+  - Fact update: re-validates text (string, 1-5000 chars) and categories (list, 1-7 items) on edit
   - Fact authorId update (reconnect): requires pairing membership check via `getUserPairingId()`
   - Reactions: validated against allowed types; write restricted to `type` field only
-  - dailyAnswers create: validates field types and restricts to `pairingId`, `date`, `questionText`, `category`, `answers` fields
-  - dailyAnswers update: only user's own answer key can be modified
+  - dailyAnswers create: validates field types, answer value must be string 1-2000 chars; restricts to `pairingId`, `date`, `questionText`, `category`, `answers` fields
+  - dailyAnswers update: only user's own answer key can be modified; answer value validated as string 1-2000 chars
 
 ## Notes
 
@@ -95,7 +97,9 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - Daily answer textarea auto-grows with content (max 160px height)
 - `submitDailyAnswer` uses Firestore `runTransaction` for atomic read-then-write (prevents partner answers being overwritten on concurrent submission)
 - Input validation: fact text max 5000 chars, answer text max 2000 chars, name max 50 chars, categories validated against allowed set, reaction types validated against allowed set, anniversary date fully validated (format, date validity, no future dates), fact date format validated as YYYY-MM-DD
-- `reconnectUser` validates pairing exists and user membership matches before proceeding; sanitizes name from cookie (trim + length check); clears stale cookies on failure
+- `reconnectUser` creates user doc first (enables pairing read via `getUserPairingId()` rule), then validates pairing exists and user membership matches; on failure, cleans up the tentative user doc before throwing; sanitizes name from cookie (trim + length check); clears stale cookies on failure
+- `getReconnectCookie` validates parsed JSON shape (uid, name, pairingId are non-empty strings, isUser1 is boolean) before returning; prevents crashes from corrupted/tampered cookies
+- `joinPairing` uses Firestore `runTransaction` to atomically verify user2Id is null before setting it; prevents race conditions where two users try to join simultaneously
 - `reconnectUser` copies (not moves) old answer keys and reaction docs during UID migration — old orphaned keys are harmless since no user has the old UID; avoids PERMISSION_DENIED from rules that restrict deletions to own UID
 - `hasPostedToday` filters authorId server-side in Firestore query (3-field query: pairingId + authorId + date)
 - Composite indexes configured in `firestore.indexes.json` for multi-field queries on facts collection

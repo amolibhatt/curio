@@ -17,7 +17,8 @@ service cloud.firestore {
       allow read: if request.auth != null
         && (resource.data.user1Id == request.auth.uid
             || resource.data.user2Id == request.auth.uid
-            || resource.data.user2Id == null);
+            || resource.data.user2Id == null
+            || getUserPairingId() == pairingId);
       allow create: if request.auth != null
         && request.resource.data.user1Id == request.auth.uid
         && request.resource.data.user2Id == null
@@ -27,7 +28,9 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['inviteCode', 'user1Id', 'user2Id']);
       allow update: if request.auth != null
         && (
-          (resource.data.user2Id == null && request.resource.data.user2Id == request.auth.uid)
+          (resource.data.user2Id == null
+            && request.resource.data.user2Id == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user2Id']))
           || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['anniversaryDate'])
               && (resource.data.user1Id == request.auth.uid || resource.data.user2Id == request.auth.uid))
           || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user1Id'])
@@ -57,7 +60,13 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['text', 'authorId', 'pairingId', 'date', 'categories']);
       allow update: if request.auth != null
         && ((resource.data.authorId == request.auth.uid
-             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'categories']))
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'categories'])
+             && request.resource.data.text is string
+             && request.resource.data.text.size() > 0
+             && request.resource.data.text.size() <= 5000
+             && request.resource.data.categories is list
+             && request.resource.data.categories.size() > 0
+             && request.resource.data.categories.size() <= 7)
             || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['authorId'])
                 && request.resource.data.authorId == request.auth.uid
                 && resource.data.pairingId == getUserPairingId()));
@@ -79,6 +88,9 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.pairingId == getUserPairingId()
         && request.resource.data.answers.keys().hasOnly([request.auth.uid])
+        && request.resource.data.answers[request.auth.uid] is string
+        && request.resource.data.answers[request.auth.uid].size() > 0
+        && request.resource.data.answers[request.auth.uid].size() <= 2000
         && request.resource.data.date is string
         && request.resource.data.questionText is string
         && request.resource.data.category is string
@@ -86,7 +98,10 @@ service cloud.firestore {
       allow update: if request.auth != null
         && getUserPairingId() == resource.data.pairingId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answers'])
-        && request.resource.data.answers.diff(resource.data.answers).affectedKeys().hasOnly([request.auth.uid]);
+        && request.resource.data.answers.diff(resource.data.answers).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.answers[request.auth.uid] is string
+        && request.resource.data.answers[request.auth.uid].size() > 0
+        && request.resource.data.answers[request.auth.uid].size() <= 2000;
       allow delete: if false;
     }
   }
