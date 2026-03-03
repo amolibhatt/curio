@@ -40,8 +40,8 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
         <header className="flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FAF9F7]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
-              <div className="w-9 h-9 flex items-center justify-center bg-gradient-to-br from-rose-100 to-orange-50 rounded-xl">
-                <BookOpen className="w-[18px] h-[18px] text-rose-500" strokeWidth={1.5} />
+              <div className="w-9 h-9 flex items-center justify-center bg-[#EDEAE6] rounded-xl">
+                <BookOpen className="w-[18px] h-[18px] text-[#8B7E74]" strokeWidth={1.5} />
               </div>
               <span className="font-serif text-xl text-[#1C1C1C] tracking-tight">Curio</span>
             </div>
@@ -52,7 +52,7 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
               <Button 
                 variant="ghost" 
                 onClick={handleShareLink}
-                className={`rounded-full h-9 px-3.5 flex items-center gap-1.5 transition-all ${copied ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
+                className={`rounded-full h-9 px-3.5 flex items-center gap-1.5 transition-all ${copied ? 'text-[#1C1C1C] bg-black/5 hover:bg-black/10 hover:text-[#1C1C1C]' : 'text-[#909090] hover:text-black hover:bg-black/5'}`}
                 data-testid="button-invite"
               >
                 {copied ? (
@@ -96,7 +96,7 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
               </Button>
             </Link>
             <Link href="/us">
-              <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/us" ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600 hover:text-white shadow-sm" : "text-[#909090] hover:text-rose-400 hover:bg-rose-50"}`}>
+              <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/us" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
                 <Heart className={`w-[20px] h-[20px] ${location === "/us" ? "fill-white" : ""}`} strokeWidth={location === "/us" ? 2 : 1.5} />
               </Button>
             </Link>

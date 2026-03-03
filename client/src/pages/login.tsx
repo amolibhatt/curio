@@ -17,19 +17,19 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
   };
 
   return (
-    <div className="flex-1 bg-gradient-to-b from-[#FAF9F7] via-[#FFF5F0] to-[#FAF9F7] flex flex-col items-center justify-center p-6">
+    <div className="flex-1 bg-[#FAF9F7] flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-10 animate-in zoom-in-95 duration-500">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 flex items-center justify-center mb-6 bg-gradient-to-br from-rose-100 to-orange-50 rounded-2xl shadow-sm">
-             <BookOpen className="w-10 h-10 text-rose-500" strokeWidth={1.5} />
+          <div className="mx-auto w-20 h-20 flex items-center justify-center mb-6 bg-[#EDEAE6] rounded-2xl shadow-sm">
+             <BookOpen className="w-10 h-10 text-[#8B7E74]" strokeWidth={1.5} />
           </div>
           <h1 className="text-4xl md:text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">
             {isInvite ? "You've been invited." : "A shared space for two curious hearts."}
           </p>
           {isInvite && (
-            <div className="flex items-center justify-center gap-1.5 text-rose-400 animate-in fade-in duration-1000">
-              <Heart className="w-3.5 h-3.5 fill-rose-400" />
+            <div className="flex items-center justify-center gap-1.5 text-[#909090] animate-in fade-in duration-1000">
+              <Heart className="w-3.5 h-3.5" />
               <span className="text-xs font-medium">Your partner is waiting</span>
             </div>
           )}
@@ -41,7 +41,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
               <div className="space-y-2">
                 <Input 
                   placeholder="What's your name?"
-                  className="h-14 rounded-2xl px-6 bg-white border-none focus-visible:ring-rose-100 focus-visible:border-rose-100 text-base text-center placeholder:text-center shadow-sm"
+                  className="h-14 rounded-2xl px-6 bg-white border-none focus-visible:ring-black/5 focus-visible:border-black/5 text-base text-center placeholder:text-center shadow-sm"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={50}
@@ -51,7 +51,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
               </div>
 
               {error && (
-                <p className="text-rose-500 text-sm text-center" data-testid="text-error">{error}</p>
+                <p className="text-[#B86A6A] text-sm text-center" data-testid="text-error">{error}</p>
               )}
 
               <Button 
