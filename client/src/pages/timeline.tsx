@@ -4,6 +4,7 @@ import { getLocalDateStr } from "@/lib/date-utils";
 import { Heart, Calendar, Star, Gift, Sparkles, PartyPopper, CalendarHeart } from "lucide-react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
+import { useToast } from "@/hooks/use-toast";
 
 type Milestone = {
   days: number;
@@ -212,6 +213,7 @@ export default function Timeline({
   anniversaryDate: string | null;
   onSetAnniversaryDate: (date: string) => Promise<void>;
 }) {
+  const { toast } = useToast();
   const [dateInput, setDateInput] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -264,7 +266,7 @@ export default function Timeline({
       });
       setShowDatePicker(false);
     } catch {
-      alert("Couldn't save the date. Please try again.");
+      toast({ title: "Couldn't save", description: "Please try again.", variant: "destructive" });
     } finally {
       setIsSaving(false);
     }

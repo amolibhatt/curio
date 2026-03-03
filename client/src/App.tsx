@@ -66,18 +66,31 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     };
   }, [fetchFacts]);
 
+  const addingRef = useRef(false);
+
   const handleAddFact = async (text: string, categories: Category[]): Promise<void> => {
     if (!auth.pairing) throw new Error("No pairing");
-    const date = getLocalDateStr();
+    if (addingRef.current) throw new Error("Already submitting");
+    addingRef.current = true;
+    try {
+      const date = getLocalDateStr();
 
-    const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
-    if (alreadyPosted) {
-      throw new Error("You've already shared a discovery today");
+      const localDup = facts.some(f => f.authorId === auth.user.id && f.date === date);
+      if (localDup) {
+        throw new Error("You've already shared a discovery today");
+      }
+
+      const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
+      if (alreadyPosted) {
+        throw new Error("You've already shared a discovery today");
+      }
+
+      const newFact = await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
+      setFacts(prev => [newFact, ...prev]);
+      fetchFacts().catch(() => {});
+    } finally {
+      addingRef.current = false;
     }
-
-    const newFact = await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
-    setFacts(prev => [newFact, ...prev]);
-    fetchFacts().catch(() => {});
   };
 
   const handleEditFact = async (factId: string, text: string, categories: Category[]): Promise<void> => {

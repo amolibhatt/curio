@@ -1,4 +1,4 @@
-const CACHE_NAME = 'curio-cache-v7';
+const CACHE_NAME = 'curio-cache-v8';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -16,6 +16,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  if (event.request.method !== 'GET') return;
 
   if (
     url.hostname.includes('googleapis.com') ||

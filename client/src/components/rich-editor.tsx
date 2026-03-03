@@ -41,11 +41,28 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
     }
   }, [autoFocus]);
 
+  const lastValidHtml = useRef<string>('');
+
   const handleInput = useCallback(() => {
     if (!editorRef.current) return;
     const html = editorRef.current.innerHTML;
     const md = htmlContentToMarkdown(html);
-    if (maxLength && md.length > maxLength) return;
+    if (maxLength && md.length > maxLength) {
+      if (lastValidHtml.current) {
+        const sel = window.getSelection();
+        const hadFocus = document.activeElement === editorRef.current;
+        let savedOffset = 0;
+        if (hadFocus && sel && sel.rangeCount > 0) {
+          savedOffset = Math.min(getCaretOffset(editorRef.current), lastValidHtml.current.length);
+        }
+        editorRef.current.innerHTML = lastValidHtml.current;
+        if (hadFocus) {
+          restoreCaretOffset(editorRef.current, savedOffset);
+        }
+      }
+      return;
+    }
+    lastValidHtml.current = html;
     isInternalChange.current = true;
     onChange(md);
   }, [onChange, maxLength]);
