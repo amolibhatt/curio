@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 
 import logoImg from "../assets/images/logo-av.png";
 
@@ -20,8 +20,8 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
     <div className="flex-1 bg-[#FBF9F6] flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-10 animate-in zoom-in-95 duration-500">
         <div className="text-center space-y-4">
-          <div className="mx-auto w-32 h-32 flex items-center justify-center mb-6 overflow-hidden">
-             <img src={logoImg} alt="Logo" className="w-full h-full object-cover mix-blend-multiply" />
+          <div className="mx-auto w-20 h-20 flex items-center justify-center mb-6 bg-white rounded-full shadow-sm">
+             <BookOpen className="w-10 h-10 text-black" strokeWidth={1.5} />
           </div>
           <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">Two minds. One private cabinet of curiosities.</p>
