@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, Check } from "lucide-react";
+import { BookOpen, Compass, History, Link as LinkIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
-import logoImg from "../assets/images/logo-av.png";
 
-export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean }) {
+export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
 
   const handleShareLink = () => {
-    const inviteLink = `${window.location.origin}/invite`;
+    if (!inviteCode) return;
+    const inviteLink = `${window.location.origin}/invite/${inviteCode}`;
     navigator.clipboard.writeText(inviteLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -19,10 +19,8 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
 
   return (
     <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
-      {/* Container - Full width and height with no borders */}
       <div className="w-full min-h-screen flex flex-col relative overflow-hidden max-w-2xl mx-auto">
         
-        {/* Top Header */}
         <header className="flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
@@ -41,7 +39,7 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
               </div>
             </div>
             
-            {!hasFriendJoined && (
+            {!hasFriendJoined && inviteCode && (
               <Button 
                 variant="ghost" 
                 onClick={handleShareLink}
@@ -63,14 +61,12 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-y-auto w-full h-full pb-24 relative">
           <div className="w-full px-5 h-full flex flex-col">
             {children}
           </div>
         </main>
 
-        {/* Mobile Bottom Nav */}
         <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl flex items-center justify-center gap-2 p-1.5 rounded-[2rem] z-50 w-max px-3 border-none">
           <Link href="/">
             <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 flex-1 transition-all ${location === "/" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>

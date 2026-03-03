@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "./lib/queryClient";
+import { QueryClientProvider, useQuery, useMutation } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -11,139 +10,123 @@ import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
 
-import { mockFacts, currentUser, friendUser, Fact, User, ReactionType } from "./lib/mock-data";
+import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
 
-function Router({ 
-  facts, 
-  onAddFact,
-  onReactToFact,
-  activeUser,
-  partnerUser
-}: { 
-  facts: Fact[], 
-  onAddFact: (text: string, categories: string[], imageUrl?: string) => void,
-  onReactToFact: (factId: string, reaction: ReactionType | null) => void,
-  activeUser: User,
-  partnerUser: User
-}) {
-  const [, setLocation] = useLocation();
+function AuthenticatedApp({ auth }: { auth: AuthState }) {
+  const { data: facts = [] } = useQuery<Fact[]>({
+    queryKey: ["/api/facts"],
+    refetchInterval: 15000,
+  });
 
-  const handleAddFactAndRedirect = (text: string, categories: string[], imageUrl?: string) => {
-    onAddFact(text, categories, imageUrl);
-    setLocation('/archive');
-  };
+  const addFactMutation = useMutation({
+    mutationFn: async (data: { text: string; categories: Category[]; imageUrl?: string }) => {
+      const res = await apiRequest("POST", "/api/facts", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facts"] });
+    },
+  });
+
+  const reactMutation = useMutation({
+    mutationFn: async ({ factId, type }: { factId: number; type: ReactionType }) => {
+      const res = await apiRequest("POST", `/api/facts/${factId}/react`, { type });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facts"] });
+    },
+  });
+
+  const partner = auth.partner || { id: 0, name: "Your partner", avatar: "" };
 
   return (
-    <Switch>
-      <Route path="/">
-        <Home facts={facts} onAddFact={handleAddFactAndRedirect} activeUser={activeUser} partnerUser={partnerUser} />
-      </Route>
-      <Route path="/archive">
-        <Archive facts={facts} onReact={onReactToFact} activeUser={activeUser} partnerUser={partnerUser} />
-      </Route>
-      <Route path="/invite">
-        <Home facts={facts} onAddFact={handleAddFactAndRedirect} activeUser={activeUser} partnerUser={partnerUser} />
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
+    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
+      <Switch>
+        <Route path="/">
+          <Home
+            facts={facts}
+            onAddFact={(text, categories, imageUrl) => addFactMutation.mutate({ text, categories, imageUrl })}
+            activeUser={auth.user}
+            partnerUser={partner}
+          />
+        </Route>
+        <Route path="/archive">
+          <Archive
+            facts={facts}
+            onReact={(factId, reaction) => { if (reaction) reactMutation.mutate({ factId, type: reaction as ReactionType }); }}
+            activeUser={auth.user}
+            partnerUser={partner}
+          />
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeUser, setActiveUser] = useState<User>(currentUser);
-  const [facts, setFacts] = useState<Fact[]>(mockFacts);
-  const [hasFriendJoined, setHasFriendJoined] = useState(false);
+function AppContent() {
+  const { data: auth, isLoading } = useQuery<AuthState | null>({
+    queryKey: ["/api/auth/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (res.status === 401) return null;
+      if (!res.ok) throw new Error("Failed to fetch auth");
+      return res.json();
+    },
+    refetchInterval: 30000,
+  });
+
+  const signupMutation = useMutation({
+    mutationFn: async ({ name, inviteCode }: { name: string; inviteCode?: string }) => {
+      const url = inviteCode ? `/api/auth/join/${inviteCode}` : "/api/auth/signup";
+      const res = await apiRequest("POST", url, { name });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    },
+  });
 
   const handleLogin = (name: string) => {
-    // If we're on the invite page, user 1 invited us. We are user 2.
-    const isFriend = window.location.pathname.includes('/invite');
-    
-    const newUser: User = {
-      id: isFriend ? 'user_2' : 'user_1',
-      name: name,
-      // Simple avatar generation based on name
-      avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${name}&backgroundColor=${isFriend ? 'ffd5dc' : 'e5e4df'}`,
-    };
-    
-    // Update active user state
-    setActiveUser(newUser);
-    
-    // Also update the mock data users based on who logged in
-    if (isFriend) {
-      friendUser.name = name;
-      friendUser.avatar = newUser.avatar;
-      setHasFriendJoined(true); // User 2 just joined!
-    } else {
-      currentUser.name = name;
-      currentUser.avatar = newUser.avatar;
-    }
-
-    setIsAuthenticated(true);
-    
-    // If they logged in from invite page, redirect them home
-    if (isFriend) {
-      window.history.pushState({}, '', '/');
-      window.dispatchEvent(new PopStateEvent('popstate')); // Tell wouter to re-render
-    }
+    const match = window.location.pathname.match(/^\/invite\/(.+)/);
+    const inviteCode = match?.[1];
+    signupMutation.mutate({ name, inviteCode }, {
+      onSuccess: () => {
+        if (inviteCode) {
+          window.history.pushState({}, "", "/");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }
+      },
+    });
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-  };
-
-  const handleAddFact = (text: string, categories: string[], imageUrl?: string) => {
-    const newFact: Fact = {
-      id: `f_${Date.now()}`,
-      text,
-      imageUrl,
-      authorId: activeUser.id,
-      date: new Date().toISOString().split('T')[0],
-      categories: categories as any,
-      reactions: {}
-    };
-    setFacts(prev => [newFact, ...prev]);
-  };
-
-  const handleReactToFact = (factId: string, reaction: ReactionType | null) => {
-    setFacts(prev => prev.map(fact => {
-      if (fact.id === factId) {
-        const currentReactions = fact.reactions || {};
-        return {
-          ...fact,
-          reactions: {
-            ...currentReactions,
-            [activeUser.id]: currentReactions[activeUser.id] === reaction ? null : reaction
-          }
-        };
-      }
-      return fact;
-    }));
-  };
-
-  if (!isAuthenticated) {
+  if (isLoading) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
-            <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
-               <Login onLogin={handleLogin} />
-            </div>
-          </div>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center">
+        <div className="animate-pulse font-serif text-2xl text-[#909090]">Curio</div>
+      </div>
     );
   }
 
-  const partnerUser = activeUser.id === 'user_1' ? friendUser : currentUser;
+  if (!auth) {
+    return (
+      <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
+        <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
+          <Login onLogin={handleLogin} error={signupMutation.error?.message} />
+        </div>
+      </div>
+    );
+  }
 
+  return <AuthenticatedApp auth={auth} />;
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Layout user={activeUser} hasFriendJoined={hasFriendJoined}>
-          <Router facts={facts} onAddFact={handleAddFact} onReactToFact={handleReactToFact} activeUser={activeUser} partnerUser={partnerUser} />
-        </Layout>
+        <AppContent />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
@@ -151,4 +134,3 @@ function App() {
 }
 
 export default App;
-

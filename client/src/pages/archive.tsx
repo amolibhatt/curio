@@ -5,12 +5,12 @@ import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User }) {
-  const [filterPerson, setFilterPerson] = useState<string | null>(null);
+export default function Archive({ facts, onReact, activeUser, partnerUser }: { facts: Fact[], onReact: (factId: number, reaction: string | null) => void, activeUser: User, partnerUser: User }) {
+  const [filterPerson, setFilterPerson] = useState<number | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
+  const [burstReaction, setBurstReaction] = useState<{id: number, type: string} | null>(null);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
@@ -48,7 +48,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
     return 'bg-[#FBF9F6] text-[#737373] border-none';
   };
 
-  const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
+  const handleReact = (factId: number, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
     if (navigator.vibrate) navigator.vibrate(50);
     setBurstReaction({ id: factId, type });
     onReact(factId, type);
@@ -164,7 +164,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                   const isHidden = !isMe && !iPostedThisDate;
                   
                   // Check if current user has reacted
-                  const myReaction = fact.reactions?.[activeUser.id];
+                  const myReaction = fact.reactions?.[String(activeUser.id)];
                   
                   return (
                     <motion.div 
@@ -383,14 +383,14 @@ export default function Archive({ facts, onReact, activeUser, partnerUser }: { f
                                 </div>
                               
                               {/* Display existing reactions if any */}
-                              {(fact.reactions?.[partnerUser.id]) && isMe && (
+                              {(fact.reactions?.[String(partnerUser.id)]) && isMe && (
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300">
-                                  {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
-                                  {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
-                                  {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                                  {fact.reactions[partnerUser.id] === 'laugh' && <span className="text-[12px]">😂</span>}
-                                  {fact.reactions[partnerUser.id] === 'thinking' && <span className="text-[12px]">🤔</span>}
-                                  {fact.reactions[partnerUser.id] === 'sad' && <span className="text-[12px]">😢</span>}
+                                  {fact.reactions[String(partnerUser.id)] === 'mind-blown' && <Brain className="w-3.5 h-3.5" />}
+                                  {fact.reactions[String(partnerUser.id)] === 'fascinating' && <Sparkles className="w-3.5 h-3.5" />}
+                                  {fact.reactions[String(partnerUser.id)] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
+                                  {fact.reactions[String(partnerUser.id)] === 'laugh' && <span className="text-[12px]">😂</span>}
+                                  {fact.reactions[String(partnerUser.id)] === 'thinking' && <span className="text-[12px]">🤔</span>}
+                                  {fact.reactions[String(partnerUser.id)] === 'sad' && <span className="text-[12px]">😢</span>}
                                   <span>{partnerUser.name} reacted</span>
                                 </div>
                               )}
