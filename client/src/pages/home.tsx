@@ -140,9 +140,9 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
   };
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-2 md:pt-8 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-6 md:gap-10">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto h-full flex flex-col pt-1 md:pt-4 pb-[max(env(safe-area-inset-bottom),5rem)] md:pb-4 gap-3 md:gap-6">
       {/* Header Section */}
-      <header className="space-y-4 md:space-y-6 flex-shrink-0 px-2 md:px-0">
+      <header className="space-y-2 md:space-y-4 flex-shrink-0 px-2 md:px-0">
         <div className="inline-flex items-center gap-2 bg-[#1C1C1C] text-white px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-[11px] font-bold tracking-[0.1em]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
             <circle cx="12" cy="12" r="10" />
@@ -151,11 +151,11 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           {streak} DAY STREAK
         </div>
         
-            <div className="space-y-1 md:space-y-3 pt-1 md:pt-2">
-          <h1 className="text-[3rem] md:text-[4rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
+            <div className="space-y-1 pt-1">
+          <h1 className="text-[2.25rem] md:text-[3rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
             Did you learn something <span className="italic text-[#4A4A4A]">new</span> today?
           </h1>
-          <p className="text-[1.05rem] md:text-[1.15rem] text-[#909090] italic font-serif">
+          <p className="text-[1rem] md:text-[1.15rem] text-[#909090] italic font-serif">
             Add it to our shared cabinet of curiosities.
           </p>
         </div>
@@ -168,8 +168,8 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
           
-          <CardContent className="p-6 md:p-12 flex-1 flex flex-col justify-center items-center text-center relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-soft animate-in slide-in-from-bottom-2 duration-500">
+          <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center relative z-10">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-50/80 text-green-600 rounded-full flex items-center justify-center mb-4 shadow-soft animate-in slide-in-from-bottom-2 duration-500">
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
             <h2 className="font-serif text-xl md:text-2xl text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100">Discovery Captured</h2>
@@ -186,14 +186,14 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             setIsAdding(true);
           }}
         >
-          <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center group">
-            <div className="w-20 h-20 md:w-24 md:h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mb-6 md:mb-10 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-soft border border-black/[0.02]">
-              <Plus className="w-8 h-8 md:w-10 md:h-10 text-[#1C1C1C]" strokeWidth={1.5} />
+          <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
+            <div className="w-14 h-14 bg-[#FAFAFA] rounded-full flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 group-hover:shadow-soft border border-black/[0.02]">
+              <Plus className="w-6 h-6 text-[#1C1C1C]" strokeWidth={1.5} />
             </div>
             
-            <div className="space-y-2 md:space-y-3">
-              <h2 className="font-serif text-[1.25rem] md:text-[1.4rem] text-[#1C1C1C]">Capture a Discovery</h2>
-              <p className="text-[10px] md:text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+            <div className="space-y-1">
+              <h2 className="font-serif text-[1.2rem] md:text-[1.3rem] text-[#1C1C1C]">Capture a Discovery</h2>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
                 Add to the collection
               </p>
             </div>
