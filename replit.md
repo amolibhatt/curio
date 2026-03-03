@@ -69,5 +69,4 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `todayStr` is reactive (checks every 30s for midnight rollover)
 - `fetchFacts` uses a ref for pairingId to avoid interval restarts on auth refresh
 - Reactions subcollection reads are parallelized with Promise.all
-- Recovery flow: if user doc is deleted, re-login finds existing pairing via `findExistingPairingForUser`
 - Burst animation timeout is cleaned up on component unmount via ref

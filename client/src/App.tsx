@@ -241,14 +241,8 @@ function AppContent() {
         window.history.pushState({}, "", "/");
         window.dispatchEvent(new PopStateEvent("popstate"));
       } else {
-        const existingPairing = await firestoreOps.findExistingPairingForUser(uid);
-        if (existingPairing) {
-          const isUser1 = existingPairing.user1Id === uid;
-          await firestoreOps.createUser(uid, name, existingPairing.id, isUser1);
-        } else {
-          const pairing = await firestoreOps.createPairing(uid);
-          await firestoreOps.createUser(uid, name, pairing.id, true);
-        }
+        const pairing = await firestoreOps.createPairing(uid);
+        await firestoreOps.createUser(uid, name, pairing.id, true);
       }
 
       const state = await firestoreOps.getAuthState(uid);
