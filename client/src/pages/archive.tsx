@@ -121,29 +121,19 @@ export default function Archive({ facts }: { facts: Fact[] }) {
         )}
       </header>
 
-      <div className="space-y-10 relative before:absolute before:inset-0 before:ml-[28px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-black/5 px-2 md:px-0">
+      <div className="space-y-12 px-2 md:px-0">
         {sortedDates.map((date) => {
           const dateFacts = groupedFacts[date];
           return (
-            <div key={date} className="relative flex flex-col md:flex-row items-start justify-between md:odd:flex-row-reverse group gap-4 md:gap-0">
-              
-              {/* Timeline marker for Mobile (Left) and Desktop (Center) */}
-              <div className="absolute left-[28px] md:left-1/2 -translate-x-1/2 flex items-center justify-center w-6 h-6 rounded-full border-[4px] border-[#FBF9F6] bg-[#1C1C1C] z-10 top-0 md:top-6" />
-              
-              {/* Date Header for Mobile (Shows above the cards on mobile) */}
-              <div className="md:hidden pl-[60px] w-full pt-0.5">
-                <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase bg-[#FBF9F6] pr-4">
+            <div key={date} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-4">
+                <h2 className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase whitespace-nowrap">
                   {format(parseISO(date), 'MMMM d, yyyy')}
-                </span>
+                </h2>
+                <div className="h-px bg-black/5 flex-1" />
               </div>
-
-              {/* Content side */}
-              <div className="w-full pl-[60px] md:pl-0 md:w-[calc(50%-3rem)] flex flex-col gap-4 mt-2 md:mt-0">
-                {/* Date Header for Desktop */}
-                <div className="hidden md:flex text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-2">
-                  {format(parseISO(date), 'MMMM d, yyyy')}
-                </div>
-                
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {dateFacts.map((fact) => {
                   const isMe = fact.authorId === currentUser.id;
                   const author = isMe ? currentUser : friendUser;
@@ -152,34 +142,30 @@ export default function Archive({ facts }: { facts: Fact[] }) {
                   return (
                     <div 
                       key={fact.id} 
-                      className={`bg-white rounded-[1.5rem] p-5 md:p-6 border ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'}`}
+                      className={`bg-white rounded-[1.5rem] p-5 flex flex-col justify-between border ${isAboutUs ? 'border-rose-100 shadow-[0_8px_30px_rgba(225,29,72,0.06)]' : 'border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.03)]'}`}
                     >
-                      <div className="flex items-start justify-between mb-4 gap-2">
-                        <div className="flex items-center gap-2.5 shrink-0 pt-0.5">
-                          <img src={author.avatar} alt={author.name} className="w-6 h-6 rounded-full border border-black/5" />
-                          <span className="text-xs font-semibold text-[#1C1C1C]">{author.name}</span>
+                      <p className={`font-serif leading-relaxed mb-6 ${isAboutUs ? 'text-rose-950 text-lg' : 'text-[#1C1C1C] text-lg'}`}>
+                        "{fact.text}"
+                      </p>
+
+                      <div className="flex items-end justify-between gap-2 mt-auto">
+                        <div className="flex items-center gap-2 shrink-0">
+                          <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full border border-black/5" />
+                          <span className="text-[11px] font-semibold text-[#1C1C1C]">{author.name}</span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-1.5 justify-end">
+                        <div className="flex flex-wrap items-center gap-1 justify-end">
                           {fact.categories.map((category) => (
-                            <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
-                              {getCategoryIcon(category)}
+                            <div key={category} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getCategoryColor(category)}`}>
                               {category}
                             </div>
                           ))}
                         </div>
                       </div>
-                      
-                      <p className={`font-serif leading-relaxed ${isAboutUs ? 'text-rose-950 text-lg md:text-xl' : 'text-[#1C1C1C] text-lg'}`}>
-                        "{fact.text}"
-                      </p>
                     </div>
                   );
                 })}
               </div>
-              
-              {/* Empty spacer for flex layout on desktop */}
-              <div className="hidden md:block w-[calc(50%-3rem)]" />
             </div>
           );
         })}
