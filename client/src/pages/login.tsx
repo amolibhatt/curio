@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 
-import logoImg from "../assets/images/logo-av-line.png";
+import logoImg from "../assets/images/logo-av-book-minimal.png";
 
 export default function Login({ onLogin }: { onLogin: (name: string) => void }) {
   const [name, setName] = useState("");
