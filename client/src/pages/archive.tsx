@@ -216,7 +216,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                      {(() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()}
+                      {qa.date === todayStr ? (
+                        <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                      ) : (
+                        (() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()
+                      )}
                     </p>
                     <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">{qa.category}</span>
                   </div>
@@ -262,7 +266,11 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
               <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
                 <div className="sticky top-0 z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5">
                   <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
-                    {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()}
+                    {date === todayStr ? (
+                      <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                    ) : (
+                      (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()
+                    )}
                   </h2>
                 </div>
                 
@@ -294,15 +302,19 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
 
                         <div className="flex-1 relative group/card">
                           {isHidden ? (
-                            <div className="py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 hover:bg-black/[0.02]">
-                              <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
-                              <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                            <div className={`py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 ${date === todayStr ? 'hover:bg-black/[0.02]' : ''}`}>
+                              {date === todayStr && (
+                                <>
+                                  <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
+                                  <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                                </>
+                              )}
                               <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>
+                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>}
                                 {date === todayStr
                                   ? "Sealed until you share yours"
                                   : "You didn\u2019t share that day"}
-                                <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>
+                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>}
                               </p>
                             </div>
                           ) : (
@@ -327,6 +339,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative shrink-0">
                                       <button
                                         onClick={() => handleReact(fact.id, 'mind-blown')}
+                                        aria-label="React mind blown"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'mind-blown' 
                                             ? 'bg-black text-white' 
@@ -354,6 +367,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative">
                                       <button
                                         onClick={() => handleReact(fact.id, 'fascinating')}
+                                        aria-label="React fascinating"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'fascinating' 
                                             ? 'bg-black text-white' 
@@ -381,6 +395,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative">
                                       <button
                                         onClick={() => handleReact(fact.id, 'heart')}
+                                        aria-label="React heart"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'heart' 
                                             ? 'bg-rose-500 text-white' 
@@ -408,6 +423,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative">
                                       <button
                                         onClick={() => handleReact(fact.id, 'laugh')}
+                                        aria-label="React laugh"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'laugh' 
                                             ? 'bg-amber-100 text-amber-700' 
@@ -435,6 +451,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative">
                                       <button
                                         onClick={() => handleReact(fact.id, 'thinking')}
+                                        aria-label="React thinking"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'thinking' 
                                             ? 'bg-blue-100 text-blue-700' 
@@ -462,6 +479,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                                     <div className="relative">
                                       <button
                                         onClick={() => handleReact(fact.id, 'sad')}
+                                        aria-label="React sad"
                                         className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                           myReaction === 'sad' 
                                             ? 'bg-indigo-100 text-indigo-700' 

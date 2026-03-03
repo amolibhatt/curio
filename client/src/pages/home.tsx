@@ -368,9 +368,13 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           <p className="text-[10px] text-[#b0b0b0] leading-tight">
             {myFactToday ? "Discovery shared" : "Share yours today"}
           </p>
-          {myFactToday && (
+          {myFactToday ? (
             <button onClick={startEditing} className="mt-auto self-start flex items-center gap-1 text-[10px] font-semibold text-[#909090] hover:text-[#1C1C1C] transition-colors" data-testid="button-edit-fact">
               <Pencil className="w-2.5 h-2.5" /> Edit
+            </button>
+          ) : (
+            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }} className="mt-auto self-start text-[10px] font-semibold text-[#909090] hover:text-[#1C1C1C] transition-colors flex items-center gap-1" data-testid="button-card-add">
+              <Send className="w-2.5 h-2.5" /> Tap to share
             </button>
           )}
         </div>

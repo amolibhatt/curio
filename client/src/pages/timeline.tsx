@@ -396,7 +396,7 @@ export default function Timeline({
                 className="absolute inset-y-0 left-0 bg-[#1C1C1C] rounded-full"
               />
             </div>
-            <p className="text-xs text-[#909090] mt-2 text-right">{next.days - daysTogether} days to go</p>
+            <p className="text-xs text-[#909090] mt-2 text-right">{next.days - daysTogether} {next.days - daysTogether === 1 ? 'day' : 'days'} to go</p>
           </motion.div>
         )}
 

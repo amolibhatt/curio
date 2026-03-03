@@ -153,7 +153,7 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
     editorElement: (
       <div className="relative">
         {showPlaceholder && (
-          <div className="absolute top-0 left-0 pointer-events-none text-[#909090]/40 select-none">
+          <div className={`absolute top-0 left-0 pointer-events-none text-[#909090]/40 select-none ${className || ''}`}>
             {placeholder}
           </div>
         )}
