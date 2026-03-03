@@ -49,8 +49,13 @@ function DaysCounter({ days }: { days: number }) {
   );
 }
 
+function parseLocalDate(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function getMonthlyAnniversary(anniversaryDate: string) {
-  const anniv = new Date(anniversaryDate);
+  const anniv = parseLocalDate(anniversaryDate);
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   const annivDay = anniv.getDate();
@@ -81,7 +86,7 @@ function getMonthlyAnniversary(anniversaryDate: string) {
 function getYearlyAnniversary(anniversaryDate: string) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const anniv = new Date(anniversaryDate);
+  const anniv = parseLocalDate(anniversaryDate);
   const thisYear = new Date(now.getFullYear(), anniv.getMonth(), anniv.getDate());
   thisYear.setHours(0, 0, 0, 0);
 
@@ -200,7 +205,7 @@ export default function Timeline({
 
   const daysTogether = useMemo(() => {
     if (!anniversaryDate) return 0;
-    const start = new Date(anniversaryDate);
+    const start = parseLocalDate(anniversaryDate);
     const now = new Date();
     start.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
@@ -334,7 +339,7 @@ export default function Timeline({
           <p className="text-[10px] font-bold tracking-[0.25em] text-[#909090] uppercase mb-4" data-testid="text-days-label">Days Together</p>
           <DaysCounter days={daysTogether} />
           <p className="text-sm text-[#909090] font-serif italic mt-4" data-testid="text-since-date">
-            since {new Date(anniversaryDate!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            since {parseLocalDate(anniversaryDate!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
           <MonthBadge months={monthsTogether} />
         </motion.div>
