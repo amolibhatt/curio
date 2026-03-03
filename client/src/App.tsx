@@ -57,7 +57,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Layout>
+        <Layout user={activeUser}>
           <Switch>
             <Route path="/">
               <Home facts={facts} onAddFact={handleAddFact} />

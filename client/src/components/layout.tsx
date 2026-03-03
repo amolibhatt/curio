@@ -2,7 +2,9 @@ import { Link, useLocation } from "wouter";
 import { BookOpen, UserPlus, LogOut, History, Home, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+import { currentUser } from "@/lib/mock-data";
+
+export default function Layout({ children, user }: { children: React.ReactNode, user: typeof currentUser }) {
   const [location] = useLocation();
 
   return (
@@ -24,8 +26,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
           
-          <div className="flex items-center">
-            <Button variant="outline" className="rounded-full bg-white border-black/5 shadow-sm hover:bg-black/5 text-[10px] font-bold tracking-[0.15em] text-black/70 h-9 px-4 flex items-center gap-2 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex flex-col items-end mr-2">
+              <span className="text-[10px] font-bold tracking-widest text-[#909090] uppercase leading-none">Signed in as</span>
+              <span className="text-xs font-semibold text-[#1C1C1C] mt-1">{user.name}</span>
+            </div>
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-black/10 shrink-0">
+              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover bg-white" />
+            </div>
+            <Button variant="outline" className="rounded-full bg-white border-black/5 shadow-sm hover:bg-black/5 text-[10px] font-bold tracking-[0.15em] text-black/70 h-9 px-4 flex items-center gap-2 transition-colors ml-1">
               <UserPlus className="w-3.5 h-3.5" strokeWidth={2} />
               <span>ADD</span>
             </Button>
