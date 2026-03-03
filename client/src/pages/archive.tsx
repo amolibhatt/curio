@@ -5,13 +5,13 @@ import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter
 
 export default function Archive({ facts }: { facts: Fact[] }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   // Apply filters
   const filteredFacts = facts.filter(fact => {
     if (filterPerson && fact.authorId !== filterPerson) return false;
-    if (filterCategory && !fact.categories.includes(filterCategory as any)) return false;
+    if (filterCategories.length > 0 && !fact.categories.some(c => filterCategories.includes(c))) return false;
     return true;
   });
 
@@ -59,10 +59,10 @@ export default function Archive({ facts }: { facts: Fact[] }) {
 
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategory ? 'bg-[#1C1C1C] text-white' : 'bg-white border border-black/[0.05] text-[#1C1C1C] hover:bg-black/5'}`}
+            className={`self-center md:self-auto flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-white border border-black/[0.05] text-[#1C1C1C] hover:bg-black/5'}`}
           >
             <Filter className="w-3.5 h-3.5" />
-            Filters {(filterPerson || filterCategory) && '(Active)'}
+            Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}
           </button>
         </div>
 
@@ -97,19 +97,25 @@ export default function Archive({ facts }: { facts: Fact[] }) {
 
               {/* Category Filter */}
               <div>
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category (Select multiple)</p>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => setFilterCategory(null)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === null ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                    onClick={() => setFilterCategories([])}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
                   >
-                    All
+                    All Categories
                   </button>
                   {['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'].map(cat => (
                     <button
                       key={cat}
-                      onClick={() => setFilterCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === cat ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
+                      onClick={() => {
+                        setFilterCategories(prev => 
+                          prev.includes(cat) 
+                            ? prev.filter(c => c !== cat) 
+                            : [...prev, cat]
+                        );
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}
                     >
                       {cat}
                     </button>
