@@ -88,10 +88,11 @@ export async function reconnectUser(
   for (const ansDoc of answersSnap.docs) {
     const ansData = ansDoc.data();
     if (ansData.answers && oldUid in ansData.answers) {
-      await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
-        [`answers.${newUid}`]: ansData.answers[oldUid],
-        [`answers.${oldUid}`]: deleteField(),
-      });
+      try {
+        await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
+          [`answers.${newUid}`]: ansData.answers[oldUid],
+        });
+      } catch {}
     }
   }
 
@@ -106,14 +107,9 @@ export async function reconnectUser(
       const oldReactionSnap = await getDoc(oldReactionRef);
       if (oldReactionSnap.exists()) {
         await setDoc(doc(db, "facts", factDoc.id, "reactions", newUid), oldReactionSnap.data());
-        await deleteDoc(oldReactionRef);
       }
     } catch {}
   }
-
-  try {
-    await deleteDoc(doc(db, "users", oldUid));
-  } catch {}
 
   setReconnectCookie({ uid: newUid, name, pairingId, isUser1 });
 }

@@ -27,6 +27,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
 
+  const hasLoadedOnce = useRef(false);
+
   const fetchFacts = useCallback(async () => {
     const pid = pairingIdRef.current;
     if (!pid) return;
@@ -37,13 +39,16 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
       ]);
       setFacts(factsData);
       setDailyAnswers(answersData);
+      hasLoadedOnce.current = true;
     } catch (err: any) {
       console.error("[Curio] Failed to fetch data:", err);
-      toast({
-        title: "Couldn't load data",
-        description: err?.message || "Check Firestore rules",
-        variant: "destructive",
-      });
+      if (!hasLoadedOnce.current) {
+        toast({
+          title: "Couldn't load data",
+          description: err?.message || "Check Firestore rules",
+          variant: "destructive",
+        });
+      }
     } finally {
       setInitialLoading(false);
     }
@@ -98,7 +103,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const handleEditFact = async (factId: string, text: string, categories: Category[]): Promise<void> => {
     await firestoreOps.updateFact(factId, text, categories);
-    setFacts(prev => prev.map(f => f.id === factId ? { ...f, text, categories } : f));
+    const safeText = text.slice(0, 5000);
+    const validCats = categories.filter(c => ['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'].includes(c));
+    setFacts(prev => prev.map(f => f.id === factId ? { ...f, text: safeText, categories: validCats } : f));
   };
 
   const handleReact = async (factId: string, type: ReactionType) => {
@@ -169,6 +176,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
       }
       return [result, ...prev];
     });
+    fetchFacts().catch(() => {});
     return result;
   };
 
@@ -335,7 +343,8 @@ function AppContent() {
   }, [authState, refreshAuth]);
 
   const handleLogin = async (name: string) => {
-    if (!name || name.length < 2) {
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length < 2) {
       setSignupError("Name must be at least 2 characters");
       return;
     }
@@ -367,7 +376,7 @@ function AppContent() {
           setIsSigningUp(false);
           return;
         }
-        await firestoreOps.createUser(uid, name, pairing.id, false);
+        await firestoreOps.createUser(uid, trimmedName, pairing.id, false);
         await firestoreOps.joinPairing(pairing.id, uid);
         isUser1 = false;
         pairingId = pairing.id;
@@ -376,11 +385,11 @@ function AppContent() {
         window.dispatchEvent(new PopStateEvent("popstate"));
       } else {
         const pairing = await firestoreOps.createPairing(uid);
-        await firestoreOps.createUser(uid, name, pairing.id, true);
+        await firestoreOps.createUser(uid, trimmedName, pairing.id, true);
         pairingId = pairing.id;
       }
 
-      firestoreOps.setReconnectCookie({ uid, name, pairingId, isUser1 });
+      firestoreOps.setReconnectCookie({ uid, name: trimmedName, pairingId, isUser1 });
 
       const state = await firestoreOps.getAuthState(uid);
       setAuthState(state);

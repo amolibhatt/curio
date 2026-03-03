@@ -92,5 +92,11 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `submitDailyAnswer` uses Firestore `runTransaction` for atomic read-then-write (prevents partner answers being overwritten on concurrent submission)
 - Input validation: fact text max 5000 chars, answer text max 2000 chars, name max 50 chars, categories validated against allowed set, reaction types validated against allowed set, anniversary date format validated as YYYY-MM-DD
 - `reconnectUser` validates pairing exists and user membership matches before proceeding; clears stale cookies on failure
+- `reconnectUser` copies (not moves) old answer keys and reaction docs during UID migration — old orphaned keys are harmless since no user has the old UID; avoids PERMISSION_DENIED from rules that restrict deletions to own UID
 - `hasPostedToday` filters authorId server-side in Firestore query (3-field query: pairingId + authorId + date)
 - Composite indexes configured in `firestore.indexes.json` for multi-field queries on facts collection
+- Fact update rule restricts author edits to only `text` and `categories` fields — prevents malicious pairingId/date/authorId changes
+- `handleEditFact` stores sanitized (truncated + validated) values in local state, not raw component values
+- `handleLogin` trims name before length check to prevent whitespace-only names passing validation
+- `handleSubmitAnswer` triggers a background `fetchFacts()` after Q&A submission to pick up partner's answer sooner
+- `fetchFacts` error toast only shows on initial load, not during periodic 15s polling — prevents toast spam when Firestore is temporarily unreachable

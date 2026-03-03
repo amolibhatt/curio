@@ -43,7 +43,8 @@ service cloud.firestore {
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 5000;
       allow update: if request.auth != null
-        && (resource.data.authorId == request.auth.uid
+        && ((resource.data.authorId == request.auth.uid
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'categories']))
             || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['authorId'])
                 && request.resource.data.authorId == request.auth.uid));
       allow delete: if false;
