@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, Lightbulb, RefreshCw, ArrowRight, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -309,37 +309,53 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         </div>
       </header>
 
-      {myFactToday && !isEditing ? (
-        <Card className="bg-transparent border-none shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
-          
-          <CardContent className="p-6 md:p-8 flex-1 flex flex-col justify-center items-center text-center relative z-10">
-            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500 ${partnerFactToday ? 'bg-amber-50/80 text-amber-600' : 'bg-green-50/80 text-green-600'}`}>
-              <Clock className="w-7 h-7 md:w-8 md:h-8" />
-            </div>
-            <h2 className="font-serif text-[1.5rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100" data-testid="text-sealed-title">
-              {partnerFactToday ? "Both shared!" : "Sealed."}
-            </h2>
-            <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200" data-testid="text-sealed-message">
-              {partnerFactToday
-                ? "Head to the archive to see today\u2019s discoveries."
-                : partnerUser.id === "0"
-                  ? "Your discovery is safe. Invite someone to start the exchange."
-                  : `Waiting for ${partnerUser.name} to share theirs.`}
-            </p>
-            <button
-              onClick={startEditing}
-              className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-bold tracking-[0.15em] uppercase text-[#909090] hover:text-black hover:bg-black/5 transition-all animate-in slide-in-from-bottom-6 duration-500 delay-300"
-              data-testid="button-edit-fact"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              Edit your entry
-            </button>
-          </CardContent>
-        </Card>
-      ) : !isAdding && !isEditing ? (
+      {!isAdding && !isEditing ? (
         <div className="flex-1 flex flex-col gap-3 md:gap-4 mx-2 md:mx-0">
+
+          {myFactToday && (
+            <div
+              className={`rounded-[1.25rem] px-5 py-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500 ${
+                partnerFactToday
+                  ? 'bg-amber-50/80 border border-amber-200/60'
+                  : 'bg-green-50/80 border border-green-200/60'
+              }`}
+              data-testid="banner-today-status"
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                partnerFactToday ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'
+              }`}>
+                {partnerFactToday ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#1C1C1C]" data-testid="text-sealed-title">
+                  {partnerFactToday
+                    ? "Both shared!"
+                    : partnerUser.id === "0"
+                      ? "Sealed. Invite someone to start."
+                      : `Sealed. Waiting for ${partnerUser.name}.`}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {partnerFactToday && (
+                  <a
+                    href="/archive"
+                    className="text-[10px] font-bold tracking-[0.15em] uppercase text-amber-700 hover:text-amber-900 transition-colors"
+                    data-testid="link-view-archive"
+                  >
+                    Archive
+                  </a>
+                )}
+                <button
+                  onClick={startEditing}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors text-[#909090] hover:text-black"
+                  data-testid="button-edit-fact"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
           <div
             className="bg-white rounded-[1.5rem] p-5 md:p-6 shadow-sm border border-black/5 animate-in fade-in slide-in-from-bottom-2 duration-500"
             data-testid="card-daily-prompt"
@@ -364,38 +380,42 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                 <RefreshCw className="w-3 h-3" />
                 Another
               </button>
-              <button
-                onClick={usePrompt}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
-                data-testid="button-use-prompt"
-              >
-                Use this
-                <ArrowRight className="w-3 h-3" />
-              </button>
+              {!myFactToday && (
+                <button
+                  onClick={usePrompt}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 ml-auto shadow-sm"
+                  data-testid="button-use-prompt"
+                >
+                  Use this
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              )}
             </div>
           </div>
 
-          <Card 
-            className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] shadow-sm border border-black/5"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(50);
-              setIsAdding(true);
-            }}
-            data-testid="card-add-discovery"
-          >
-            <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
-              <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
-                <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
-              </div>
-              
-              <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
-                <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
-                <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
-                  To the archive
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {!myFactToday && (
+            <Card 
+              className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] shadow-sm border border-black/5"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(50);
+                setIsAdding(true);
+              }}
+              data-testid="card-add-discovery"
+            >
+              <CardContent className="p-4 flex-1 flex flex-col justify-center items-center text-center group">
+                <div className="w-16 h-16 bg-[#FBF9F6] rounded-full flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
+                  <Plus className="w-8 h-8 text-[#1C1C1C]" strokeWidth={1} />
+                </div>
+                
+                <div className="space-y-1 opacity-80 group-hover:opacity-100 transition-opacity mt-5">
+                  <h2 className="font-serif text-[1.5rem] md:text-[1.75rem] text-[#1C1C1C]">Add a discovery</h2>
+                  <p className="text-[10px] md:text-[11px] font-bold tracking-[0.25em] text-[#909090] uppercase mt-2">
+                    To the archive
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : (
         <div className="fixed inset-0 z-[60] bg-[#FBF9F6] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto">
