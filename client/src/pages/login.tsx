@@ -30,7 +30,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
 
         <Card className="border-black/[0.03] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] overflow-hidden bg-white">
           <CardHeader className="bg-[#FAFAFA] pb-6 border-b border-black/[0.03]">
-            <CardTitle className="text-xl font-serif text-center">Enter the Archive</CardTitle>
+            <CardTitle className="text-xl font-serif text-center">Welcome to Curio</CardTitle>
           </CardHeader>
           <CardContent className="pt-6 pb-8 px-6">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -50,7 +50,7 @@ export default function Login({ onLogin }: { onLogin: (name: string) => void }) 
                 disabled={!name.trim()}
                 className="w-full h-14 text-base font-semibold rounded-[1.25rem] justify-between px-6 bg-[#1C1C1C] hover:bg-black text-white shadow-lg shadow-black/10 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
               >
-                Join Archive
+                Join Curio
                 <ArrowRight className="w-5 h-5 opacity-70" />
               </Button>
             </form>
