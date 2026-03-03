@@ -1,4 +1,4 @@
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { db } from "./db";
 import {
   users, pairings, facts, reactions,
@@ -18,7 +18,9 @@ export interface IStorage {
 
   createFact(authorId: number, pairingId: number, text: string, categories: string[], date: string, imageUrl?: string): Promise<Fact>;
   getFactsByPairing(pairingId: number): Promise<FactWithReactions[]>;
+  hasPostedToday(authorId: number, pairingId: number, date: string): Promise<boolean>;
 
+  getFact(factId: number): Promise<Fact | undefined>;
   setReaction(factId: number, userId: number, type: string): Promise<void>;
   removeReaction(factId: number, userId: number): Promise<void>;
   getReaction(factId: number, userId: number): Promise<Reaction | undefined>;
@@ -70,18 +72,31 @@ export class DatabaseStorage implements IStorage {
     return fact;
   }
 
+  async hasPostedToday(authorId: number, pairingId: number, date: string): Promise<boolean> {
+    const [existing] = await db.select().from(facts).where(and(eq(facts.authorId, authorId), eq(facts.pairingId, pairingId), eq(facts.date, date)));
+    return !!existing;
+  }
+
   async getFactsByPairing(pairingId: number): Promise<FactWithReactions[]> {
     const allFacts = await db.select().from(facts).where(eq(facts.pairingId, pairingId)).orderBy(desc(facts.id));
-    const allReactions = await db.select().from(reactions);
+    if (allFacts.length === 0) return [];
+
+    const factIds = allFacts.map(f => f.id);
+    const pairingReactions = await db.select().from(reactions).where(inArray(reactions.factId, factIds));
 
     return allFacts.map(fact => {
-      const factReactions = allReactions.filter(r => r.factId === fact.id);
+      const factReactions = pairingReactions.filter(r => r.factId === fact.id);
       const reactionsMap: Record<string, ReactionType | null> = {};
       for (const r of factReactions) {
         reactionsMap[String(r.userId)] = r.type as ReactionType;
       }
       return { ...fact, reactions: reactionsMap };
     });
+  }
+
+  async getFact(factId: number): Promise<Fact | undefined> {
+    const [fact] = await db.select().from(facts).where(eq(facts.id, factId));
+    return fact;
   }
 
   async setReaction(factId: number, userId: number, type: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider, useQuery, useMutation } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,13 +40,22 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const partner = auth.partner || { id: 0, name: "Your partner", avatar: "" };
 
+  const handleAddFact = (text: string, categories: Category[], imageUrl?: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      addFactMutation.mutate({ text, categories, imageUrl }, {
+        onSuccess: () => resolve(),
+        onError: (err) => reject(err),
+      });
+    });
+  };
+
   return (
     <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
       <Switch>
         <Route path="/">
           <Home
             facts={facts}
-            onAddFact={(text, categories, imageUrl) => addFactMutation.mutate({ text, categories, imageUrl })}
+            onAddFact={handleAddFact}
             activeUser={auth.user}
             partnerUser={partner}
           />

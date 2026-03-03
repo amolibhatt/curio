@@ -150,6 +150,12 @@ export async function registerRoutes(
       }
 
       const date = new Date().toISOString().split("T")[0];
+
+      const alreadyPosted = await storage.hasPostedToday(req.session.userId!, req.session.pairingId!, date);
+      if (alreadyPosted) {
+        return res.status(400).json({ message: "You've already shared a thought today" });
+      }
+
       const fact = await storage.createFact(
         req.session.userId!,
         req.session.pairingId!,
@@ -167,7 +173,7 @@ export async function registerRoutes(
 
   app.post("/api/facts/:factId/react", requireAuth, async (req, res) => {
     try {
-      const factId = parseInt(req.params.factId);
+      const factId = parseInt(req.params.factId as string);
       if (isNaN(factId)) {
         return res.status(400).json({ message: "Invalid fact ID" });
       }
@@ -175,6 +181,11 @@ export async function registerRoutes(
       const parsed = insertReactionSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ message: "Invalid reaction" });
+      }
+
+      const fact = await storage.getFact(factId);
+      if (!fact || fact.pairingId !== req.session.pairingId) {
+        return res.status(404).json({ message: "Fact not found" });
       }
 
       const existing = await storage.getReaction(factId, req.session.userId!);

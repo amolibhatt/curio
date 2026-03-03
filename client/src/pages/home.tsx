@@ -16,7 +16,7 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Random', icon: HelpCircle },
 ];
 
-export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => void, activeUser: User, partnerUser: User }) {
+export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[], imageUrl?: string) => Promise<void>, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
@@ -90,16 +90,25 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     prevStreakRef.current = streak;
   }, [streak]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFact.trim() && !imageUrl) return;
     if (selectedCategories.length === 0) return;
+    if (isSubmitting) return;
     
-    onAddFact(newFact, selectedCategories, imageUrl || undefined);
-    setNewFact("");
-    setSelectedCategories([]);
-    setImageUrl(null);
-    setIsAdding(false);
+    setIsSubmitting(true);
+    try {
+      await onAddFact(newFact, selectedCategories, imageUrl || undefined);
+      setNewFact("");
+      setSelectedCategories([]);
+      setImageUrl(null);
+      setIsAdding(false);
+    } catch {
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleCategory = (category: Category) => {
@@ -293,9 +302,10 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   <button 
                     type="submit" 
                     className="rounded-full px-8 h-12 bg-[#1C1C1C] text-white hover:bg-black font-semibold text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-sm flex items-center" 
-                    disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0}
+                    disabled={(!newFact.trim() && !imageUrl) || selectedCategories.length === 0 || isSubmitting}
+                    data-testid="button-save-fact"
                   >
-                    Save it
+                    {isSubmitting ? "Saving..." : "Save it"}
                   </button>
                 </div>
               </div>
