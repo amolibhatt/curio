@@ -4,7 +4,7 @@ import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, C
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
-import logoImg from "../assets/images/logo-av-clean.png";
+import logoImg from "../assets/images/logo-av-book.png";
 
 export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean }) {
   const [location] = useLocation();
@@ -26,10 +26,10 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
         <header className="flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
                 <img src={logoImg} alt="Logo" className="w-full h-full object-cover mix-blend-multiply" />
               </div>
-              <span className="font-serif text-[1.4rem] text-black tracking-tight mt-1">Curio</span>
+              <span className="font-serif text-[1.6rem] text-black tracking-tight mt-1">Curio</span>
             </div>
           </Link>
           
