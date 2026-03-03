@@ -168,26 +168,31 @@ export async function getReaction(factId: string, userId: string): Promise<strin
 }
 
 export async function getAuthState(uid: string): Promise<AuthState | null> {
-  const user = await getUser(uid);
-  if (!user) return null;
+  try {
+    const user = await getUser(uid);
+    if (!user) return null;
 
-  const pairingId = await getUserPairingId(uid);
-  if (!pairingId) return null;
+    const pairingId = await getUserPairingId(uid);
+    if (!pairingId) return null;
 
-  const pairing = await getPairing(pairingId);
-  if (!pairing) return null;
+    const pairing = await getPairing(pairingId);
+    if (!pairing) return null;
 
-  let partner: User | null = null;
-  const partnerId = pairing.user1Id === uid ? pairing.user2Id : pairing.user1Id;
-  if (partnerId) {
-    partner = await getUser(partnerId);
+    let partner: User | null = null;
+    const partnerId = pairing.user1Id === uid ? pairing.user2Id : pairing.user1Id;
+    if (partnerId) {
+      partner = await getUser(partnerId);
+    }
+
+    return {
+      user,
+      pairing: { id: pairing.id, inviteCode: pairing.inviteCode },
+      partner,
+    };
+  } catch (err) {
+    console.error("[Curio] getAuthState error:", err);
+    return null;
   }
-
-  return {
-    user,
-    pairing: { id: pairing.id, inviteCode: pairing.inviteCode },
-    partner,
-  };
 }
 
 export async function toggleReaction(factId: string, userId: string, type: ReactionType): Promise<void> {

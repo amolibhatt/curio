@@ -132,8 +132,18 @@ function AppContent() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
-        const state = await firestoreOps.getAuthState(user.uid);
-        setAuthState(state);
+        try {
+          const state = await firestoreOps.getAuthState(user.uid);
+          if (state) {
+            setAuthState(state);
+          } else {
+            console.log("[Curio] Firebase user exists but no Firestore profile yet, uid:", user.uid);
+            setAuthState(null);
+          }
+        } catch (err) {
+          console.error("[Curio] Failed to load auth state from Firestore:", err);
+          setAuthState(null);
+        }
       } else {
         setAuthState(null);
       }
@@ -190,7 +200,6 @@ function AppContent() {
         window.history.pushState({}, "", "/");
         window.dispatchEvent(new PopStateEvent("popstate"));
       } else {
-        await firestoreOps.createUser(uid, name, null);
         const pairing = await firestoreOps.createPairing(uid);
         await firestoreOps.createUser(uid, name, pairing.id);
       }
