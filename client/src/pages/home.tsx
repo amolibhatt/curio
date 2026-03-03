@@ -19,7 +19,7 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
 ];
 
 function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadingMenu }: { newFact: string, setNewFact: (v: string) => void, showHeadingMenu: boolean, setShowHeadingMenu: (v: boolean) => void }) {
-  const { editorRef, applyFormat, applyHeading, editorElement } = RichEditor({
+  const { editorRef, applyFormat, applyHeading, charCount, maxLength, editorElement } = RichEditor({
     value: newFact,
     onChange: setNewFact,
     placeholder: "What caught your eye today...",
@@ -98,6 +98,11 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
         </button>
       </div>
       {editorElement}
+      {maxLength > 0 && (
+        <p className={`text-[10px] mt-2 text-right transition-colors ${charCount > maxLength * 0.9 ? 'text-red-400' : 'text-[#c0c0c0]'}`}>
+          {charCount}/{maxLength}
+        </p>
+      )}
     </div>
   );
 }
@@ -254,6 +259,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         toast({ title: "Updated", description: "Your discovery has been updated." });
       } else {
         await onAddFact(newFact.trim(), selectedCategories);
+        toast({ title: "Shared!", description: "Your discovery has been added." });
       }
       closeEditor(true);
     } catch (err: any) {

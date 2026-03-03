@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { htmlToMarkdown } from "@/lib/format-text";
 
 interface RichEditorProps {
@@ -13,6 +13,8 @@ interface RichEditorProps {
 export default function RichEditor({ value, onChange, placeholder, maxLength, autoFocus, className }: RichEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
+  const [charCount, setCharCount] = useState(0);
+  const [showPlaceholder, setShowPlaceholder] = useState(!value);
 
   useEffect(() => {
     if (!editorRef.current || isInternalChange.current) {
@@ -43,6 +45,12 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
 
   const lastValidHtml = useRef<string>('');
 
+  const updatePlaceholderState = useCallback((el: HTMLDivElement) => {
+    const text = el.textContent || '';
+    setShowPlaceholder(text.trim().length === 0);
+    setCharCount(htmlContentToMarkdown(el.innerHTML).length);
+  }, []);
+
   const handleInput = useCallback(() => {
     if (!editorRef.current) return;
     const html = editorRef.current.innerHTML;
@@ -60,12 +68,14 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
           restoreCaretOffset(editorRef.current, savedOffset);
         }
       }
+      updatePlaceholderState(editorRef.current);
       return;
     }
     lastValidHtml.current = html;
     isInternalChange.current = true;
+    updatePlaceholderState(editorRef.current);
     onChange(md);
-  }, [onChange, maxLength]);
+  }, [onChange, maxLength, updatePlaceholderState]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
@@ -138,18 +148,28 @@ export default function RichEditor({ value, onChange, placeholder, maxLength, au
     editorRef,
     applyFormat,
     applyHeading,
+    charCount,
+    maxLength: maxLength || 0,
     editorElement: (
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        onInput={handleInput}
-        onPaste={handlePaste}
-        onKeyDown={handleKeyDown}
-        className={`outline-none ${className || ''} [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-[#909090]/40 [&:empty]:before:pointer-events-none [&_h1]:text-2xl [&_h1]:md:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-1 [&_h1]:mb-1 [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:mt-1 [&_h2]:mb-1 [&_h3]:text-lg [&_h3]:md:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_h3]:mt-1 [&_h3]:mb-1 [&_h4]:text-base [&_h4]:md:text-lg [&_h4]:font-semibold [&_h4]:leading-tight [&_h4]:mt-1 [&_h4]:mb-1 [&_h5]:text-sm [&_h5]:md:text-base [&_h5]:font-medium [&_h5]:uppercase [&_h5]:tracking-wide [&_h5]:mt-1 [&_h5]:mb-1 [&_h6]:text-xs [&_h6]:md:text-sm [&_h6]:font-medium [&_h6]:uppercase [&_h6]:tracking-wider [&_h6]:text-[#737373] [&_h6]:mt-1 [&_h6]:mb-1 [&_hr]:border-black/10 [&_hr]:my-2 [&_ul]:pl-4 [&_li]:list-disc`}
-        data-placeholder={placeholder || ''}
-        data-testid="input-rich-editor"
-      />
+      <div className="relative">
+        {showPlaceholder && (
+          <div className="absolute top-0 left-0 pointer-events-none text-[#909090]/40 select-none">
+            {placeholder}
+          </div>
+        )}
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onKeyDown={handleKeyDown}
+          onFocus={() => editorRef.current && updatePlaceholderState(editorRef.current)}
+          onBlur={() => editorRef.current && updatePlaceholderState(editorRef.current)}
+          className={`outline-none ${className || ''} [&_h1]:text-2xl [&_h1]:md:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-1 [&_h1]:mb-1 [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:mt-1 [&_h2]:mb-1 [&_h3]:text-lg [&_h3]:md:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_h3]:mt-1 [&_h3]:mb-1 [&_h4]:text-base [&_h4]:md:text-lg [&_h4]:font-semibold [&_h4]:leading-tight [&_h4]:mt-1 [&_h4]:mb-1 [&_h5]:text-sm [&_h5]:md:text-base [&_h5]:font-medium [&_h5]:uppercase [&_h5]:tracking-wide [&_h5]:mt-1 [&_h5]:mb-1 [&_h6]:text-xs [&_h6]:md:text-sm [&_h6]:font-medium [&_h6]:uppercase [&_h6]:tracking-wider [&_h6]:text-[#737373] [&_h6]:mt-1 [&_h6]:mb-1 [&_hr]:border-black/10 [&_hr]:my-2 [&_ul]:pl-4 [&_li]:list-disc`}
+          data-testid="input-rich-editor"
+        />
+      </div>
     ),
   };
 }

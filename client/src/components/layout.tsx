@@ -17,6 +17,14 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
   const handleShareLink = async () => {
     if (!inviteCode) return;
     const inviteLink = `${window.location.origin}/invite/${inviteCode}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Join me on Curio", text: "Let's share daily discoveries together!", url: inviteLink });
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
     try {
       await navigator.clipboard.writeText(inviteLink);
     } catch {
@@ -83,25 +91,28 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
           </div>
         </main>
 
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl flex items-center justify-center z-50 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 px-4">
-          <div className="bg-white/95 backdrop-blur-xl flex items-center justify-center gap-1 p-1.5 rounded-2xl w-max px-2 shadow-lg shadow-black/5 border border-black/[0.03]">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                <Compass className="w-[20px] h-[20px]" strokeWidth={location === "/" ? 2 : 1.5} />
-              </Button>
-            </Link>
-            <Link href="/archive">
-              <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                <History className="w-[20px] h-[20px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
-              </Button>
-            </Link>
-            <Link href="/us">
-              <Button variant="ghost" size="icon" className={`rounded-xl w-12 h-11 transition-all ${location === "/us" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                <Heart className={`w-[20px] h-[20px] ${location === "/us" ? "fill-white" : ""}`} strokeWidth={location === "/us" ? 2 : 1.5} />
-              </Button>
-            </Link>
-          </div>
-        </nav>
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 pointer-events-none">
+          <div className="h-8 bg-gradient-to-t from-[#FAF9F7] to-transparent" />
+          <nav className="flex items-center justify-center pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-1 px-4 bg-[#FAF9F7]/80 pointer-events-auto" role="navigation" aria-label="Main navigation">
+            <div className="bg-white/95 backdrop-blur-xl flex items-center justify-center gap-1 p-1.5 rounded-2xl w-max px-2 shadow-lg shadow-black/5 border border-black/[0.03]">
+              <Link href="/">
+                <Button variant="ghost" size="icon" aria-label="Today" className={`rounded-xl w-12 h-11 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                  <Compass className="w-[20px] h-[20px]" strokeWidth={location === "/" ? 2 : 1.5} />
+                </Button>
+              </Link>
+              <Link href="/archive">
+                <Button variant="ghost" size="icon" aria-label="Archive" className={`rounded-xl w-12 h-11 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                  <History className="w-[20px] h-[20px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
+                </Button>
+              </Link>
+              <Link href="/us">
+                <Button variant="ghost" size="icon" aria-label="Us" className={`rounded-xl w-12 h-11 transition-all ${location === "/us" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                  <Heart className={`w-[20px] h-[20px] ${location === "/us" ? "fill-white" : ""}`} strokeWidth={location === "/us" ? 2 : 1.5} />
+                </Button>
+              </Link>
+            </div>
+          </nav>
+        </div>
       </div>
     </div>
   );
