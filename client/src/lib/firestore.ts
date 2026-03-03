@@ -8,7 +8,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   addDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -108,8 +107,7 @@ export async function createFact(
 export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
   const q = query(
     collection(db, "facts"),
-    where("pairingId", "==", pairingId),
-    orderBy("date", "desc")
+    where("pairingId", "==", pairingId)
   );
   const snap = await getDocs(q);
 
@@ -128,10 +126,11 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
       authorId: data.authorId,
       pairingId: data.pairingId,
       date: data.date,
-      categories: data.categories,
+      categories: data.categories || [],
       reactions,
     });
   }
+  facts.sort((a, b) => b.date.localeCompare(a.date));
   return facts;
 }
 
