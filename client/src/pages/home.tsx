@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline } from "lucide-react";
+import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import { formatText } from "@/lib/format-text";
@@ -103,8 +103,10 @@ function RichEditorSection({ newFact, setNewFact, showHeadingMenu, setShowHeadin
   );
 }
 
-export default function Home({ facts, onAddFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
+export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User }) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingFactId, setEditingFactId] = useState<string | null>(null);
   const [newFact, setNewFact] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const { toast } = useToast();
@@ -190,18 +192,29 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isAdding) {
+      if (e.key === "Escape" && (isAdding || isEditing)) {
         setIsAdding(false);
+        setIsEditing(false);
+        setEditingFactId(null);
         setNewFact("");
         setSelectedCategories([]);
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isAdding]);
+  }, [isAdding, isEditing]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
+
+  const startEditing = () => {
+    if (myFactToday) {
+      setNewFact(myFactToday.text);
+      setSelectedCategories([...myFactToday.categories]);
+      setEditingFactId(myFactToday.id);
+      setIsEditing(true);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,13 +225,20 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
     if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmitting(true);
     try {
-      await onAddFact(newFact.trim(), selectedCategories);
+      if (isEditing && editingFactId) {
+        await onEditFact(editingFactId, newFact.trim(), selectedCategories);
+        toast({ title: "Updated", description: "Your discovery has been updated." });
+      } else {
+        await onAddFact(newFact.trim(), selectedCategories);
+      }
       setNewFact("");
       setSelectedCategories([]);
       setIsAdding(false);
+      setIsEditing(false);
+      setEditingFactId(null);
     } catch (err: any) {
       toast({
-        title: "Couldn't add",
+        title: isEditing ? "Couldn't update" : "Couldn't add",
         description: err?.message || "Something went wrong. Try again.",
         variant: "destructive",
       });
@@ -257,7 +277,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
         </div>
       </header>
 
-      {myFactToday ? (
+      {myFactToday && !isEditing ? (
         <Card className="bg-transparent border-none shadow-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col mx-2 md:mx-0 relative">
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/[0.02] opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '4s' }} />
@@ -276,9 +296,17 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                   ? "Your discovery is safe. Invite someone to start the exchange."
                   : `Waiting for ${partnerUser.name} to share theirs.`}
             </p>
+            <button
+              onClick={startEditing}
+              className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-bold tracking-[0.15em] uppercase text-[#909090] hover:text-black hover:bg-black/5 transition-all animate-in slide-in-from-bottom-6 duration-500 delay-300"
+              data-testid="button-edit-fact"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit your entry
+            </button>
           </CardContent>
         </Card>
-      ) : !isAdding ? (
+      ) : !isAdding && !isEditing ? (
         <Card 
           className="bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] mx-2 md:mx-0 shadow-sm border border-black/5"
           onClick={() => {
@@ -305,11 +333,13 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
           
           <div className="flex items-center justify-between p-4 md:p-6 sticky top-0 z-20 bg-[#FBF9F6]/90 backdrop-blur-md">
             <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
-              New entry
+              {isEditing ? "Edit entry" : "New entry"}
             </p>
             <button 
               onClick={() => {
                 setIsAdding(false);
+                setIsEditing(false);
+                setEditingFactId(null);
                 setNewFact("");
                 setSelectedCategories([]);
               }}
@@ -366,7 +396,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
                     disabled={!newFact.trim() || selectedCategories.length === 0 || isSubmitting}
                     data-testid="button-save-fact"
                   >
-                    {isSubmitting ? "Adding..." : "Add to archive"}
+                    {isSubmitting ? (isEditing ? "Saving..." : "Adding...") : (isEditing ? "Save changes" : "Add to archive")}
                   </button>
                 </div>
               </div>

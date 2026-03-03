@@ -57,6 +57,11 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
     fetchFacts().catch(() => {});
   };
 
+  const handleEditFact = async (factId: string, text: string, categories: Category[]): Promise<void> => {
+    await firestoreOps.updateFact(factId, text, categories);
+    setFacts(prev => prev.map(f => f.id === factId ? { ...f, text, categories } : f));
+  };
+
   const handleReact = async (factId: string, type: ReactionType) => {
     setIsReacting(true);
     try {
@@ -86,6 +91,7 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
           <Home
             facts={facts}
             onAddFact={handleAddFact}
+            onEditFact={handleEditFact}
             activeUser={auth.user}
             partnerUser={partner}
           />
@@ -105,6 +111,7 @@ function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () =>
           <Home
             facts={facts}
             onAddFact={handleAddFact}
+            onEditFact={handleEditFact}
             activeUser={auth.user}
             partnerUser={partner}
           />

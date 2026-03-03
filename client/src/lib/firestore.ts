@@ -104,6 +104,14 @@ export async function createFact(
   };
 }
 
+export async function updateFact(
+  factId: string,
+  text: string,
+  categories: Category[]
+): Promise<void> {
+  await updateDoc(doc(db, "facts", factId), { text, categories });
+}
+
 export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
   const q = query(
     collection(db, "facts"),
