@@ -4,6 +4,7 @@ import { BookOpen, UserPlus, LogOut, History, Home, Compass, Link as LinkIcon, C
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
+import logoImg from "../assets/images/logo.png";
 
 export default function Layout({ children, user, hasFriendJoined = false }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean }) {
   const [location] = useLocation();
@@ -25,11 +26,8 @@ export default function Layout({ children, user, hasFriendJoined = false }: { ch
         <header className="flex items-center justify-between p-4 pt-[max(env(safe-area-inset-top),1rem)] md:pt-6 md:px-8 z-10 sticky top-0 bg-[#FBF9F6]/90 backdrop-blur-md shrink-0">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer">
-              <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] shadow-sm border border-black/[0.04]">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-                  <path d="M12 2v20" />
-                </svg>
+              <div className="bg-white w-10 h-10 flex items-center justify-center rounded-[0.8rem] shadow-sm border border-black/[0.04] overflow-hidden">
+                <img src={logoImg} alt="Curio Logo" className="w-full h-full object-cover" />
               </div>
               <span className="font-serif text-[1.4rem] text-black tracking-tight mt-1">Curio</span>
             </div>
