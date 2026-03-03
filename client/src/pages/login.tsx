@@ -23,7 +23,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
           <div className="mx-auto w-20 h-20 flex items-center justify-center mb-6 bg-white rounded-full shadow-sm">
              <BookOpen className="w-10 h-10 text-black" strokeWidth={1.5} />
           </div>
-          <h1 className="text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
+          <h1 className="text-4xl md:text-5xl font-serif tracking-tight text-[#1C1C1C]">Curio</h1>
           <p className="text-[#909090] text-lg font-serif italic max-w-[250px] mx-auto leading-relaxed">
             {isInvite ? "You've been invited." : "A shared archive of curiosities for two."}
           </p>

@@ -63,18 +63,18 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
               <Button 
                 variant="ghost" 
                 onClick={handleShareLink}
-                className={`rounded-full h-7 md:h-8 px-3 md:px-4 flex items-center gap-1.5 md:gap-2 transition-all mr-0.5 ${copied ? 'text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800' : 'text-[#737373] hover:text-black hover:bg-black/5'}`}
+                className={`rounded-full h-9 px-3.5 flex items-center gap-1.5 transition-all mr-0.5 ${copied ? 'text-green-700 bg-green-50 hover:bg-green-100 hover:text-green-800' : 'text-[#737373] hover:text-black hover:bg-black/5'}`}
                 data-testid="button-invite"
               >
                 {copied ? (
                   <>
-                    <Check className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={2.5} />
-                    <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] hidden sm:inline-block">COPIED</span>
+                    <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    <span className="text-[10px] font-bold tracking-[0.15em]">COPIED</span>
                   </>
                 ) : (
                   <>
-                    <LinkIcon className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={2.5} />
-                    <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] hidden sm:inline-block">INVITE</span>
+                    <LinkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    <span className="text-[10px] font-bold tracking-[0.15em]">INVITE</span>
                   </>
                 )}
               </Button>
@@ -82,32 +82,34 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="rounded-full h-7 w-7 md:h-8 md:w-8 p-0 text-[#909090] hover:text-black hover:bg-black/5"
+              className="rounded-full h-9 w-9 p-0 text-[#909090] hover:text-black hover:bg-black/5"
               data-testid="button-logout"
               title="Log out"
             >
-              <LogOut className="w-3.5 h-3.5" strokeWidth={2} />
+              <LogOut className="w-4 h-4" strokeWidth={2} />
             </Button>
           </div>
         </header>
 
-        <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-24 relative">
-          <div className="w-full px-5 h-full flex flex-col">
+        <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-[calc(5rem+env(safe-area-inset-bottom,0px))] relative">
+          <div className="w-full px-4 md:px-5 h-full flex flex-col">
             {children}
           </div>
         </main>
 
-        <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl flex items-center justify-center gap-2 p-1.5 rounded-[2rem] z-50 w-max px-3 border-none">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 flex-1 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-              <Compass className="w-[22px] h-[22px]" strokeWidth={location === "/" ? 2 : 1.5} />
-            </Button>
-          </Link>
-          <Link href="/archive">
-            <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 flex-1 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-              <History className="w-[22px] h-[22px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
-            </Button>
-          </Link>
+        <nav className="fixed bottom-0 left-0 right-0 flex items-center justify-center z-50 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 px-4">
+          <div className="bg-white/90 backdrop-blur-xl flex items-center justify-center gap-2 p-1.5 rounded-[2rem] w-max px-3 shadow-sm">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                <Compass className="w-[22px] h-[22px]" strokeWidth={location === "/" ? 2 : 1.5} />
+              </Button>
+            </Link>
+            <Link href="/archive">
+              <Button variant="ghost" size="icon" className={`rounded-full w-12 h-12 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
+                <History className="w-[22px] h-[22px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
+              </Button>
+            </Link>
+          </div>
         </nav>
       </div>
     </div>

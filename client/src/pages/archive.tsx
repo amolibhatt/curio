@@ -69,7 +69,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
       <header className="mb-8 md:mb-12 text-center md:text-left shrink-0">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-[2.5rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
+            <h1 className="text-[2rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
               The Archive
             </h1>
             <p className="text-base text-[#909090] italic font-serif mt-2">
@@ -224,17 +224,17 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                 ))}
                               </div>
                               
-                                {!isMe && <div className="flex items-center gap-1.5 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-2 md:mt-0">
+                                {!isMe && <div className="flex items-center gap-1 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-3 md:mt-0">
                                   <div className="relative shrink-0">
                                     <button
                                       onClick={() => handleReact(fact.id, 'mind-blown')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'mind-blown' 
                                           ? 'bg-black text-white' 
                                           : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                       }`}
                                     >
-                                      <Brain className="w-3.5 h-3.5" />
+                                      <Brain className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'mind-blown' && (
@@ -254,13 +254,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'fascinating')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'fascinating' 
                                           ? 'bg-black text-white' 
                                           : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
                                       }`}
                                     >
-                                      <Sparkles className="w-3.5 h-3.5" />
+                                      <Sparkles className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'fascinating' && (
@@ -280,13 +280,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'heart')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'heart' 
                                           ? 'bg-rose-500 text-white' 
                                           : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
                                       }`}
                                     >
-                                      <Heart className={`w-3.5 h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
+                                      <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'heart' && (
@@ -306,13 +306,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'laugh')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'laugh' 
                                           ? 'bg-amber-100 text-amber-700' 
                                           : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
                                       }`}
                                     >
-                                      <Laugh className="w-3.5 h-3.5" />
+                                      <Laugh className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'laugh' && (
@@ -332,13 +332,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'thinking')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'thinking' 
                                           ? 'bg-blue-100 text-blue-700' 
                                           : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
                                       }`}
                                     >
-                                      <Lightbulb className="w-3.5 h-3.5" />
+                                      <Lightbulb className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'thinking' && (
@@ -358,13 +358,13 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                                   <div className="relative">
                                     <button
                                       onClick={() => handleReact(fact.id, 'sad')}
-                                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
+                                      className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
                                         myReaction === 'sad' 
                                           ? 'bg-indigo-100 text-indigo-700' 
                                           : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
                                       }`}
                                     >
-                                      <Frown className="w-3.5 h-3.5" />
+                                      <Frown className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                     </button>
                                     <AnimatePresence>
                                       {burstReaction?.id === fact.id && burstReaction?.type === 'sad' && (

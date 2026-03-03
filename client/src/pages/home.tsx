@@ -268,10 +268,10 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </div>
         )}
         <div className="space-y-3 pt-4">
-          <h1 className="text-[2.5rem] md:text-[3.25rem] leading-[1.05] font-serif text-[#1C1C1C] tracking-tight">
+          <h1 className="text-[2rem] md:text-[3.25rem] leading-[1.1] font-serif text-[#1C1C1C] tracking-tight">
             What did you <span className="italic text-[#4A4A4A]">discover</span>?
           </h1>
-          <p className="text-[1.15rem] md:text-[1.25rem] text-[#909090] italic font-serif">
+          <p className="text-base md:text-[1.25rem] text-[#909090] italic font-serif">
             One curiosity a day, just between us.
           </p>
         </div>
@@ -286,7 +286,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-6 animate-in slide-in-from-bottom-2 duration-500 ${partnerFactToday ? 'bg-amber-50/80 text-amber-600' : 'bg-green-50/80 text-green-600'}`}>
               <Clock className="w-7 h-7 md:w-8 md:h-8" />
             </div>
-            <h2 className="font-serif text-[1.8rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100" data-testid="text-sealed-title">
+            <h2 className="font-serif text-[1.5rem] md:text-[2.2rem] text-black mb-2 animate-in slide-in-from-bottom-3 duration-500 delay-100" data-testid="text-sealed-title">
               {partnerFactToday ? "Both shared!" : "Sealed."}
             </h2>
             <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200" data-testid="text-sealed-message">
