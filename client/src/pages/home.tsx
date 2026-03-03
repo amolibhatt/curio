@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Clock, Plus, Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
-import { formatText } from "@/lib/format-text";
 import RichEditor from "@/components/rich-editor";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
@@ -189,6 +187,15 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
     prevStreakRef.current = streak;
   }, [streak, facts.length]);
+
+  useEffect(() => {
+    if (isAdding || isEditing) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isAdding, isEditing]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

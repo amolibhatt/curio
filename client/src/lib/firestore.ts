@@ -41,12 +41,6 @@ export async function getUser(uid: string): Promise<User | null> {
   return { id: uid, name: data.name, avatar: data.avatar };
 }
 
-export async function getUserPairingId(uid: string): Promise<string | null> {
-  const snap = await getDoc(doc(db, "users", uid));
-  if (!snap.exists()) return null;
-  return snap.data().pairingId || null;
-}
-
 export async function createPairing(userId: string): Promise<{ id: string; inviteCode: string }> {
   const inviteCode = generateInviteCode();
   const pairingRef = await addDoc(collection(db, "pairings"), {
@@ -54,7 +48,6 @@ export async function createPairing(userId: string): Promise<{ id: string; invit
     user1Id: userId,
     user2Id: null,
   });
-  await updateDoc(doc(db, "users", userId), { pairingId: pairingRef.id });
   return { id: pairingRef.id, inviteCode };
 }
 
@@ -145,12 +138,11 @@ export async function getFactsByPairing(pairingId: string): Promise<Fact[]> {
 export async function hasPostedToday(authorId: string, pairingId: string, date: string): Promise<boolean> {
   const q = query(
     collection(db, "facts"),
-    where("authorId", "==", authorId),
     where("pairingId", "==", pairingId),
     where("date", "==", date)
   );
   const snap = await getDocs(q);
-  return !snap.empty;
+  return snap.docs.some(d => d.data().authorId === authorId);
 }
 
 export async function setReaction(factId: string, userId: string, type: string): Promise<void> {
@@ -169,10 +161,12 @@ export async function getReaction(factId: string, userId: string): Promise<strin
 
 export async function getAuthState(uid: string): Promise<AuthState | null> {
   try {
-    const user = await getUser(uid);
-    if (!user) return null;
+    const snap = await getDoc(doc(db, "users", uid));
+    if (!snap.exists()) return null;
+    const data = snap.data();
 
-    const pairingId = await getUserPairingId(uid);
+    const user: User = { id: uid, name: data.name, avatar: data.avatar };
+    const pairingId = data.pairingId || null;
     if (!pairingId) return null;
 
     const pairing = await getPairing(pairingId);

@@ -10,7 +10,7 @@ import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
 
-import { auth as firebaseAuth } from "./lib/firebase";
+import { auth as firebaseAuth, authReady } from "./lib/firebase";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
@@ -130,8 +130,10 @@ function AppContent() {
   const [signupError, setSignupError] = useState<string | undefined>();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
-      if (user) {
+    let unsubscribe: (() => void) | undefined;
+    authReady.then(() => {
+      unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
         setFirebaseUid(user.uid);
         try {
           const state = await firestoreOps.getAuthState(user.uid);
@@ -155,9 +157,10 @@ function AppContent() {
           setNeedsName(true);
         }
       }
-      setIsLoading(false);
+        setIsLoading(false);
+      });
     });
-    return () => unsubscribe();
+    return () => { if (unsubscribe) unsubscribe(); };
   }, []);
 
   const refreshAuth = useCallback(async () => {
