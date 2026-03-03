@@ -1,74 +1,79 @@
+import { useState, useEffect, useCallback } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient, apiRequest } from "./lib/queryClient";
-import { QueryClientProvider, useQuery, useMutation } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 import NotFound from "@/pages/not-found";
 
 import Layout from "./components/layout";
 import Home from "./pages/home";
 import Archive from "./pages/archive";
 import Login from "./pages/login";
-import { useToast } from "@/hooks/use-toast";
+
+import { auth as firebaseAuth } from "./lib/firebase";
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import * as firestoreOps from "./lib/firestore";
 
 import type { AuthState, Fact, ReactionType, Category } from "./lib/mock-data";
 
-function AuthenticatedApp({ auth }: { auth: AuthState }) {
+function AuthenticatedApp({ auth, onLogout }: { auth: AuthState; onLogout: () => void }) {
   const { toast } = useToast();
-  const { data: facts = [] } = useQuery<Fact[]>({
-    queryKey: ["/api/facts"],
-    refetchInterval: 15000,
-    queryFn: async () => {
-      const res = await fetch("/api/facts", { credentials: "include" });
-      if (res.status === 401) {
-        queryClient.setQueryData(["/api/auth/me"], null);
-        return [];
-      }
-      if (!res.ok) throw new Error("Failed to fetch facts");
-      return res.json();
-    },
-  });
+  const [facts, setFacts] = useState<Fact[]>([]);
+  const [isReacting, setIsReacting] = useState(false);
 
-  const addFactMutation = useMutation({
-    mutationFn: async (data: { text: string; categories: Category[] }) => {
-      const res = await apiRequest("POST", "/api/facts", data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/facts"] });
-    },
-  });
+  const fetchFacts = useCallback(async () => {
+    if (!auth.pairing) return;
+    try {
+      const data = await firestoreOps.getFactsByPairing(auth.pairing.id);
+      setFacts(data);
+    } catch (err) {
+      console.error("Failed to fetch facts:", err);
+    }
+  }, [auth.pairing]);
 
-  const reactMutation = useMutation({
-    mutationFn: async ({ factId, type }: { factId: number; type: ReactionType }) => {
-      const res = await apiRequest("POST", `/api/facts/${factId}/react`, { type });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/facts"] });
-    },
-    onError: (err: Error) => {
+  useEffect(() => {
+    fetchFacts();
+    const interval = setInterval(fetchFacts, 15000);
+    return () => clearInterval(interval);
+  }, [fetchFacts]);
+
+  const handleAddFact = async (text: string, categories: Category[]): Promise<void> => {
+    if (!auth.pairing) throw new Error("No pairing");
+    const date = new Date().toISOString().split("T")[0];
+
+    const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
+    if (alreadyPosted) {
+      throw new Error("You've already shared a discovery today");
+    }
+
+    await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
+    await fetchFacts();
+  };
+
+  const handleReact = async (factId: string, type: ReactionType) => {
+    setIsReacting(true);
+    try {
+      await firestoreOps.toggleReaction(factId, auth.user.id, type);
+      await fetchFacts();
+    } catch (err: any) {
       toast({
         title: "Couldn't react",
         description: err.message || "Something went wrong.",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setIsReacting(false);
+    }
+  };
 
-  const partner = auth.partner || { id: 0, name: "Your partner", avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=e5e4df` };
-
-  const handleAddFact = (text: string, categories: Category[]): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      addFactMutation.mutate({ text, categories }, {
-        onSuccess: () => resolve(),
-        onError: (err) => reject(err),
-      });
-    });
+  const partner = auth.partner || {
+    id: "0",
+    name: "Your partner",
+    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=e5e4df`,
   };
 
   return (
-    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
+    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode} onLogout={onLogout}>
       <Switch>
         <Route path="/">
           <Home
@@ -81,10 +86,12 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
         <Route path="/archive">
           <Archive
             facts={facts}
-            onReact={(factId, reaction) => { if (reaction) reactMutation.mutate({ factId, type: reaction as ReactionType }); }}
+            onReact={(factId, reaction) => {
+              if (reaction) handleReact(factId, reaction as ReactionType);
+            }}
             activeUser={auth.user}
             partnerUser={partner}
-            isReacting={reactMutation.isPending}
+            isReacting={isReacting}
           />
         </Route>
         <Route path="/invite/:code">
@@ -102,39 +109,94 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 }
 
 function AppContent() {
-  const { data: auth, isLoading } = useQuery<AuthState | null>({
-    queryKey: ["/api/auth/me"],
-    queryFn: async () => {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      if (res.status === 401) return null;
-      if (!res.ok) throw new Error("Failed to fetch auth");
-      return res.json();
-    },
-    refetchInterval: 30000,
-  });
+  const { toast } = useToast();
+  const [authState, setAuthState] = useState<AuthState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [signupError, setSignupError] = useState<string | undefined>();
 
-  const signupMutation = useMutation({
-    mutationFn: async ({ name, inviteCode }: { name: string; inviteCode?: string }) => {
-      const url = inviteCode ? `/api/auth/join/${inviteCode}` : "/api/auth/signup";
-      const res = await apiRequest("POST", url, { name });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-    },
-  });
-
-  const handleLogin = (name: string) => {
-    const match = window.location.pathname.match(/^\/invite\/(.+)/);
-    const inviteCode = match?.[1];
-    signupMutation.mutate({ name, inviteCode }, {
-      onSuccess: () => {
-        if (inviteCode) {
-          window.history.pushState({}, "", "/");
-          window.dispatchEvent(new PopStateEvent("popstate"));
-        }
-      },
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+      if (user) {
+        const state = await firestoreOps.getAuthState(user.uid);
+        setAuthState(state);
+      } else {
+        setAuthState(null);
+      }
+      setIsLoading(false);
     });
+    return () => unsubscribe();
+  }, []);
+
+  const refreshAuth = useCallback(async () => {
+    const user = firebaseAuth.currentUser;
+    if (user) {
+      const state = await firestoreOps.getAuthState(user.uid);
+      setAuthState(state);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authState) return;
+    const interval = setInterval(refreshAuth, 30000);
+    return () => clearInterval(interval);
+  }, [authState, refreshAuth]);
+
+  const handleLogin = async (name: string) => {
+    setIsSigningUp(true);
+    setSignupError(undefined);
+    try {
+      const match = window.location.pathname.match(/^\/invite\/(.+)/);
+      const inviteCode = match?.[1];
+
+      let uid: string;
+      const currentUser = firebaseAuth.currentUser;
+      if (currentUser) {
+        uid = currentUser.uid;
+      } else {
+        const cred = await signInAnonymously(firebaseAuth);
+        uid = cred.user.uid;
+      }
+
+      if (inviteCode) {
+        const pairing = await firestoreOps.getPairingByCode(inviteCode);
+        if (!pairing) {
+          setSignupError("Invite not found");
+          setIsSigningUp(false);
+          return;
+        }
+        if (pairing.user2Id) {
+          setSignupError("This pairing is already full");
+          setIsSigningUp(false);
+          return;
+        }
+        await firestoreOps.createUser(uid, name, pairing.id);
+        await firestoreOps.joinPairing(pairing.id, uid);
+
+        window.history.pushState({}, "", "/");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      } else {
+        await firestoreOps.createUser(uid, name, null);
+        const pairing = await firestoreOps.createPairing(uid);
+        await firestoreOps.createUser(uid, name, pairing.id);
+      }
+
+      const state = await firestoreOps.getAuthState(uid);
+      setAuthState(state);
+    } catch (err: any) {
+      setSignupError(err.message || "Something went wrong");
+    } finally {
+      setIsSigningUp(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await firebaseAuth.signOut();
+    } catch {
+    } finally {
+      setAuthState(null);
+    }
   };
 
   if (isLoading) {
@@ -145,27 +207,25 @@ function AppContent() {
     );
   }
 
-  if (!auth) {
+  if (!authState) {
     return (
       <div className="min-h-screen bg-[#FBF9F6] flex items-center justify-center font-sans">
         <div className="w-full min-h-screen flex flex-col relative overflow-hidden">
-          <Login onLogin={handleLogin} error={signupMutation.error?.message} isLoading={signupMutation.isPending} />
+          <Login onLogin={handleLogin} error={signupError} isLoading={isSigningUp} />
         </div>
       </div>
     );
   }
 
-  return <AuthenticatedApp auth={auth} />;
+  return <AuthenticatedApp auth={authState} onLogout={handleLogout} />;
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AppContent />
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <TooltipProvider>
+      <AppContent />
+      <Toaster />
+    </TooltipProvider>
   );
 }
 

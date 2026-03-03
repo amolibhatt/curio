@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { BookOpen, Compass, History, Link as LinkIcon, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { queryClient, apiRequest } from "@/lib/queryClient";
 
 import { User } from "@/lib/mock-data";
 
-export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
+export default function Layout({ children, user, hasFriendJoined = false, inviteCode, onLogout }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string, onLogout?: () => void }) {
   const [location] = useLocation();
   const [copied, setCopied] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -15,14 +14,8 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
     mainRef.current?.scrollTo(0, 0);
   }, [location]);
 
-  const handleLogout = async () => {
-    try {
-      await apiRequest("POST", "/api/auth/logout");
-    } catch {
-    } finally {
-      queryClient.setQueryData(["/api/auth/me"], null);
-      queryClient.invalidateQueries();
-    }
+  const handleLogout = () => {
+    onLogout?.();
   };
 
   const handleShareLink = async () => {

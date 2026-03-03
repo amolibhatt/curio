@@ -3,23 +3,23 @@ export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | '
 export type ReactionType = 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad';
 
 export type Fact = {
-  id: number;
+  id: string;
   text: string;
-  authorId: number;
-  pairingId: number;
+  authorId: string;
+  pairingId: string;
   date: string;
   categories: Category[];
   reactions: Record<string, ReactionType | null>;
 };
 
 export type User = {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
 };
 
 export type AuthState = {
   user: User;
-  pairing: { id: number; inviteCode: string } | null;
+  pairing: { id: string; inviteCode: string } | null;
   partner: User | null;
 };

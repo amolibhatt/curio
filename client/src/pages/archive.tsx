@@ -5,11 +5,11 @@ import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter
 import emptyArchiveImg from "../assets/images/empty-archive.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser, isReacting }: { facts: Fact[], onReact: (factId: number, reaction: string | null) => void, activeUser: User, partnerUser: User, isReacting?: boolean }) {
-  const [filterPerson, setFilterPerson] = useState<number | null>(null);
+export default function Archive({ facts, onReact, activeUser, partnerUser, isReacting }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, isReacting?: boolean }) {
+  const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [burstReaction, setBurstReaction] = useState<{id: number, type: string} | null>(null);
+  const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Apply filters
@@ -48,7 +48,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
     return 'bg-[#FBF9F6] text-[#737373] border-none';
   };
 
-  const handleReact = (factId: number, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
+  const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
     if (isReacting) return;
     const fact = facts.find(f => f.id === factId);
     const currentReaction = fact?.reactions?.[String(activeUser.id)];
@@ -108,7 +108,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, isRea
                   >
                     Me
                   </button>
-                  {partnerUser.id !== 0 && (
+                  {partnerUser.id !== "0" && (
                     <button
                       onClick={() => setFilterPerson(partnerUser.id)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FBF9F6] text-[#737373] hover:bg-black/5'}`}

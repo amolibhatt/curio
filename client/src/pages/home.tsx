@@ -184,7 +184,7 @@ export default function Home({ facts, onAddFact, activeUser, partnerUser }: { fa
             <p className="text-[#909090] text-base md:text-lg max-w-[320px] leading-relaxed animate-in slide-in-from-bottom-4 duration-500 delay-200" data-testid="text-sealed-message">
               {partnerFactToday
                 ? "Head to the archive to see today\u2019s discoveries."
-                : partnerUser.id === 0
+                : partnerUser.id === "0"
                   ? "Your discovery is safe. Invite someone to start the exchange."
                   : `Waiting for ${partnerUser.name} to share theirs.`}
             </p>
