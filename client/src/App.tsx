@@ -293,7 +293,13 @@ function AppContent() {
                     cookie.pairingId,
                     cookie.isUser1
                   );
-                  const reconnectedState = await firestoreOps.getAuthState(user.uid);
+                  let retries = 0;
+                  let reconnectedState = await firestoreOps.getAuthState(user.uid);
+                  while (!reconnectedState && retries < 2) {
+                    await new Promise(r => setTimeout(r, 500));
+                    reconnectedState = await firestoreOps.getAuthState(user.uid);
+                    retries++;
+                  }
                   if (reconnectedState) {
                     setAuthState(reconnectedState);
                     setNeedsName(false);
@@ -365,7 +371,14 @@ function AppContent() {
       let pairingId: string;
 
       if (inviteCode) {
-        const pairing = await firestoreOps.getPairingByCode(inviteCode);
+        let pairing;
+        try {
+          pairing = await firestoreOps.getPairingByCode(inviteCode);
+        } catch {
+          setSignupError("This invite link is no longer available");
+          setIsSigningUp(false);
+          return;
+        }
         if (!pairing) {
           setSignupError("Invite not found");
           setIsSigningUp(false);
@@ -407,6 +420,9 @@ function AppContent() {
       firestoreOps.setReconnectCookie({ uid, name: trimmedName, pairingId, isUser1 });
 
       const state = await firestoreOps.getAuthState(uid);
+      if (!state) {
+        throw new Error("Account created but couldn't load your data. Please refresh and try again.");
+      }
       setAuthState(state);
       setNeedsName(false);
     } catch (err: any) {

@@ -74,7 +74,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
   - Anniversary date: validated as string with size 10 in pairing update rules
   - Fact create: validates date (string, length 10), categories (list, 1-7 items), restricts to exactly `text`, `authorId`, `pairingId`, `date`, `categories` fields
   - Fact update: re-validates text (string, 1-5000 chars) and categories (list, 1-7 items) on edit
-  - Fact authorId update (reconnect): requires pairing membership check via `getUserPairingId()`
+  - Fact authorId update (reconnect): requires pairing membership check via `getUserPairingId()`, plus verifies old authorId is NOT a current active pairing member (prevents authorship theft by partner)
   - Reactions: validated against allowed types; write restricted to `type` field only
   - dailyAnswers create: validates field types, answer value must be string 1-2000 chars; restricts to `pairingId`, `date`, `questionText`, `category`, `answers` fields
   - dailyAnswers update: only user's own answer key can be modified; answer value validated as string 1-2000 chars

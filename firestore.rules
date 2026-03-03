@@ -83,7 +83,9 @@ service cloud.firestore {
              && request.resource.data.categories.size() <= 7)
             || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['authorId'])
                 && request.resource.data.authorId == request.auth.uid
-                && resource.data.pairingId == getUserPairingId()));
+                && resource.data.pairingId == getUserPairingId()
+                && resource.data.authorId != get(/databases/$(database)/documents/pairings/$(resource.data.pairingId)).data.user1Id
+                && resource.data.authorId != get(/databases/$(database)/documents/pairings/$(resource.data.pairingId)).data.user2Id));
       allow delete: if false;
 
       match /reactions/{userId} {

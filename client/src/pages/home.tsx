@@ -444,13 +444,13 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                   el.style.height = Math.min(el.scrollHeight, 160) + 'px';
                 }}
                 placeholder="Type your answer..."
-                maxLength={500}
+                maxLength={2000}
                 className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
                 rows={2}
                 data-testid="input-daily-answer"
               />
               <div className="flex items-center justify-between">
-                <p className="text-[10px] text-[#c0c0c0]">{answerText.length}/500</p>
+                <p className="text-[10px] text-[#c0c0c0]">{answerText.length}/2000</p>
                 <button
                   onClick={handleSubmitDailyAnswer}
                   disabled={!answerText.trim() || isSubmittingAnswer}
