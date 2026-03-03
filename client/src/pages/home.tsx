@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
 import { getDailyPrompt, getDailyPromptAlternatives } from "@/lib/daily-prompts";
-import { getDailyQuestion, type QuestionCategory } from "@/lib/daily-questions";
+import { getDailyQuestion } from "@/lib/daily-questions";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },

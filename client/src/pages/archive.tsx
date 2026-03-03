@@ -126,6 +126,7 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             <button 
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+              data-testid="button-toggle-filters"
             >
               <Filter className="w-3.5 h-3.5" />
               Filters {(filterPerson || filterCategories.length > 0) && '(Active)'}

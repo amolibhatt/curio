@@ -75,6 +75,22 @@ export async function reconnectUser(
     }
   }
 
+  const allFactsQuery = query(
+    collection(db, "facts"),
+    where("pairingId", "==", pairingId)
+  );
+  const allFactsSnap = await getDocs(allFactsQuery);
+  for (const factDoc of allFactsSnap.docs) {
+    try {
+      const oldReactionRef = doc(db, "facts", factDoc.id, "reactions", oldUid);
+      const oldReactionSnap = await getDoc(oldReactionRef);
+      if (oldReactionSnap.exists()) {
+        await setDoc(doc(db, "facts", factDoc.id, "reactions", newUid), oldReactionSnap.data());
+        await deleteDoc(oldReactionRef);
+      }
+    } catch {}
+  }
+
   try {
     await deleteDoc(doc(db, "users", oldUid));
   } catch {}
@@ -246,8 +262,8 @@ export async function submitDailyAnswer(
 
   if (snap.exists()) {
     const data = snap.data();
+    await updateDoc(ref, { [`answers.${userId}`]: answer });
     const answers = { ...data.answers, [userId]: answer };
-    await updateDoc(ref, { answers });
     return { id: docId, pairingId, date, questionText: data.questionText, category: data.category, answers };
   } else {
     const answers = { [userId]: answer };

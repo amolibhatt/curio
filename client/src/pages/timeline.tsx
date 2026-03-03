@@ -80,8 +80,8 @@ function getMonthlyAnniversary(anniversaryDate: string) {
     nextMonthlyDate.setDate(lastDayOfTargetMonth);
   }
 
-  const diff = Math.ceil((nextMonthlyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  return { monthsCompleted, daysUntilNext: diff, isToday: false, nextMonth: monthsCompleted + 1 };
+  const diff = Math.round((nextMonthlyDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return { monthsCompleted, daysUntilNext: Math.max(0, diff), isToday: false, nextMonth: monthsCompleted + 1 };
 }
 
 function getYearlyAnniversary(anniversaryDate: string) {
@@ -101,8 +101,8 @@ function getYearlyAnniversary(anniversaryDate: string) {
   if (thisYear < now) {
     next = new Date(now.getFullYear() + 1, anniv.getMonth(), anniv.getDate());
   }
-  const diff = Math.ceil((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  return { daysUntilNext: diff, isToday: false, nextYear: yearsCompleted + 1, yearsCompleted };
+  const diff = Math.round((next.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return { daysUntilNext: Math.max(0, diff), isToday: false, nextYear: yearsCompleted + 1, yearsCompleted };
 }
 
 function CountdownCards({ anniversaryDate }: { anniversaryDate: string }) {
@@ -210,7 +210,7 @@ export default function Timeline({
     const now = new Date();
     start.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
-    return Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, Math.round((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
   }, [anniversaryDate]);
 
   const monthsTogether = useMemo(() => {
@@ -243,9 +243,11 @@ export default function Timeline({
         origin: { y: 0.6 },
         colors: ['#ff5e7e', '#ff36ff', '#a25afd', '#fcff42', '#ffa62d'],
       });
+      setShowDatePicker(false);
+    } catch {
+      setShowDatePicker(false);
     } finally {
       setIsSaving(false);
-      setShowDatePicker(false);
     }
   };
 
