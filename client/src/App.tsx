@@ -168,6 +168,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const handleSubmitAnswer = async (questionText: string, category: string, answer: string): Promise<DailyAnswer> => {
     if (!auth.pairing) throw new Error("No pairing");
     const date = getLocalDateStr();
+    console.log("[Curio] submitAnswer:", { pairingId: auth.pairing.id, date, userId: auth.user.id, answerLen: answer.length });
     const result = await firestoreOps.submitDailyAnswer(auth.pairing.id, date, questionText, category, auth.user.id, answer);
     setDailyAnswers(prev => {
       const idx = prev.findIndex(a => a.id === result.id);

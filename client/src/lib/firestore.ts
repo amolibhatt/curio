@@ -378,8 +378,8 @@ export async function submitDailyAnswer(
   const result = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);
     if (snap.exists()) {
-      transaction.update(ref, { [`answers.${userId}`]: safeAnswer });
       const existingData = snap.data();
+      transaction.update(ref, { [`answers.${userId}`]: safeAnswer });
       return {
         id: docId,
         pairingId: existingData.pairingId,
