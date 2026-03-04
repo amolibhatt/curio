@@ -60,11 +60,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     const pid = pairingIdRef.current;
     if (!pid) return;
     try {
-      const [factsData, answersData, journalData] = await Promise.all([
+      const [factsData, answersData] = await Promise.all([
         firestoreOps.getFactsByPairing(pid),
         firestoreOps.getAllDailyAnswers(pid),
-        firestoreOps.getJournalEntries(pid),
       ]);
+
+      firestoreOps.getJournalEntries(pid)
+        .then(data => setJournalEntries(data))
+        .catch(err => console.warn("[Curio] Journal entries fetch failed:", err?.message));
 
       if (partnerId && hasLoadedOnce.current) {
         const newPartnerFacts = factsData.filter(f => f.authorId === partnerId).length;
@@ -86,7 +89,6 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
       setFacts(factsData);
       setDailyAnswers(answersData);
-      setJournalEntries(journalData);
       hasLoadedOnce.current = true;
     } catch (err: any) {
       console.error("[Curio] Failed to fetch data:", err);
