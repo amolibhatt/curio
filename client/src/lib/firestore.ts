@@ -6,7 +6,6 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  deleteField,
   query,
   where,
   addDoc,
@@ -109,9 +108,27 @@ export async function reconnectUser(
       try {
         await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
           [`answers.${newUid}`]: ansData.answers[oldUid],
-          [`answers.${oldUid}`]: deleteField(),
         });
       } catch {}
+    }
+    try {
+      const oldReactionRef = doc(db, "dailyAnswers", ansDoc.id, "reactions", oldUid);
+      const oldReactionSnap = await getDoc(oldReactionRef);
+      if (oldReactionSnap.exists()) {
+        await setDoc(doc(db, "dailyAnswers", ansDoc.id, "reactions", newUid), oldReactionSnap.data());
+        try { await deleteDoc(oldReactionRef); } catch {}
+      }
+    } catch {}
+  }
+
+  const allJournalQuery = query(
+    collection(db, "journalEntries"),
+    where("pairingId", "==", pairingId)
+  );
+  const allJournalSnap = await getDocs(allJournalQuery);
+  for (const journalDoc of allJournalSnap.docs) {
+    if (journalDoc.data().authorId === oldUid) {
+      try { await updateDoc(doc(db, "journalEntries", journalDoc.id), { authorId: newUid }); } catch {}
     }
   }
 

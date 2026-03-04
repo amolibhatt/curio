@@ -116,6 +116,12 @@ service cloud.firestore {
         && (request.resource.data.text is string && request.resource.data.text.size() <= 2000)
         && (!('imageData' in request.resource.data.keys()) || (request.resource.data.imageData is string && request.resource.data.imageData.size() <= 800000))
         && request.resource.data.keys().hasOnly(['authorId', 'pairingId', 'date', 'text', 'imageData']);
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['authorId'])
+        && request.resource.data.authorId == request.auth.uid
+        && resource.data.pairingId == getUserPairingId()
+        && resource.data.authorId != get(/databases/$(database)/documents/pairings/$(resource.data.pairingId)).data.user1Id
+        && resource.data.authorId != get(/databases/$(database)/documents/pairings/$(resource.data.pairingId)).data.user2Id;
       allow delete: if request.auth != null
         && resource.data.authorId == request.auth.uid;
     }
@@ -139,7 +145,8 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answers'])
         && request.resource.data.answers[request.auth.uid] is string
         && request.resource.data.answers[request.auth.uid].size() > 0
-        && request.resource.data.answers[request.auth.uid].size() <= 2000;
+        && request.resource.data.answers[request.auth.uid].size() <= 2000
+        && request.resource.data.answers.keys().hasAll(resource.data.answers.keys());
       allow delete: if false;
 
       match /reactions/{userId} {
