@@ -12,7 +12,7 @@ import {
   runTransaction,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer } from "./mock-data";
+import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer, JournalEntry } from "./mock-data";
 
 const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
 export const VALID_CATEGORIES_LIST = ['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'] as const;
@@ -451,6 +451,55 @@ export async function getAllDailyAnswers(pairingId: string): Promise<DailyAnswer
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+
+const MAX_JOURNAL_TEXT_LENGTH = 2000;
+const MAX_IMAGE_SIZE = 800000;
+
+export async function createJournalEntry(
+  authorId: string,
+  pairingId: string,
+  date: string,
+  text: string,
+  imageData?: string
+): Promise<JournalEntry> {
+  if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) throw new Error("Invalid date format");
+  if (!text.trim() && !imageData) throw new Error("Entry must have text or an image");
+  if (text.length > MAX_JOURNAL_TEXT_LENGTH) throw new Error("Text too long");
+  if (imageData && imageData.length > MAX_IMAGE_SIZE) throw new Error("Image too large");
+
+  const docData: Record<string, any> = {
+    authorId,
+    pairingId,
+    date,
+    text: text.trim(),
+  };
+  if (imageData) docData.imageData = imageData;
+
+  const ref = await addDoc(collection(db, "journalEntries"), docData);
+  return { id: ref.id, pairingId, authorId, date, text: text.trim(), imageData };
+}
+
+export async function getJournalEntries(pairingId: string): Promise<JournalEntry[]> {
+  const q = query(collection(db, "journalEntries"), where("pairingId", "==", pairingId));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        pairingId: data.pairingId,
+        authorId: data.authorId,
+        date: data.date,
+        text: data.text || '',
+        imageData: data.imageData,
+      } as JournalEntry;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export async function deleteJournalEntry(entryId: string): Promise<void> {
+  await deleteDoc(doc(db, "journalEntries", entryId));
+}
 
 export async function getAuthState(uid: string): Promise<AuthState | null> {
   try {

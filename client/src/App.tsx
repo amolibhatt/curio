@@ -17,12 +17,13 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
 import { getLocalDateStr } from "./lib/date-utils";
-import type { AuthState, Fact, ReactionType, Category, DailyAnswer } from "./lib/mock-data";
+import type { AuthState, Fact, ReactionType, Category, DailyAnswer, JournalEntry } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
   const [facts, setFacts] = useState<Fact[]>([]);
   const [dailyAnswers, setDailyAnswers] = useState<DailyAnswer[]>([]);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
   const [initialLoading, setInitialLoading] = useState(true);
   const pairingIdRef = useRef(auth.pairing?.id);
@@ -59,9 +60,10 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     const pid = pairingIdRef.current;
     if (!pid) return;
     try {
-      const [factsData, answersData] = await Promise.all([
+      const [factsData, answersData, journalData] = await Promise.all([
         firestoreOps.getFactsByPairing(pid),
         firestoreOps.getAllDailyAnswers(pid),
+        firestoreOps.getJournalEntries(pid),
       ]);
 
       if (partnerId && hasLoadedOnce.current) {
@@ -84,6 +86,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
       setFacts(factsData);
       setDailyAnswers(answersData);
+      setJournalEntries(journalData);
       hasLoadedOnce.current = true;
     } catch (err: any) {
       console.error("[Curio] Failed to fetch data:", err);
@@ -272,6 +275,18 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     return result;
   };
 
+  const handleAddJournalEntry = async (text: string, imageData?: string) => {
+    if (!auth.pairing) throw new Error("No pairing");
+    const date = getLocalDateStr();
+    const entry = await firestoreOps.createJournalEntry(auth.user.id, auth.pairing.id, date, text, imageData);
+    setJournalEntries(prev => [entry, ...prev]);
+  };
+
+  const handleDeleteJournalEntry = async (entryId: string) => {
+    await firestoreOps.deleteJournalEntry(entryId);
+    setJournalEntries(prev => prev.filter(e => e.id !== entryId));
+  };
+
   const partner = auth.partner || {
     id: "0",
     name: "Your partner",
@@ -361,6 +376,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             }}
             reactingFacts={reactingFacts}
             anniversaryDate={anniversaryDate}
+            journalEntries={journalEntries}
+            onAddJournalEntry={handleAddJournalEntry}
+            onDeleteJournalEntry={handleDeleteJournalEntry}
           />
         </Route>
         <Route path="/us">

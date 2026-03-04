@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
-import { Fact, User, DailyAnswer, ReactionType } from "@/lib/mock-data";
+import { useState, useMemo, useCallback, useRef } from "react";
+import { Fact, User, DailyAnswer, ReactionType, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
-import { format, differenceInDays, differenceInMonths } from "date-fns";
-import { Heart, Rewind, Sparkles, Star, Clock, Shuffle, ChevronRight, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
+import { Heart, Rewind, Sparkles, Star, Shuffle, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle, Camera, X, Send, ImageIcon, Trash2, PenLine } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
+import { compressImage } from "@/lib/image-utils";
 
 type MemoryItem = {
   type: 'fact' | 'qa';
@@ -32,6 +33,9 @@ export default function Memories({
   onQAReact,
   reactingFacts,
   anniversaryDate,
+  journalEntries,
+  onAddJournalEntry,
+  onDeleteJournalEntry,
 }: {
   facts: Fact[];
   dailyAnswers: DailyAnswer[];
@@ -41,11 +45,22 @@ export default function Memories({
   onQAReact?: (answerId: string, reaction: string | null) => void;
   reactingFacts?: Set<string>;
   anniversaryDate?: string | null;
+  journalEntries: JournalEntry[];
+  onAddJournalEntry: (text: string, imageData?: string) => Promise<void>;
+  onDeleteJournalEntry: (entryId: string) => Promise<void>;
 }) {
   const [randomFact, setRandomFact] = useState<Fact | null>(null);
   const [randomRevealed, setRandomRevealed] = useState(false);
   const todayStr = getLocalDateStr();
   const [ty, tm, td] = todayStr.split('-').map(Number);
+
+  const [journalText, setJournalText] = useState("");
+  const [journalImage, setJournalImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showComposer, setShowComposer] = useState(false);
+  const [compressingImage, setCompressingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const onThisDay = useMemo(() => {
     const items: MemoryItem[] = [];
@@ -118,10 +133,15 @@ export default function Memories({
 
     const list: Milestone[] = [];
 
+    const pd = (dateStr: string) => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    };
+
     if (sorted.length > 0) {
       list.push({
         label: 'First Discovery',
-        description: `Shared on ${format(new Date(sorted[0].date.split('-').map(Number).reduce((_, v, i) => i === 0 ? v : _, 0), sorted[0].date.split('-').map(Number)[1] - 1, sorted[0].date.split('-').map(Number)[2]), 'MMM d, yyyy')}`,
+        description: `Shared on ${format(pd(sorted[0].date), 'MMM d, yyyy')}`,
         fact: sorted[0],
         icon: Star,
         achieved: true,
@@ -131,7 +151,7 @@ export default function Memories({
     if (completedQAs.length > 0) {
       list.push({
         label: 'First Q&A Together',
-        description: `Answered on ${format(new Date(completedQAs[0].date.split('-').map(Number)[0], completedQAs[0].date.split('-').map(Number)[1] - 1, completedQAs[0].date.split('-').map(Number)[2]), 'MMM d, yyyy')}`,
+        description: `Answered on ${format(pd(completedQAs[0].date), 'MMM d, yyyy')}`,
         qa: completedQAs[0],
         icon: MessageCircle,
         achieved: true,
@@ -143,7 +163,7 @@ export default function Memories({
       if (sorted.length >= n) {
         list.push({
           label: `${n} Discoveries`,
-          description: `Reached on ${format(new Date(sorted[n - 1].date.split('-').map(Number)[0], sorted[n - 1].date.split('-').map(Number)[1] - 1, sorted[n - 1].date.split('-').map(Number)[2]), 'MMM d, yyyy')}`,
+          description: `Reached on ${format(pd(sorted[n - 1].date), 'MMM d, yyyy')}`,
           fact: sorted[n - 1],
           icon: n >= 100 ? Gem : Award,
           achieved: true,
@@ -164,7 +184,7 @@ export default function Memories({
       if (completedQAs.length >= n) {
         list.push({
           label: `${n} Q&As Answered`,
-          description: `Reached on ${format(new Date(completedQAs[n - 1].date.split('-').map(Number)[0], completedQAs[n - 1].date.split('-').map(Number)[1] - 1, completedQAs[n - 1].date.split('-').map(Number)[2]), 'MMM d, yyyy')}`,
+          description: `Reached on ${format(pd(completedQAs[n - 1].date), 'MMM d, yyyy')}`,
           qa: completedQAs[n - 1],
           icon: MessageCircle,
           achieved: true,
@@ -186,8 +206,6 @@ export default function Memories({
   const stats = useMemo(() => {
     const totalFacts = facts.length;
     const totalQAs = dailyAnswers.filter(a => Object.keys(a.answers || {}).length >= 2).length;
-    const myFacts = facts.filter(f => f.authorId === activeUser.id).length;
-    const partnerFacts = facts.filter(f => f.authorId === partnerUser.id).length;
 
     const allDates = [...new Set(facts.map(f => f.date))].sort();
     let longestStreak = 0;
@@ -222,7 +240,7 @@ export default function Memories({
       return best;
     }, null);
 
-    return { totalFacts, totalQAs, myFacts, partnerFacts, longestStreak, daysTogether, mostReactedFact };
+    return { totalFacts, totalQAs, longestStreak, daysTogether, mostReactedFact };
   }, [facts, dailyAnswers, activeUser.id, partnerUser.id, anniversaryDate, todayStr]);
 
   const handleRediscover = useCallback(() => {
@@ -239,7 +257,46 @@ export default function Memories({
     return new Date(y, m - 1, d);
   };
 
-  const hasPartner = partnerUser.id !== "0";
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    setCompressingImage(true);
+    try {
+      const compressed = await compressImage(file);
+      setJournalImage(compressed);
+    } catch {
+      // silently fail
+    } finally {
+      setCompressingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmitJournal = async () => {
+    if (isSubmitting) return;
+    if (!journalText.trim() && !journalImage) return;
+    setIsSubmitting(true);
+    try {
+      await onAddJournalEntry(journalText.trim(), journalImage || undefined);
+      setJournalText("");
+      setJournalImage(null);
+      setShowComposer(false);
+    } catch {
+      // handled upstream
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const groupedJournal = useMemo(() => {
+    const groups: Record<string, JournalEntry[]> = {};
+    for (const entry of journalEntries) {
+      if (!groups[entry.date]) groups[entry.date] = [];
+      groups[entry.date].push(entry);
+    }
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+  }, [journalEntries]);
 
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10 flex flex-col gap-6">
@@ -251,6 +308,173 @@ export default function Memories({
           The moments that made you, together.
         </p>
       </header>
+
+      <section data-testid="section-capture">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+              <PenLine className="w-4.5 h-4.5 text-[#8B7E74]" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#1C1C1C]">Capture Today</h2>
+              <p className="text-[11px] text-[#b0b0b0]">{format(new Date(ty, tm - 1, td), 'EEEE, MMMM d')}</p>
+            </div>
+          </div>
+          {!showComposer && (
+            <button
+              onClick={() => { setShowComposer(true); setTimeout(() => textareaRef.current?.focus(), 150); }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 shadow-sm"
+              data-testid="button-open-journal"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              Add
+            </button>
+          )}
+        </div>
+
+        <AnimatePresence>
+          {showComposer && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              className="rounded-2xl bg-white border border-black/5 overflow-hidden"
+            >
+              <div className="p-5 space-y-3">
+                <textarea
+                  ref={textareaRef}
+                  value={journalText}
+                  onChange={(e) => {
+                    setJournalText(e.target.value);
+                    const el = e.target;
+                    el.style.height = 'auto';
+                    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+                  }}
+                  placeholder="What happened today? How did it feel?"
+                  maxLength={2000}
+                  className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
+                  rows={3}
+                  data-testid="input-journal-text"
+                />
+
+                {journalImage && (
+                  <div className="relative inline-block">
+                    <img
+                      src={journalImage}
+                      alt="Preview"
+                      className="rounded-xl max-h-48 object-cover border border-black/5"
+                      data-testid="img-journal-preview"
+                    />
+                    <button
+                      onClick={() => setJournalImage(null)}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                      data-testid="button-remove-journal-image"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleImagePick}
+                      className="hidden"
+                      data-testid="input-journal-image"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={compressingImage}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-medium text-[#737373] hover:text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-95 border border-black/5"
+                      data-testid="button-add-journal-image"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      {compressingImage ? 'Processing...' : 'Photo'}
+                    </button>
+                    <button
+                      onClick={() => { setShowComposer(false); setJournalText(""); setJournalImage(null); }}
+                      className="px-3 py-2 rounded-full text-[11px] font-medium text-[#b0b0b0] hover:text-[#737373] hover:bg-black/5 transition-all"
+                      data-testid="button-cancel-journal"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleSubmitJournal}
+                    disabled={(!journalText.trim() && !journalImage) || isSubmitting}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                    data-testid="button-submit-journal"
+                  >
+                    {isSubmitting ? "Saving..." : "Save"}
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <p className="text-[10px] text-[#c0c0c0] text-right">{journalText.length}/2000</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {groupedJournal.length > 0 && (
+          <div className="space-y-3 mt-4">
+            {groupedJournal.map(([date, entries]) => (
+              <div key={date}>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase mb-2 px-1">
+                  {format(parseDate(date), 'EEEE, MMMM d, yyyy')}
+                </p>
+                <div className="space-y-2">
+                  {entries.map(entry => {
+                    const isMe = entry.authorId === activeUser.id;
+                    const authorName = isMe ? activeUser.name : partnerUser.name;
+                    const authorAvatar = isMe ? activeUser.avatar : partnerUser.avatar;
+                    return (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl bg-white border border-black/5 overflow-hidden"
+                      >
+                        <div className="px-5 pt-4 pb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img src={authorAvatar} alt={authorName} className="w-5 h-5 rounded-full" />
+                            <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{authorName}</span>
+                          </div>
+                          {isMe && (
+                            <button
+                              onClick={() => onDeleteJournalEntry(entry.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded-full text-[#c0c0c0] hover:text-red-400 hover:bg-red-50 transition-all"
+                              data-testid={`button-delete-journal-${entry.id}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="px-5 pb-4">
+                          {entry.text && (
+                            <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed mb-2">{entry.text}</p>
+                          )}
+                          {entry.imageData && (
+                            <img
+                              src={entry.imageData}
+                              alt="Memory"
+                              className="rounded-xl max-w-full border border-black/5"
+                              data-testid={`img-journal-${entry.id}`}
+                            />
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {stats.totalFacts > 0 && (
         <div className="grid grid-cols-2 gap-3" data-testid="section-stats">
@@ -445,14 +669,14 @@ export default function Memories({
         </section>
       )}
 
-      {facts.length === 0 && dailyAnswers.length === 0 && (
+      {facts.length === 0 && dailyAnswers.length === 0 && journalEntries.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-16 h-16 rounded-2xl bg-[#EDEAE6] flex items-center justify-center mb-4">
             <BookOpen className="w-7 h-7 text-[#8B7E74]" />
           </div>
           <p className="text-lg font-serif text-[#1C1C1C] mb-2">No memories yet</p>
           <p className="text-sm text-[#909090] max-w-[260px]">
-            Start sharing discoveries and answering daily questions to build your memory collection.
+            Start sharing discoveries and capturing moments to build your memory collection.
           </p>
         </div>
       )}

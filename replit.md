@@ -17,6 +17,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `facts` — text, authorId, pairingId, date, categories[]
   - `facts/{id}/reactions` — subcollection, doc ID = userId, field: type
 - `dailyAnswers` — doc ID = `{pairingId}_{date}`, fields: pairingId, date, questionText, category, answers (map of userId → answer text)
+- `journalEntries` — text (up to 2000 chars), imageData (base64, up to ~800KB), authorId, pairingId, date
 
 ## Key Features
 
@@ -28,6 +29,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Daily Q&A**: Each day a categorized question (Us, Deep, Memory Lane, Dream Big, Hot Takes, Hypothetical, Intimacy, Gratitude, Play, Before Us) is shown; both partners answer independently; answers are hidden until both submit; full Q&A history in archive
 - **Rich Text Editor**: WYSIWYG contentEditable editor with B/I/U/headings, markdown storage
 - **Edit Entry**: Can edit today's entry after posting
+- **Memories** (`/memories`): Journal entries with text + photo capture, "On This Day" lookbacks, "Rediscover" random memory, milestones, stats, most-loved discovery
 - **Relationship Timeline** (`/us`): Anniversary date, days-together counter, milestone celebrations, anniversary countdown
 - **Anonymous Auth**: Auto sign-in, no logout, permanent session
 
@@ -42,6 +44,8 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `client/src/pages/archive.tsx` — Chronological archive with filters + reactions
 - `client/src/pages/login.tsx` — Name input page
 - `client/src/components/layout.tsx` — App shell with sticky header + bottom nav
+- `client/src/pages/memories.tsx` — Memories page with journal entries, On This Day, Rediscover, milestones, stats
+- `client/src/lib/image-utils.ts` — Client-side image compression for journal photos
 - `client/src/pages/timeline.tsx` — Relationship timeline with milestones + anniversary
 - `client/src/lib/daily-questions.ts` — 280+ categorized couple questions, deterministic daily selection
 - `client/src/components/rich-editor.tsx` — WYSIWYG contentEditable editor

@@ -28,6 +28,15 @@ export type DailyAnswer = {
   reactions: Record<string, ReactionType>;
 };
 
+export type JournalEntry = {
+  id: string;
+  pairingId: string;
+  authorId: string;
+  date: string;
+  text: string;
+  imageData?: string;
+};
+
 export type AuthState = {
   user: User;
   pairing: { id: string; inviteCode: string; anniversaryDate?: string | null } | null;
