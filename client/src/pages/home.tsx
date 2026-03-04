@@ -171,19 +171,24 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         candidates.push({ type: 'qa', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: a });
       }
     }
-    const [, todayM, todayD] = [ty, tm, td];
     for (const f of facts) {
       const [fy, fm, fd] = f.date.split('-').map(Number);
-      if (fd === todayD && fy === ty && fm < todayM) {
-        const diff = todayM - fm;
-        candidates.push({ type: 'fact', label: diff === 1 ? '1 month ago' : `${diff} months ago`, data: f });
+      if (fd === td && (fy < ty || (fy === ty && fm < tm))) {
+        if (fm === tm && fd === td && fy < ty) continue;
+        const monthsDiff = (ty - fy) * 12 + (tm - fm);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          candidates.push({ type: 'fact', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: f });
+        }
       }
     }
     for (const a of dailyAnswers) {
       const [ay, am, ad] = a.date.split('-').map(Number);
-      if (ad === todayD && ay === ty && am < todayM && Object.keys(a.answers).length >= 2) {
-        const diff = todayM - am;
-        candidates.push({ type: 'qa', label: diff === 1 ? '1 month ago' : `${diff} months ago`, data: a });
+      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers).length >= 2) {
+        if (am === tm && ad === td && ay < ty) continue;
+        const monthsDiff = (ty - ay) * 12 + (tm - am);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          candidates.push({ type: 'qa', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: a });
+        }
       }
     }
     if (candidates.length === 0) return null;
