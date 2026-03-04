@@ -380,14 +380,15 @@ export async function submitDailyAnswer(
 
     if (snap.exists()) {
       const existingData = snap.data();
-      await updateDoc(ref, { [`answers.${userId}`]: safeAnswer });
+      const mergedAnswers = { ...existingData.answers, [userId]: safeAnswer };
+      await updateDoc(ref, { answers: mergedAnswers });
       return {
         id: docId,
         pairingId: existingData.pairingId,
         date: existingData.date,
         questionText: existingData.questionText,
         category: existingData.category,
-        answers: { ...existingData.answers, [userId]: safeAnswer },
+        answers: mergedAnswers,
       };
     } else {
       const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };

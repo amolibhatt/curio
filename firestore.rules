@@ -106,22 +106,14 @@ service cloud.firestore {
     }
 
     match /dailyAnswers/{docId} {
-      allow read: if request.auth != null
-        && (resource == null || getUserPairingId() == resource.data.pairingId);
+      allow read: if request.auth != null;
       allow create: if request.auth != null
-        && request.resource.data.pairingId == getUserPairingId()
-        && request.resource.data.answers.keys().hasOnly([request.auth.uid])
-        && request.resource.data.answers[request.auth.uid] is string
-        && request.resource.data.answers[request.auth.uid].size() > 0
-        && request.resource.data.answers[request.auth.uid].size() <= 2000
+        && request.resource.data.pairingId is string
+        && request.resource.data.answers is map
         && request.resource.data.date is string
         && request.resource.data.questionText is string
-        && request.resource.data.category is string
-        && request.resource.data.keys().hasOnly(['pairingId', 'date', 'questionText', 'category', 'answers']);
+        && request.resource.data.category is string;
       allow update: if request.auth != null
-        && getUserPairingId() == resource.data.pairingId
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answers'])
-        && request.resource.data.answers.diff(resource.data.answers).affectedKeys().hasOnly([request.auth.uid])
         && request.resource.data.answers[request.auth.uid] is string
         && request.resource.data.answers[request.auth.uid].size() > 0
         && request.resource.data.answers[request.auth.uid].size() <= 2000;
