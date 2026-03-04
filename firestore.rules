@@ -146,7 +146,8 @@ service cloud.firestore {
         && request.resource.data.answers[request.auth.uid] is string
         && request.resource.data.answers[request.auth.uid].size() > 0
         && request.resource.data.answers[request.auth.uid].size() <= 2000
-        && request.resource.data.answers.keys().hasAll(resource.data.answers.keys());
+        && request.resource.data.answers.keys().hasAll(resource.data.answers.keys())
+        && request.resource.data.answers.diff(resource.data.answers).affectedKeys().hasOnly([request.auth.uid]);
       allow delete: if false;
 
       match /reactions/{userId} {
