@@ -10,6 +10,7 @@ import {
   where,
   addDoc,
   runTransaction,
+  limit,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer, JournalEntry } from "./mock-data";
@@ -333,7 +334,8 @@ export async function hasPostedToday(authorId: string, pairingId: string, date: 
     collection(db, "facts"),
     where("pairingId", "==", pairingId),
     where("authorId", "==", authorId),
-    where("date", "==", date)
+    where("date", "==", date),
+    limit(1)
   );
   const snap = await getDocs(q);
   return !snap.empty;

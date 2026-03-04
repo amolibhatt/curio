@@ -140,9 +140,14 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
         throw new Error("You've already shared a discovery today");
       }
 
-      const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
-      if (alreadyPosted) {
-        throw new Error("You've already shared a discovery today");
+      try {
+        const alreadyPosted = await firestoreOps.hasPostedToday(auth.user.id, auth.pairing.id, date);
+        if (alreadyPosted) {
+          throw new Error("You've already shared a discovery today");
+        }
+      } catch (checkErr: any) {
+        if (checkErr?.message === "You've already shared a discovery today") throw checkErr;
+        console.warn("[Curio] hasPostedToday check failed, proceeding:", checkErr?.message);
       }
 
       const newFact = await firestoreOps.createFact(auth.user.id, auth.pairing.id, text, categories, date);
