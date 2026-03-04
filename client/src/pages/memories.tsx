@@ -95,29 +95,35 @@ export default function Memories({
 
     for (const f of facts) {
       const [fy, fm, fd] = f.date.split('-').map(Number);
-      if (fd === td && fy === ty && fm < tm) {
-        const diff = tm - fm;
-        items.push({
-          type: 'fact',
-          label: format(new Date(fy, fm - 1, fd), 'MMM d, yyyy'),
-          timeAgo: diff === 1 ? '1 month ago' : `${diff} months ago`,
-          data: f,
-          priority: diff * 0.1,
-        });
+      if (fd === td && (fy < ty || (fy === ty && fm < tm))) {
+        if (fm === tm && fd === td && fy < ty) continue;
+        const monthsDiff = (ty - fy) * 12 + (tm - fm);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          items.push({
+            type: 'fact',
+            label: format(new Date(fy, fm - 1, fd), 'MMM d, yyyy'),
+            timeAgo: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`,
+            data: f,
+            priority: monthsDiff * 0.1,
+          });
+        }
       }
     }
 
     for (const a of dailyAnswers) {
       const [ay, am, ad] = a.date.split('-').map(Number);
-      if (ad === td && ay === ty && am < tm && Object.keys(a.answers || {}).length >= 2) {
-        const diff = tm - am;
-        items.push({
-          type: 'qa',
-          label: format(new Date(ay, am - 1, ad), 'MMM d, yyyy'),
-          timeAgo: diff === 1 ? '1 month ago' : `${diff} months ago`,
-          data: a,
-          priority: diff * 0.1,
-        });
+      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers || {}).length >= 2) {
+        if (am === tm && ad === td && ay < ty) continue;
+        const monthsDiff = (ty - ay) * 12 + (tm - am);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          items.push({
+            type: 'qa',
+            label: format(new Date(ay, am - 1, ad), 'MMM d, yyyy'),
+            timeAgo: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`,
+            data: a,
+            priority: monthsDiff * 0.1,
+          });
+        }
       }
     }
 

@@ -166,7 +166,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     }
     for (const a of dailyAnswers) {
       const [ay, am, ad] = a.date.split('-').map(Number);
-      if (am === tm && ad === td && ay < ty && Object.keys(a.answers).length >= 2) {
+      if (am === tm && ad === td && ay < ty && Object.keys(a.answers || {}).length >= 2) {
         const diff = ty - ay;
         candidates.push({ type: 'qa', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: a });
       }
@@ -183,7 +183,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     }
     for (const a of dailyAnswers) {
       const [ay, am, ad] = a.date.split('-').map(Number);
-      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers).length >= 2) {
+      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers || {}).length >= 2) {
         if (am === tm && ad === td && ay < ty) continue;
         const monthsDiff = (ty - ay) * 12 + (tm - am);
         if (monthsDiff >= 1 && monthsDiff <= 11) {
