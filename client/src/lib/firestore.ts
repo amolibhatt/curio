@@ -348,6 +348,15 @@ export async function removeReaction(factId: string, userId: string): Promise<vo
   await deleteDoc(doc(db, "facts", factId, "reactions", userId));
 }
 
+export async function setQAReaction(answerId: string, userId: string, type: ReactionType): Promise<void> {
+  if (!VALID_REACTIONS.has(type)) throw new Error("Invalid reaction type");
+  await setDoc(doc(db, "dailyAnswers", answerId, "reactions", userId), { type });
+}
+
+export async function removeQAReaction(answerId: string, userId: string): Promise<void> {
+  await deleteDoc(doc(db, "dailyAnswers", answerId, "reactions", userId));
+}
+
 export async function setAnniversaryDate(pairingId: string, date: string): Promise<void> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid date format");
   const [y, m, d] = date.split('-').map(Number);
@@ -389,6 +398,7 @@ export async function submitDailyAnswer(
         questionText: existingData.questionText,
         category: existingData.category,
         answers: mergedAnswers,
+        reactions: {},
       };
     } else {
       const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };
@@ -400,6 +410,7 @@ export async function submitDailyAnswer(
         questionText,
         category,
         answers: { [userId]: safeAnswer },
+        reactions: {},
       };
     }
   } catch (err: any) {
@@ -413,16 +424,29 @@ export async function getDailyAnswerForDate(pairingId: string, date: string): Pr
   const snap = await getDoc(doc(db, "dailyAnswers", docId));
   if (!snap.exists()) return null;
   const data = snap.data();
-  return { id: docId, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {} };
+  const reactSnap = await getDocs(collection(db, "dailyAnswers", docId, "reactions"));
+  const reactions: Record<string, string> = {};
+  reactSnap.docs.forEach(r => { reactions[r.id] = r.data().type; });
+  return { id: docId, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {}, reactions };
 }
 
 export async function getAllDailyAnswers(pairingId: string): Promise<DailyAnswer[]> {
   const q = query(collection(db, "dailyAnswers"), where("pairingId", "==", pairingId));
   const snap = await getDocs(q);
+
+  const reactionPromises = snap.docs.map(async (d) => {
+    const reactSnap = await getDocs(collection(db, "dailyAnswers", d.id, "reactions"));
+    const reactions: Record<string, string> = {};
+    reactSnap.docs.forEach(r => { reactions[r.id] = r.data().type; });
+    return { docId: d.id, reactions };
+  });
+  const reactionResults = await Promise.all(reactionPromises);
+  const reactionsMap = new Map(reactionResults.map(r => [r.docId, r.reactions]));
+
   return snap.docs
     .map(d => {
       const data = d.data();
-      return { id: d.id, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {} };
+      return { id: d.id, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {}, reactions: reactionsMap.get(d.id) || {} };
     })
     .sort((a, b) => b.date.localeCompare(a.date));
 }

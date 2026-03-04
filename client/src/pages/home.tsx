@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Fact, Category, User, DailyAnswer } from "@/lib/mock-data";
+import { Fact, Category, User, DailyAnswer, ReactionType } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, Rewind } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
 import { getDailyQuestion } from "@/lib/daily-questions";
+import { format } from "date-fns";
+import { formatText } from "@/lib/format-text";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -113,7 +115,7 @@ function getGreeting(hour: number): string {
   return "Good evening";
 }
 
-export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer> }) {
+export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
@@ -148,6 +150,46 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const myAnswer = todayAnswer?.answers?.[activeUser.id];
   const partnerAnswer = todayAnswer?.answers?.[partnerUser.id];
   const bothAnswered = !!myAnswer && !!partnerAnswer;
+
+  const myQAReaction = todayAnswer?.reactions?.[activeUser.id] as ReactionType | undefined;
+
+  const throwback = useMemo(() => {
+    if (!hasPartner) return null;
+    const [ty, tm, td] = todayStr.split('-').map(Number);
+    const candidates: { type: 'fact' | 'qa'; label: string; data: Fact | DailyAnswer }[] = [];
+    for (const f of facts) {
+      const [fy, fm, fd] = f.date.split('-').map(Number);
+      if (fm === tm && fd === td && fy < ty) {
+        const diff = ty - fy;
+        candidates.push({ type: 'fact', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: f });
+      }
+    }
+    for (const a of dailyAnswers) {
+      const [ay, am, ad] = a.date.split('-').map(Number);
+      if (am === tm && ad === td && ay < ty && Object.keys(a.answers).length >= 2) {
+        const diff = ty - ay;
+        candidates.push({ type: 'qa', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: a });
+      }
+    }
+    const [, todayM, todayD] = [ty, tm, td];
+    for (const f of facts) {
+      const [fy, fm, fd] = f.date.split('-').map(Number);
+      if (fd === todayD && fy === ty && fm < todayM) {
+        const diff = todayM - fm;
+        candidates.push({ type: 'fact', label: diff === 1 ? '1 month ago' : `${diff} months ago`, data: f });
+      }
+    }
+    for (const a of dailyAnswers) {
+      const [ay, am, ad] = a.date.split('-').map(Number);
+      if (ad === todayD && ay === ty && am < todayM && Object.keys(a.answers).length >= 2) {
+        const diff = todayM - am;
+        candidates.push({ type: 'qa', label: diff === 1 ? '1 month ago' : `${diff} months ago`, data: a });
+      }
+    }
+    if (candidates.length === 0) return null;
+    const seed = todayStr.split('-').reduce((a, b) => a + parseInt(b), 0);
+    return candidates[seed % candidates.length];
+  }, [facts, dailyAnswers, todayStr, hasPartner]);
 
   const handleSubmitDailyAnswer = async () => {
     if (!answerText.trim() || isSubmittingAnswer) return;
@@ -494,6 +536,27 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                   <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
                   <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
                 </div>
+                {onQAReact && todayAnswer && (
+                  <div className="flex items-center gap-1 pt-1">
+                    {([
+                      { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                      { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                      { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                      { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                    ]).map(({ type, Icon, active, hover, fill }) => (
+                      <button
+                        key={type}
+                        onClick={() => onQAReact(todayAnswer.id, myQAReaction === type ? null : type)}
+                        className={`w-9 h-9 flex items-center justify-center rounded-full text-[10px] transition-all active:scale-95 ${
+                          myQAReaction === type ? active : `text-[#b0b0b0] ${hover}`
+                        }`}
+                        data-testid={`button-qa-react-${type}`}
+                      >
+                        <Icon className={`w-4 h-4 ${fill && myQAReaction === type ? 'fill-white' : ''}`} />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
@@ -518,6 +581,57 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </div>
         </div>
       </div>
+
+      {throwback && (
+        <div className="px-1 md:px-0" data-testid="card-throwback">
+          <div className="rounded-2xl border border-black/5 bg-white">
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+              <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+                <Rewind className="w-4.5 h-4.5 text-[#8B7E74]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Throwback</p>
+                <p className="text-[11px] text-[#b0b0b0] mt-0.5">{throwback.label}</p>
+              </div>
+            </div>
+            <div className="px-5 pb-5">
+              {throwback.type === 'fact' ? (() => {
+                const f = throwback.data as Fact;
+                const authorName = f.authorId === activeUser.id ? activeUser.name : partnerUser.name;
+                return (
+                  <div>
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1.5">{authorName} shared</p>
+                    <div className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{formatText(f.text)}</div>
+                  </div>
+                );
+              })() : (() => {
+                const a = throwback.data as DailyAnswer;
+                const myAns = a.answers[activeUser.id];
+                const partAns = a.answers[partnerUser.id];
+                return (
+                  <div>
+                    <p className="font-serif text-sm text-[#1C1C1C] leading-relaxed mb-3">{a.questionText}</p>
+                    <div className="space-y-2">
+                      {myAns && (
+                        <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
+                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{activeUser.name}</p>
+                          <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                        </div>
+                      )}
+                      {partAns && (
+                        <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
+                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{partnerUser.name}</p>
+                          <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{partAns}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

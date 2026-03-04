@@ -196,6 +196,50 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     }
   };
 
+  const [reactingQAs, setReactingQAs] = useState<Set<string>>(new Set());
+
+  const handleQAReact = async (answerId: string, type: ReactionType) => {
+    if (reactingQAs.has(answerId)) return;
+    setReactingQAs(prev => new Set(prev).add(answerId));
+    const userId = auth.user.id;
+
+    const qa = dailyAnswers.find(a => a.id === answerId);
+    const currentReaction = qa?.reactions?.[userId];
+    const shouldRemove = currentReaction === type;
+
+    setDailyAnswers(prev => prev.map(a => {
+      if (a.id !== answerId) return a;
+      const newReactions = { ...a.reactions };
+      if (shouldRemove) {
+        delete newReactions[userId];
+      } else {
+        newReactions[userId] = type;
+      }
+      return { ...a, reactions: newReactions };
+    }));
+
+    try {
+      if (shouldRemove) {
+        await firestoreOps.removeQAReaction(answerId, userId);
+      } else {
+        await firestoreOps.setQAReaction(answerId, userId, type);
+      }
+    } catch (err: any) {
+      toast({
+        title: "Couldn't react",
+        description: err?.message || "Something went wrong.",
+        variant: "destructive",
+      });
+      fetchFacts().catch(() => {});
+    } finally {
+      setReactingQAs(prev => {
+        const next = new Set(prev);
+        next.delete(answerId);
+        return next;
+      });
+    }
+  };
+
   const [anniversaryDate, setAnniversaryDate] = useState<string | null>(auth.pairing?.anniversaryDate || null);
 
   useEffect(() => {
@@ -282,6 +326,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
             dailyAnswers={dailyAnswers}
             onSubmitAnswer={handleSubmitAnswer}
+            onQAReact={(answerId, reaction) => {
+              if (reaction) handleQAReact(answerId, reaction as ReactionType);
+            }}
           />
         </Route>
         <Route path="/archive">
@@ -289,6 +336,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             facts={facts}
             onReact={(factId, reaction) => {
               if (reaction) handleReact(factId, reaction as ReactionType);
+            }}
+            onQAReact={(answerId, reaction) => {
+              if (reaction) handleQAReact(answerId, reaction as ReactionType);
             }}
             activeUser={auth.user}
             partnerUser={partner}
@@ -313,6 +363,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
             dailyAnswers={dailyAnswers}
             onSubmitAnswer={handleSubmitAnswer}
+            onQAReact={(answerId, reaction) => {
+              if (reaction) handleQAReact(answerId, reaction as ReactionType);
+            }}
           />
         </Route>
         <Route component={NotFound} />

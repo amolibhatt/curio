@@ -25,6 +25,7 @@ export type DailyAnswer = {
   questionText: string;
   category: string;
   answers: Record<string, string>;
+  reactions: Record<string, ReactionType>;
 };
 
 export type AuthState = {

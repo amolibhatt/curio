@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Fact, User, DailyAnswer } from "@/lib/mock-data";
+import { Fact, User, DailyAnswer, ReactionType } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -10,7 +10,7 @@ import { QUESTION_CATEGORIES } from "@/lib/daily-questions";
 
 type TabMode = "discoveries" | "questions";
 
-export default function Archive({ facts, onReact, activeUser, partnerUser, reactingFacts, dailyAnswers }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[] }) {
+export default function Archive({ facts, onReact, onQAReact, activeUser, partnerUser, reactingFacts, dailyAnswers }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, onQAReact?: (answerId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[] }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterQACategories, setFilterQACategories] = useState<string[]>([]);
@@ -19,6 +19,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
   const [activeTab, setActiveTab] = useState<TabMode>("discoveries");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const burstTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     const check = setInterval(() => {
@@ -31,9 +34,12 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
     return () => { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
   }, []);
 
+  const searchLower = searchQuery.toLowerCase().trim();
+
   const filteredFacts = facts.filter(fact => {
     if (filterPerson && fact.authorId !== filterPerson) return false;
     if (filterCategories.length > 0 && !fact.categories.some(c => filterCategories.includes(c))) return false;
+    if (searchLower && !fact.text.toLowerCase().includes(searchLower)) return false;
     return true;
   });
 
@@ -129,14 +135,23 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
           </div>
 
           {activeTab === "discoveries" && (
-            <button 
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
-              data-testid="button-toggle-filters"
-            >
-              <Filter className="w-3.5 h-3.5" />
-              {(filterPerson || filterCategories.length > 0) ? 'Filtered' : 'Filter'}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { setShowSearch(!showSearch); if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 100); else setSearchQuery(""); }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showSearch || searchQuery ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-search"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showFilters || filterPerson || filterCategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-filters"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                {(filterPerson || filterCategories.length > 0) ? 'Filtered' : 'Filter'}
+              </button>
+            </div>
           )}
           {activeTab === "questions" && (
             <button 
