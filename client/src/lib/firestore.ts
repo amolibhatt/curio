@@ -442,8 +442,11 @@ export async function getDailyAnswerForDate(pairingId: string, date: string): Pr
   if (!snap.exists()) return null;
   const data = snap.data();
   const reactSnap = await getDocs(collection(db, "dailyAnswers", docId, "reactions"));
-  const reactions: Record<string, string> = {};
-  reactSnap.docs.forEach(r => { reactions[r.id] = r.data().type; });
+  const reactions: Record<string, ReactionType> = {};
+  reactSnap.docs.forEach(r => {
+    const type = r.data().type;
+    if (VALID_REACTIONS.has(type)) reactions[r.id] = type as ReactionType;
+  });
   return { id: docId, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {}, reactions };
 }
 
@@ -453,8 +456,11 @@ export async function getAllDailyAnswers(pairingId: string): Promise<DailyAnswer
 
   const reactionPromises = snap.docs.map(async (d) => {
     const reactSnap = await getDocs(collection(db, "dailyAnswers", d.id, "reactions"));
-    const reactions: Record<string, string> = {};
-    reactSnap.docs.forEach(r => { reactions[r.id] = r.data().type; });
+    const reactions: Record<string, ReactionType> = {};
+    reactSnap.docs.forEach(r => {
+      const type = r.data().type;
+      if (VALID_REACTIONS.has(type)) reactions[r.id] = type as ReactionType;
+    });
     return { docId: d.id, reactions };
   });
   const reactionResults = await Promise.all(reactionPromises);
@@ -463,7 +469,7 @@ export async function getAllDailyAnswers(pairingId: string): Promise<DailyAnswer
   return snap.docs
     .map(d => {
       const data = d.data();
-      return { id: d.id, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {}, reactions: reactionsMap.get(d.id) || {} };
+      return { id: d.id, pairingId: data.pairingId, date: data.date, questionText: data.questionText, category: data.category, answers: data.answers || {}, reactions: reactionsMap.get(d.id) || {} } as DailyAnswer;
     })
     .sort((a, b) => b.date.localeCompare(a.date));
 }
