@@ -362,14 +362,17 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         <div className={`rounded-2xl border overflow-hidden transition-colors ${
           myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
-          <div className="px-5 pt-5 pb-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-[#909090]" />
-              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Discovery</p>
+          <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#1C1C1C] flex items-center justify-center shrink-0">
+              <Sparkles className="w-4.5 h-4.5 text-white" />
             </div>
-            <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed">
-              Share something you learned or noticed today. Once you both share, the reveal unlocks.
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Discovery</p>
+              <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
+            </div>
+            {myFactToday && partnerFactToday && (
+              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
+            )}
           </div>
 
           <div className="px-5 pb-5">
@@ -430,74 +433,89 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       </div>
 
       <div className="px-1 md:px-0">
-        <div className="bg-white rounded-2xl p-5 border border-black/5" data-testid="card-daily-question">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#1C1C1C] flex items-center justify-center shrink-0">
-              <MessageCircle className="w-5 h-5 text-white" />
+        <div className={`rounded-2xl border overflow-hidden transition-colors ${
+          bothAnswered ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
+        }`} data-testid="card-daily-question">
+          <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#1C1C1C] flex items-center justify-center shrink-0">
+              <MessageCircle className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-[9px] font-bold tracking-[0.25em] text-[#909090] uppercase">Today's question</p>
-                <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">· {dailyQuestion.category}</span>
-              </div>
-              <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed" data-testid="text-daily-question">
-                {dailyQuestion.text}
-              </p>
+              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Question</p>
+              <p className="text-[11px] text-[#b0b0b0] mt-0.5">{dailyQuestion.category}</p>
             </div>
+            {bothAnswered && (
+              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
+            )}
           </div>
 
-          {!myAnswer ? (
-            <div className="space-y-3">
-              <textarea
-                ref={answerTextareaRef}
-                value={answerText}
-                onChange={(e) => {
-                  setAnswerText(e.target.value);
-                  const el = e.target;
-                  el.style.height = 'auto';
-                  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-                }}
-                placeholder="Type your answer..."
-                maxLength={2000}
-                className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
-                rows={2}
-                data-testid="input-daily-answer"
-              />
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] text-[#c0c0c0]">{answerText.length}/2000</p>
-                <button
-                  onClick={handleSubmitDailyAnswer}
-                  disabled={!answerText.trim() || isSubmittingAnswer}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                  data-testid="button-submit-answer"
-                >
-                  {isSubmittingAnswer ? "Sending..." : "Answer"}
-                  <Send className="w-3.5 h-3.5" />
-                </button>
+          <div className="px-5 pb-5">
+            <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed mb-4" data-testid="text-daily-question">
+              {dailyQuestion.text}
+            </p>
+
+            {!myAnswer ? (
+              <div className="space-y-3">
+                <textarea
+                  ref={answerTextareaRef}
+                  value={answerText}
+                  onChange={(e) => {
+                    setAnswerText(e.target.value);
+                    const el = e.target;
+                    el.style.height = 'auto';
+                    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                  }}
+                  placeholder="Type your answer..."
+                  maxLength={2000}
+                  className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
+                  rows={2}
+                  data-testid="input-daily-answer"
+                />
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-[#c0c0c0]">{answerText.length}/2000</p>
+                  <button
+                    onClick={handleSubmitDailyAnswer}
+                    disabled={!answerText.trim() || isSubmittingAnswer}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                    data-testid="button-submit-answer"
+                  >
+                    {isSubmittingAnswer ? "Sending..." : "Answer"}
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : bothAnswered ? (
-            <div className="space-y-2.5 animate-in fade-in duration-500">
-              <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
-                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
+            ) : bothAnswered ? (
+              <div className="space-y-2.5 animate-in fade-in duration-500">
+                <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                  <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
+                </div>
+                <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                  <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
+                </div>
               </div>
-              <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
-                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                    <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
+                    <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
+                  </div>
+                  <p className="text-[10px] text-white/60">Answered</p>
+                </div>
+                <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
+                  <div className="flex items-center gap-2">
+                    <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                    <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : "Partner"}</span>
+                    <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
+                  </div>
+                  <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? "Waiting..." : "Invite to join"}</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-xl bg-[#FAF9F7] px-4 py-3.5 flex items-center gap-3 border border-black/5">
-              <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                <Lock className="w-3.5 h-3.5 text-[#909090]" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-[#1C1C1C]">You answered!</p>
-                <p className="text-[10px] text-[#909090]">{hasPartner ? `Waiting for ${partnerUser.name} to unlock both` : "Invite your partner to see their answer too"}</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
