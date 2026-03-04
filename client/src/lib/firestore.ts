@@ -6,6 +6,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   query,
   where,
   addDoc,
@@ -108,6 +109,7 @@ export async function reconnectUser(
       try {
         await updateDoc(doc(db, "dailyAnswers", ansDoc.id), {
           [`answers.${newUid}`]: ansData.answers[oldUid],
+          [`answers.${oldUid}`]: deleteField(),
         });
       } catch {}
     }

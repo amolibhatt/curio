@@ -546,7 +546,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                     ]).map(({ type, Icon, active, hover, fill }) => (
                       <button
                         key={type}
-                        onClick={() => onQAReact(todayAnswer.id, myQAReaction === type ? null : type)}
+                        onClick={() => onQAReact(todayAnswer.id, type)}
                         className={`w-9 h-9 flex items-center justify-center rounded-full text-[10px] transition-all active:scale-95 ${
                           myQAReaction === type ? active : `text-[#b0b0b0] ${hover}`
                         }`}
