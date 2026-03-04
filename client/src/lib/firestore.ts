@@ -387,34 +387,30 @@ export async function submitDailyAnswer(
   const ref = doc(db, "dailyAnswers", docId);
 
   try {
-    const snap = await getDoc(ref);
+    let finalAnswers: Record<string, string> = {};
 
-    if (snap.exists()) {
-      const existingData = snap.data();
-      const mergedAnswers = { ...existingData.answers, [userId]: safeAnswer };
-      await updateDoc(ref, { answers: mergedAnswers });
-      return {
-        id: docId,
-        pairingId: existingData.pairingId,
-        date: existingData.date,
-        questionText: existingData.questionText,
-        category: existingData.category,
-        answers: mergedAnswers,
-        reactions: {},
-      };
-    } else {
-      const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };
-      await setDoc(ref, newData);
-      return {
-        id: docId,
-        pairingId,
-        date,
-        questionText,
-        category,
-        answers: { [userId]: safeAnswer },
-        reactions: {},
-      };
-    }
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(ref);
+
+      if (snap.exists()) {
+        const existingData = snap.data();
+        finalAnswers = { ...existingData.answers, [userId]: safeAnswer };
+        transaction.update(ref, { answers: finalAnswers });
+      } else {
+        finalAnswers = { [userId]: safeAnswer };
+        transaction.set(ref, { pairingId, date, questionText, category, answers: finalAnswers });
+      }
+    });
+
+    return {
+      id: docId,
+      pairingId,
+      date,
+      questionText,
+      category,
+      answers: finalAnswers,
+      reactions: {},
+    };
   } catch (err: any) {
     console.error("[Curio] submitDailyAnswer failed:", err?.code, err?.message);
     throw err;

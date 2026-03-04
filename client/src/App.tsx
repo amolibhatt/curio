@@ -555,6 +555,10 @@ function AppContent() {
             return;
           }
         } else {
+          const existingUser = await firestoreOps.getUser(uid);
+          if (existingUser) {
+            await firestoreOps.deleteUser(uid);
+          }
           await firestoreOps.createUser(uid, trimmedName, pairing.id, false);
           try {
             await firestoreOps.joinPairing(pairing.id, uid);
