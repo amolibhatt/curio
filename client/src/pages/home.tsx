@@ -329,10 +329,10 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   }
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-4 md:gap-5">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-5 md:gap-6">
 
       <header className="flex-shrink-0 px-1 md:px-0">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 ring-black/5">
               <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
@@ -358,62 +358,76 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 px-1 md:px-0">
-        <div className={`rounded-2xl p-4 flex flex-col gap-2 transition-colors ${
-          myFactToday ? 'bg-[#F0EEEA] border border-[#E0DDD8]' : 'bg-white border border-black/5'
+      <div className="px-1 md:px-0">
+        <div className={`rounded-2xl border overflow-hidden transition-colors ${
+          myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-              myFactToday ? 'bg-[#1C1C1C] text-white' : 'border-2 border-dashed border-[#d0d0d0]'
-            }`}>
-              {myFactToday && <Check className="w-3 h-3" strokeWidth={3} />}
+          <div className="px-5 pt-5 pb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4 text-[#909090]" />
+              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Discovery</p>
             </div>
-            <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-[#1C1C1C]' : 'text-[#909090]'}`}>
-              {activeUser.name}
-            </span>
+            <p className="font-serif text-base md:text-lg text-[#1C1C1C] leading-relaxed">
+              Share something you learned or noticed today. Once you both share, the reveal unlocks.
+            </p>
           </div>
-          <p className="text-[10px] text-[#b0b0b0] leading-tight">
-            {myFactToday ? "Discovery shared" : "Share yours today"}
-          </p>
-          {myFactToday ? (
-            <button onClick={startEditing} className="mt-auto self-start flex items-center gap-1 text-[10px] font-semibold text-[#909090] hover:text-[#1C1C1C] transition-colors" data-testid="button-edit-fact">
-              <Pencil className="w-2.5 h-2.5" /> Edit
-            </button>
-          ) : (
-            <button onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }} className="mt-auto self-start text-[10px] font-semibold text-[#909090] hover:text-[#1C1C1C] transition-colors flex items-center gap-1" data-testid="button-card-add">
-              <Send className="w-2.5 h-2.5" /> Tap to share
-            </button>
-          )}
-        </div>
 
-        <div className={`rounded-2xl p-4 flex flex-col gap-2 transition-colors ${
-          partnerFactToday ? 'bg-[#F0EEEA] border border-[#E0DDD8]' : 'bg-white border border-black/5'
-        }`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-              partnerFactToday ? 'bg-[#1C1C1C] text-white' : 'border-2 border-dashed border-[#d0d0d0]'
-            }`}>
-              {partnerFactToday && <Check className="w-3 h-3" strokeWidth={3} />}
+          <div className="px-5 pb-5">
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                  <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                    {activeUser.name}
+                  </span>
+                  {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                </div>
+                <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                  {myFactToday ? "Shared" : "Not yet"}
+                </p>
+              </div>
+              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                  <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                    {hasPartner ? partnerUser.name : "Partner"}
+                  </span>
+                  {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                </div>
+                <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                  {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
+                </p>
+              </div>
             </div>
-            <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-[#1C1C1C]' : 'text-[#909090]'}`}>
-              {hasPartner ? partnerUser.name : "Partner"}
-            </span>
+
+            {myFactToday && partnerFactToday ? (
+              <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
+                <Sparkles className="w-4 h-4" />
+                Both shared — reveal discoveries
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : myFactToday ? (
+              <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FAF9F7] text-[#737373] text-sm font-semibold hover:bg-[#F0EEEA] transition-all border border-black/5" data-testid="button-edit-fact">
+                <Pencil className="w-3.5 h-3.5" />
+                Edit your discovery
+              </button>
+            ) : (
+              <button
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
+                className="w-full bg-[#1C1C1C] text-white rounded-xl py-3.5 px-6 flex items-center justify-center gap-2.5 font-semibold text-sm transition-all active:scale-[0.98] hover:bg-black shadow-sm"
+                data-testid="card-add-discovery"
+              >
+                <Send className="w-4 h-4" />
+                Share your discovery
+              </button>
+            )}
           </div>
-          <p className="text-[10px] text-[#b0b0b0] leading-tight">
-            {!hasPartner ? "Invite them to join" : partnerFactToday ? "Discovery shared" : "Waiting..."}
-          </p>
         </div>
       </div>
-
-      {myFactToday && partnerFactToday && (
-        <div className="px-1 md:px-0">
-          <Link href="/archive" className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#F0EEEA] border border-[#E0DDD8] text-[#1C1C1C] text-xs font-semibold hover:bg-[#EAE7E3] transition-all" data-testid="link-view-archive">
-            <Sparkles className="w-3.5 h-3.5" />
-            Both shared! See today's discoveries
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      )}
 
       <div className="px-1 md:px-0">
         <div className="bg-white rounded-2xl p-5 border border-black/5" data-testid="card-daily-question">
@@ -486,19 +500,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           )}
         </div>
       </div>
-
-      {!myFactToday && (
-        <div className="px-1 md:px-0">
-          <button
-            onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
-            className="w-full bg-[#1C1C1C] text-white rounded-2xl py-4 px-6 flex items-center justify-center gap-3 font-semibold text-sm tracking-wide transition-all active:scale-[0.98] hover:bg-black shadow-sm"
-            data-testid="card-add-discovery"
-          >
-            <Send className="w-4 h-4" />
-            Share today's discovery
-          </button>
-        </div>
-      )}
     </div>
   );
 }
