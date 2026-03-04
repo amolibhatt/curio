@@ -359,7 +359,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       </header>
 
       <div className="px-1 md:px-0">
-        <div className={`rounded-2xl border overflow-hidden transition-colors ${
+        <div className={`rounded-2xl border transition-colors ${
           myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
           <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
@@ -433,7 +433,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
       </div>
 
       <div className="px-1 md:px-0">
-        <div className={`rounded-2xl border overflow-hidden transition-colors ${
+        <div className={`rounded-2xl border transition-colors ${
           bothAnswered ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`} data-testid="card-daily-question">
           <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
