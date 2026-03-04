@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check } from "lucide-react";
+import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check, Bell, BellOff, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
 
-export default function Layout({ children, user, hasFriendJoined = false, inviteCode }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string }) {
+export default function Layout({ children, user, hasFriendJoined = false, inviteCode, notifPermission, onRequestNotifPermission }: { children: React.ReactNode, user: User, hasFriendJoined?: boolean, inviteCode?: string, notifPermission?: NotificationPermission, onRequestNotifPermission?: () => void }) {
   const [location, setLocation] = useLocation();
   const [copied, setCopied] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -82,6 +82,24 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
                     <LinkIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
                     <span className="text-[10px] font-bold tracking-[0.15em]">INVITE</span>
                   </>
+                )}
+              </Button>
+            )}
+            {typeof Notification !== "undefined" && onRequestNotifPermission && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={notifPermission !== "granted" ? onRequestNotifPermission : undefined}
+                className={`rounded-full w-9 h-9 transition-all ${notifPermission === "granted" ? "text-[#1C1C1C] cursor-default" : notifPermission === "denied" ? "text-[#c0b8b0] cursor-not-allowed" : "text-[#909090] hover:text-black hover:bg-black/5"}`}
+                data-testid="button-notifications"
+                title={notifPermission === "granted" ? "Notifications on" : notifPermission === "denied" ? "Notifications blocked — enable in browser settings" : "Enable notifications"}
+              >
+                {notifPermission === "granted" ? (
+                  <BellRing className="w-4 h-4" strokeWidth={2} />
+                ) : notifPermission === "denied" ? (
+                  <BellOff className="w-4 h-4" strokeWidth={1.5} />
+                ) : (
+                  <Bell className="w-4 h-4" strokeWidth={1.5} />
                 )}
               </Button>
             )}

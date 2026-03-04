@@ -29,6 +29,31 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
 
   const hasLoadedOnce = useRef(false);
 
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
+    typeof Notification !== "undefined" ? Notification.permission : "denied"
+  );
+  const prevPartnerFactCountRef = useRef<number | null>(null);
+  const prevPartnerAnswerCountRef = useRef<number | null>(null);
+
+  const partnerId = auth.partner?.id;
+  const partnerName = auth.partner?.name || "Your partner";
+  const partnerAvatar = auth.partner?.avatar;
+
+  const showNotification = useCallback((title: string, body: string) => {
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (document.visibilityState === "visible") return;
+    try {
+      const n = new Notification(title, {
+        body,
+        icon: partnerAvatar || "/favicon.png",
+        badge: "/favicon.png",
+        tag: "curio-partner-activity",
+        renotify: true,
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch {}
+  }, [partnerAvatar]);
+
   const fetchFacts = useCallback(async () => {
     const pid = pairingIdRef.current;
     if (!pid) return;
@@ -37,6 +62,25 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
         firestoreOps.getFactsByPairing(pid),
         firestoreOps.getAllDailyAnswers(pid),
       ]);
+
+      if (partnerId && hasLoadedOnce.current) {
+        const newPartnerFacts = factsData.filter(f => f.authorId === partnerId).length;
+        const newPartnerAnswers = answersData.filter(a => a.answers && partnerId in a.answers).length;
+
+        if (prevPartnerFactCountRef.current !== null && newPartnerFacts > prevPartnerFactCountRef.current) {
+          showNotification("New discovery!", `${partnerName} shared something new`);
+        }
+        if (prevPartnerAnswerCountRef.current !== null && newPartnerAnswers > prevPartnerAnswerCountRef.current) {
+          showNotification("New answer!", `${partnerName} answered today's question`);
+        }
+
+        prevPartnerFactCountRef.current = newPartnerFacts;
+        prevPartnerAnswerCountRef.current = newPartnerAnswers;
+      } else if (partnerId) {
+        prevPartnerFactCountRef.current = factsData.filter(f => f.authorId === partnerId).length;
+        prevPartnerAnswerCountRef.current = answersData.filter(a => a.answers && partnerId in a.answers).length;
+      }
+
       setFacts(factsData);
       setDailyAnswers(answersData);
       hasLoadedOnce.current = true;
@@ -52,7 +96,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     } finally {
       setInitialLoading(false);
     }
-  }, [toast]);
+  }, [toast, partnerId, partnerName, showNotification]);
 
   useEffect(() => {
     fetchFacts();
@@ -189,9 +233,22 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=partner&backgroundColor=d5e0ff`,
   };
 
+  const requestNotifPermission = useCallback(async () => {
+    if (typeof Notification === "undefined") return;
+    try {
+      const result = await Notification.requestPermission();
+      setNotifPermission(result);
+      if (result === "granted") {
+        toast({ title: "Notifications enabled", description: "You'll be notified when your partner shares something." });
+      }
+    } catch {
+      setNotifPermission("denied");
+    }
+  }, [toast]);
+
   if (initialLoading) {
     return (
-      <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
+      <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode} notifPermission={notifPermission} onRequestNotifPermission={requestNotifPermission}>
         <div className="animate-in fade-in duration-500 max-w-2xl mx-auto flex flex-col pt-6 md:pt-10 gap-4 px-1">
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-2">
@@ -214,7 +271,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   }
 
   return (
-    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode}>
+    <Layout user={auth.user} hasFriendJoined={!!auth.partner} inviteCode={auth.pairing?.inviteCode} notifPermission={notifPermission} onRequestNotifPermission={requestNotifPermission}>
       <Switch>
         <Route path="/">
           <Home
