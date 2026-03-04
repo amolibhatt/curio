@@ -107,7 +107,7 @@ service cloud.firestore {
 
     match /dailyAnswers/{docId} {
       allow read: if request.auth != null
-        && getUserPairingId() == resource.data.pairingId;
+        && (resource == null || getUserPairingId() == resource.data.pairingId);
       allow create: if request.auth != null
         && request.resource.data.pairingId == getUserPairingId()
         && request.resource.data.answers.keys().hasOnly([request.auth.uid])

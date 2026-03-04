@@ -376,37 +376,31 @@ export async function submitDailyAnswer(
   const ref = doc(db, "dailyAnswers", docId);
 
   try {
-    const result = await runTransaction(db, async (transaction) => {
-      const snap = await transaction.get(ref);
-      console.log("[Curio] dailyAnswer doc exists:", snap.exists(), "docId:", docId, "userId:", userId);
-      if (snap.exists()) {
-        const existingData = snap.data();
-        console.log("[Curio] existing pairingId:", existingData.pairingId, "passed pairingId:", pairingId);
-        transaction.update(ref, { [`answers.${userId}`]: safeAnswer });
-        return {
-          id: docId,
-          pairingId: existingData.pairingId,
-          date: existingData.date,
-          questionText: existingData.questionText,
-          category: existingData.category,
-          answers: { ...existingData.answers, [userId]: safeAnswer },
-        };
-      } else {
-        const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };
-        console.log("[Curio] creating dailyAnswer:", JSON.stringify(newData));
-        transaction.set(ref, newData);
-        return {
-          id: docId,
-          pairingId,
-          date,
-          questionText,
-          category,
-          answers: { [userId]: safeAnswer },
-        };
-      }
-    });
+    const snap = await getDoc(ref);
 
-    return result;
+    if (snap.exists()) {
+      const existingData = snap.data();
+      await updateDoc(ref, { [`answers.${userId}`]: safeAnswer });
+      return {
+        id: docId,
+        pairingId: existingData.pairingId,
+        date: existingData.date,
+        questionText: existingData.questionText,
+        category: existingData.category,
+        answers: { ...existingData.answers, [userId]: safeAnswer },
+      };
+    } else {
+      const newData = { pairingId, date, questionText, category, answers: { [userId]: safeAnswer } };
+      await setDoc(ref, newData);
+      return {
+        id: docId,
+        pairingId,
+        date,
+        questionText,
+        category,
+        answers: { [userId]: safeAnswer },
+      };
+    }
   } catch (err: any) {
     console.error("[Curio] submitDailyAnswer failed:", err?.code, err?.message);
     throw err;
