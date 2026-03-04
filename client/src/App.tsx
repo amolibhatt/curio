@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Layout from "./components/layout";
 import Home from "./pages/home";
 import Archive from "./pages/archive";
+import Memories from "./pages/memories";
 import Timeline from "./pages/timeline";
 import Login from "./pages/login";
 
@@ -344,6 +345,22 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
             reactingFacts={reactingFacts}
             dailyAnswers={dailyAnswers}
+          />
+        </Route>
+        <Route path="/memories">
+          <Memories
+            facts={facts}
+            dailyAnswers={dailyAnswers}
+            activeUser={auth.user}
+            partnerUser={partner}
+            onReact={(factId, reaction) => {
+              if (reaction) handleReact(factId, reaction as ReactionType);
+            }}
+            onQAReact={(answerId, reaction) => {
+              if (reaction) handleQAReact(answerId, reaction as ReactionType);
+            }}
+            reactingFacts={reactingFacts}
+            anniversaryDate={anniversaryDate}
           />
         </Route>
         <Route path="/us">
