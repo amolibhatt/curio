@@ -6,13 +6,16 @@ import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
+import { QUESTION_CATEGORIES } from "@/lib/daily-questions";
 
 type TabMode = "discoveries" | "questions";
 
 export default function Archive({ facts, onReact, activeUser, partnerUser, reactingFacts, dailyAnswers }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[] }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
+  const [filterQACategories, setFilterQACategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [showQAFilters, setShowQAFilters] = useState(false);
   const [burstReaction, setBurstReaction] = useState<{id: string, type: string} | null>(null);
   const [todayStr, setTodayStr] = useState(() => getLocalDateStr());
   const [activeTab, setActiveTab] = useState<TabMode>("discoveries");
@@ -80,7 +83,9 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
 
   const completedAnswers = dailyAnswers.filter(a => {
     const answers = a.answers || {};
-    return activeUser.id in answers && partnerUser.id in answers;
+    if (!(activeUser.id in answers && partnerUser.id in answers)) return false;
+    if (filterQACategories.length > 0 && !filterQACategories.includes(a.category)) return false;
+    return true;
   });
 
   return (
@@ -131,6 +136,16 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
             >
               <Filter className="w-3.5 h-3.5" />
               {(filterPerson || filterCategories.length > 0) ? 'Filtered' : 'Filter'}
+            </button>
+          )}
+          {activeTab === "questions" && (
+            <button 
+              onClick={() => setShowQAFilters(!showQAFilters)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showQAFilters || filterQACategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+              data-testid="button-toggle-qa-filters"
+            >
+              <Filter className="w-3.5 h-3.5" />
+              {filterQACategories.length > 0 ? 'Filtered' : 'Filter'}
             </button>
           )}
         </div>
@@ -194,6 +209,39 @@ export default function Archive({ facts, onReact, activeUser, partnerUser, react
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "questions" && showQAFilters && (
+          <div className="mt-6 p-5 bg-transparent rounded-[1.5rem] animate-in slide-in-from-top-2 duration-200">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setFilterQACategories([])}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.length === 0 ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                  data-testid="filter-qa-category-all"
+                >
+                  All Categories
+                </button>
+                {QUESTION_CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setFilterQACategories(prev => 
+                        prev.includes(cat) 
+                          ? prev.filter(c => c !== cat) 
+                          : [...prev, cat]
+                      );
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                    data-testid={`filter-qa-category-${cat.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
