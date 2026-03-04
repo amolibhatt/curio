@@ -102,7 +102,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     fetchFacts();
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") fetchFacts();
-    }, 15000);
+    }, 3 * 60 * 60 * 1000);
 
     const onVisible = () => {
       if (document.visibilityState === "visible") fetchFacts();
