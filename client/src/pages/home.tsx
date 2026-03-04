@@ -123,6 +123,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [answerText, setAnswerText] = useState("");
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+  const submittingAnswerRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -197,7 +198,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   }, [facts, dailyAnswers, todayStr, hasPartner]);
 
   const handleSubmitDailyAnswer = async () => {
-    if (!answerText.trim() || isSubmittingAnswer) return;
+    if (!answerText.trim() || submittingAnswerRef.current) return;
+    submittingAnswerRef.current = true;
     if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmittingAnswer(true);
     try {
@@ -207,6 +209,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     } catch (err: any) {
       toast({ title: "Couldn't submit", description: err?.message || "Try again.", variant: "destructive" });
     } finally {
+      submittingAnswerRef.current = false;
       setIsSubmittingAnswer(false);
     }
   };
