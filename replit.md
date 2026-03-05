@@ -27,7 +27,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Daily Discovery**: Each user can post one thought per day with categories
 - **Blind Reveal**: Partner's post stays hidden until you post yours for the same day
 - **Streak Counter**: Counts consecutive days where both users posted
-- **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with optimistic UI + burst animations
+- **Reactions**: 4 reaction types (mind-blown, heart, laugh, thinking) with optimistic UI + burst animations
 - **Daily Q&A**: Each day a categorized question (Us, Deep, Memory Lane, Dream Big, Hot Takes, Hypothetical, Intimacy, Gratitude, Play, Before Us) is shown; both partners answer independently; answers are hidden until both submit; full Q&A history in archive
 - **Daily Gratitude**: Each partner writes one thing they appreciate about the other daily; blind reveal (hidden until both submit); rose-themed card on home page between Q&A and throwback; stored in `dailyGratitudes` with same transaction pattern as Q&A; `useRef` sync guard against double-submit
 - **Bookmarks/Saved**: Users can bookmark facts and Q&A answers; bookmarks are per-user in Firestore subcollection; "Saved" filter toggle in archive; "Saved" section in Memories page; optimistic UI with rollback
