@@ -252,10 +252,10 @@ function nodeToMarkdown(node: Node): string {
     case 'h5': return `##### ${children}`;
     case 'h6': return `###### ${children}`;
     case 'hr': return '***';
-    case 'br': return '';
+    case 'br': return '\n';
     case 'div':
     case 'p':
-      return children;
+      return children + '\n';
     case 'span': {
       const style = el.getAttribute('style') || '';
       let r = children;
