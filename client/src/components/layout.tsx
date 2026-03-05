@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check, Bell, BellOff, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { User } from "@/lib/mock-data";
 
@@ -24,6 +25,7 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
 
   const handleShareLink = async () => {
     if (!inviteCode) return;
+    if (navigator.vibrate) navigator.vibrate(30);
     const inviteLink = `${window.location.origin}/invite/${inviteCode}`;
     if (navigator.share) {
       try {
@@ -49,6 +51,14 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
     if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
     copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
   };
+
+  const navItems = [
+    { href: "/", icon: Compass, label: "Today", match: (loc: string) => loc === "/" || loc.startsWith("/invite") },
+    { href: "/archive", icon: History, label: "Archive", match: (loc: string) => loc === "/archive" },
+    { href: "/us", icon: Heart, label: "Us", match: (loc: string) => loc === "/us", fill: true },
+  ];
+
+  const pageKey = location === "/" || location.startsWith("/invite") ? "/" : location;
 
   return (
     <div className="min-h-screen bg-[#FAF9F7] flex items-center justify-center font-sans">
@@ -114,7 +124,18 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
 
         <main ref={mainRef} className="flex-1 overflow-y-auto w-full h-full pb-[calc(5rem+env(safe-area-inset-bottom,0px))] relative scrollbar-none">
           <div className="w-full px-3 md:px-5 h-full flex flex-col">
-            {children}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pageKey}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="flex-1 flex flex-col"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
 
@@ -122,21 +143,35 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
           <div className="h-8 bg-gradient-to-t from-[#FAF9F7] to-transparent" />
           <nav className="flex items-center justify-center pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-1 px-4 bg-[#FAF9F7]/80 pointer-events-auto" role="navigation" aria-label="Main navigation">
             <div className="bg-white/95 backdrop-blur-xl flex items-center justify-center gap-1 p-1.5 rounded-2xl w-max px-2 shadow-lg shadow-black/5 border border-black/[0.03]">
-              <Link href="/">
-                <Button variant="ghost" size="icon" aria-label="Today" className={`rounded-xl w-12 h-11 transition-all ${location === "/" || location.startsWith("/invite") ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                  <Compass className="w-[20px] h-[20px]" strokeWidth={location === "/" ? 2 : 1.5} />
-                </Button>
-              </Link>
-              <Link href="/archive">
-                <Button variant="ghost" size="icon" aria-label="Archive" className={`rounded-xl w-12 h-11 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                  <History className="w-[20px] h-[20px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
-                </Button>
-              </Link>
-              <Link href="/us">
-                <Button variant="ghost" size="icon" aria-label="Us" className={`rounded-xl w-12 h-11 transition-all ${location === "/us" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                  <Heart className={`w-[20px] h-[20px] ${location === "/us" ? "fill-white" : ""}`} strokeWidth={location === "/us" ? 2 : 1.5} />
-                </Button>
-              </Link>
+              {navItems.map(({ href, icon: Icon, label, match, fill }) => {
+                const isActive = match(location);
+                return (
+                  <Link key={href} href={href}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={label}
+                      className={`rounded-xl w-12 h-11 transition-all duration-200 relative ${
+                        isActive
+                          ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm"
+                          : "text-[#909090] hover:text-black hover:bg-black/5"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-[20px] h-[20px] transition-all duration-200 ${fill && isActive ? "fill-white" : ""}`}
+                        strokeWidth={isActive ? 2 : 1.5}
+                      />
+                      {isActive && (
+                        <motion.div
+                          layoutId="nav-active-dot"
+                          className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-white"
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                    </Button>
+                  </Link>
+                );
+              })}
             </div>
           </nav>
         </div>

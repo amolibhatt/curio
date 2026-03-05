@@ -420,35 +420,29 @@ export default function Archive({
         )}
 
         <div className="flex items-center justify-between gap-2">
-          <div className="flex bg-[#FAF9F7] rounded-full p-1 shrink-0">
-            <button
-              onClick={() => setActiveTab("discoveries")}
-              className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all ${
-                activeTab === "discoveries" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
-              }`}
-              data-testid="tab-discoveries"
-            >
-              Discoveries
-            </button>
-            <button
-              onClick={() => setActiveTab("questions")}
-              className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all flex items-center gap-1.5 ${
-                activeTab === "questions" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
-              }`}
-              data-testid="tab-questions"
-            >
-              Q&A
-            </button>
-            <button
-              onClick={() => setActiveTab("memories")}
-              className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all flex items-center gap-1.5 ${
-                activeTab === "memories" ? "bg-[#1C1C1C] text-white shadow-sm" : "text-[#909090] hover:text-black"
-              }`}
-              data-testid="tab-memories"
-            >
-              <Sparkles className="w-3 h-3" />
-              Memories
-            </button>
+          <div className="flex bg-[#FAF9F7] rounded-full p-1 shrink-0 relative">
+            {(["discoveries", "questions", "memories"] as TabMode[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(20); setActiveTab(tab); }}
+                className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all relative z-10 flex items-center gap-1.5 ${
+                  activeTab === tab ? "text-white" : "text-[#909090] hover:text-black"
+                }`}
+                data-testid={`tab-${tab === "questions" ? "questions" : tab}`}
+              >
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="tab-pill"
+                    className="absolute inset-0 bg-[#1C1C1C] rounded-full shadow-sm"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  {tab === "memories" && <Sparkles className="w-3 h-3" />}
+                  {tab === "discoveries" ? "Discoveries" : tab === "questions" ? "Q&A" : "Memories"}
+                </span>
+              </button>
+            ))}
           </div>
 
           {activeTab === "discoveries" && (
@@ -772,28 +766,45 @@ export default function Archive({
               );
             })
           ) : dailyAnswers.filter(a => Object.keys(a.answers || {}).length >= 2).length > 0 && togetherDates.length === 0 ? (
-            <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
-              <p className="text-[#909090] font-serif italic text-lg">No conversations match</p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 flex flex-col justify-center items-center py-16 text-center"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F0EEEA] flex items-center justify-center mb-4">
+                <Search className="w-5 h-5 text-[#b0b0b0]" />
+              </div>
+              <p className="text-[#909090] font-serif italic text-lg mb-1">No conversations match</p>
+              <p className="text-[#c0c0c0] text-xs mb-4">Try adjusting your filters</p>
               <button
                 onClick={() => { setFilterQACategories([]); setQASearchQuery(""); setShowQASavedOnly(false); }}
-                className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
+                className="text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors px-4 py-2 rounded-full hover:bg-black/5"
                 data-testid="button-clear-qa-filters"
               >
                 Clear filters
               </button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 py-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex-1 flex flex-col justify-center items-center py-16"
+            >
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-                <div className="w-16 h-16 rounded-full bg-black/[0.03] flex items-center justify-center mb-6">
-                  <MessageCircle className="w-7 h-7 text-[#b0b0b0]" strokeWidth={1.2} />
-                </div>
-                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">No conversations yet</h3>
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-16 h-16 rounded-2xl bg-[#EDEAE6] flex items-center justify-center mb-6"
+                >
+                  <MessageCircle className="w-7 h-7 text-[#8B7E74]" strokeWidth={1.5} />
+                </motion.div>
+                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Conversations live here</h3>
                 <p className="text-[#909090] text-sm leading-relaxed">
-                  Answer today's question on the home page. Once you both answer, it'll appear here.
+                  Answer today's question together and your shared answers will appear here.
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       ) : (
@@ -926,28 +937,45 @@ export default function Archive({
               );
             })
           ) : facts.length > 0 && filteredFacts.length === 0 ? (
-            <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
-              <p className="text-[#909090] font-serif italic text-lg">No discoveries match</p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 flex flex-col justify-center items-center py-16 text-center"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F0EEEA] flex items-center justify-center mb-4">
+                <Search className="w-5 h-5 text-[#b0b0b0]" />
+              </div>
+              <p className="text-[#909090] font-serif italic text-lg mb-1">No discoveries match</p>
+              <p className="text-[#c0c0c0] text-xs mb-4">Try adjusting your filters</p>
               <button
                 onClick={() => { setFilterPerson(null); setFilterCategories([]); setSearchQuery(""); setShowSavedOnly(false); }}
-                className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
+                className="text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors px-4 py-2 rounded-full hover:bg-black/5"
                 data-testid="button-clear-filters"
               >
-                Clear filters
+                Clear all
               </button>
-            </div>
+            </motion.div>
           ) : facts.length === 0 ? (
-            <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex-1 flex flex-col justify-center items-center py-16"
+            >
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-                <div className="w-16 h-16 rounded-full bg-black/[0.03] flex items-center justify-center mb-6">
-                  <BookOpen className="w-7 h-7 text-[#b0b0b0]" strokeWidth={1.2} />
-                </div>
-                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Nothing here yet</h3>
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-16 h-16 rounded-2xl bg-[#EDEAE6] flex items-center justify-center mb-6"
+                >
+                  <BookOpen className="w-7 h-7 text-[#8B7E74]" strokeWidth={1.5} />
+                </motion.div>
+                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Your story starts today</h3>
                 <p className="text-[#909090] text-sm leading-relaxed">
-                  Share your first discovery to begin your story together.
+                  Share your first discovery and watch your collection grow together.
                 </p>
               </div>
-            </div>
+            </motion.div>
           ) : null}
         </div>
       )}
@@ -1244,15 +1272,24 @@ function MemoriesTab({
       )}
 
       {facts.length === 0 && dailyAnswers.length === 0 && journalEntries.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#EDEAE6] flex items-center justify-center mb-4">
-            <BookOpen className="w-7 h-7 text-[#8B7E74]" />
-          </div>
-          <p className="text-lg font-serif text-[#1C1C1C] mb-2">No memories yet</p>
-          <p className="text-sm text-[#909090] max-w-[260px]">
-            Start sharing discoveries and capturing moments to build your memory collection.
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex-1 flex flex-col items-center justify-center py-16 text-center"
+        >
+          <motion.div
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="w-16 h-16 rounded-2xl bg-[#EDEAE6] flex items-center justify-center mb-6"
+          >
+            <Sparkles className="w-7 h-7 text-[#8B7E74]" />
+          </motion.div>
+          <p className="text-lg font-serif text-[#1C1C1C] mb-2">Memories take shape here</p>
+          <p className="text-sm text-[#909090] max-w-[260px] leading-relaxed">
+            Share discoveries, answer questions, and write in your journal to build your collection.
           </p>
-        </div>
+        </motion.div>
       )}
     </div>
   );
