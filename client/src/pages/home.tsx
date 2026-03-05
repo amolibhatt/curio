@@ -541,21 +541,21 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
           {onSubmitGratitude && (
             <div className={`rounded-2xl border transition-all duration-500 ${
-              bothGratitudesDone ? 'bg-rose-50/40 border-rose-100/80' : 'bg-white border-black/5'
+              bothGratitudesDone ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
             }`} data-testid="card-daily-gratitude">
               <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-rose-50 border border-rose-100'}`}>
-                  <HandHeart className={`w-4.5 h-4.5 ${myGratitude ? 'text-white' : 'text-rose-300'}`} />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+                  <HandHeart className={`w-4.5 h-4.5 ${myGratitude ? 'text-white' : 'text-[#909090]'}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Gratitude</p>
                   <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
                 </div>
                 {bothGratitudesDone && (
-                  <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
+                  <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
                 )}
                 {myGratitude && !bothGratitudesDone && (
-                  <span className="text-[9px] font-bold tracking-wider text-rose-400 bg-rose-50 px-2.5 py-1 rounded-full uppercase shrink-0 border border-rose-100">Sent</span>
+                  <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
                 )}
               </div>
 
@@ -572,7 +572,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                         el.style.height = Math.min(el.scrollHeight, 160) + 'px';
                       }}
                       placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
-                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-100 font-serif leading-relaxed border border-black/5"
+                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
                       rows={2}
                       data-testid="input-daily-gratitude"
                     />
@@ -580,7 +580,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                       <button
                         onClick={handleSubmitGratitude}
                         disabled={!gratitudeText.trim() || isSubmittingGratitude}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         data-testid="button-submit-gratitude"
                       >
                         {isSubmittingGratitude ? "Sending..." : "Share"}
@@ -590,18 +590,18 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                   </div>
                 ) : bothGratitudesDone ? (
                   <div className="space-y-2.5 animate-in fade-in duration-500">
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{activeUser.name}</p>
+                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
                     </div>
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{partnerUser.name}</p>
+                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5">
+                    <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
                       <div className="flex items-center gap-2">
                         <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
