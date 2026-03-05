@@ -422,6 +422,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
             reactingFacts={reactingFacts}
             dailyAnswers={dailyAnswers}
+            gratitudes={gratitudes}
             bookmarks={bookmarks}
             onToggleBookmark={handleToggleBookmark}
             anniversaryDate={anniversaryDate}

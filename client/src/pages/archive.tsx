@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Fact, User, DailyAnswer, ReactionType, Bookmark, JournalEntry } from "@/lib/mock-data";
+import { Fact, User, DailyAnswer, ReactionType, Bookmark, JournalEntry, DailyGratitude } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, differenceInDays } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2, MapPin } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2, MapPin, HandHeart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -29,7 +29,7 @@ type Milestone = {
 
 export default function Archive({
   facts, onReact, onQAReact, activeUser, partnerUser, reactingFacts, dailyAnswers,
-  bookmarks = [], onToggleBookmark,
+  gratitudes = [], bookmarks = [], onToggleBookmark,
   anniversaryDate, journalEntries = [], onDeleteJournalEntry,
 }: {
   facts: Fact[],
@@ -39,6 +39,7 @@ export default function Archive({
   partnerUser: User,
   reactingFacts?: Set<string>,
   dailyAnswers: DailyAnswer[],
+  gratitudes?: DailyGratitude[],
   bookmarks?: Bookmark[],
   onToggleBookmark?: (itemType: 'fact' | 'qa', itemId: string) => void,
   anniversaryDate?: string | null,
@@ -181,6 +182,32 @@ export default function Archive({
     if (filterQACategories.length > 0 && !filterQACategories.includes(a.category)) return false;
     return true;
   });
+
+  const completedGratitudes = gratitudes.filter(g => {
+    const entries = g.entries || {};
+    return activeUser.id in entries && partnerUser.id in entries;
+  });
+
+  const gratitudeByDate = useMemo(() => {
+    const map: Record<string, DailyGratitude> = {};
+    for (const g of completedGratitudes) {
+      map[g.date] = g;
+    }
+    return map;
+  }, [completedGratitudes]);
+
+  const togetherDates = useMemo(() => {
+    const dateSet = new Set<string>();
+    for (const a of completedAnswers) dateSet.add(a.date);
+    for (const g of completedGratitudes) dateSet.add(g.date);
+    return [...dateSet].sort((a, b) => b.localeCompare(a));
+  }, [completedAnswers, completedGratitudes]);
+
+  const qaByDate = useMemo(() => {
+    const map: Record<string, DailyAnswer> = {};
+    for (const a of completedAnswers) map[a.date] = a;
+    return map;
+  }, [completedAnswers]);
 
   const uniqueDays = new Set(facts.map(f => f.date)).size;
   const totalFacts = facts.length;
@@ -542,57 +569,103 @@ export default function Archive({
           onToggleBookmark={onToggleBookmark}
         />
       ) : activeTab === "questions" ? (
-        <div className="space-y-4 flex-1 flex flex-col">
-          {completedAnswers.length > 0 ? (
-            completedAnswers.map((qa, idx) => {
-              const myAns = qa.answers[activeUser.id];
-              const partnerAns = qa.answers[partnerUser.id];
+        <div className="space-y-6 flex-1 flex flex-col">
+          {togetherDates.length > 0 ? (
+            togetherDates.map((date, dateIdx) => {
+              const qa = qaByDate[date];
+              const grat = gratitudeByDate[date];
+              const dateLabel = date === todayStr
+                ? <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                : (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })();
               return (
                 <motion.div
-                  key={qa.id}
+                  key={date}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: Math.min(idx * 0.08, 0.8) }}
-                  className="bg-white rounded-2xl border border-black/5 overflow-hidden"
-                  data-testid={`card-qa-${qa.id}`}
+                  transition={{ duration: 0.4, delay: Math.min(dateIdx * 0.08, 0.8) }}
+                  className="space-y-3"
                 >
-                  <div className="px-5 pt-4 pb-1 flex items-center gap-2">
-                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase flex-1">
-                      {qa.date === todayStr ? (
-                        <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
-                      ) : (
-                        (() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()
-                      )}
-                      <span className="ml-2 text-[#c0c0c0]">{qa.category}</span>
-                    </p>
-                    {onToggleBookmark && (
-                      <button
-                        onClick={() => onToggleBookmark('qa', qa.id)}
-                        className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedQAIds.has(qa.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
-                        aria-label={bookmarkedQAIds.has(qa.id) ? "Remove bookmark" : "Bookmark"}
-                        data-testid={`button-bookmark-qa-${qa.id}`}
-                      >
-                        {bookmarkedQAIds.has(qa.id) ? <BookmarkCheck className="w-4 h-4" /> : <BookmarkIcon className="w-4 h-4" />}
-                      </button>
-                    )}
-                  </div>
-                  <div className="px-5 pb-4">
-                    <p className="font-serif text-[15px] text-[#1C1C1C] leading-relaxed mb-3">{qa.questionText}</p>
-                    <div className="space-y-2">
-                      {myAns && (
-                        <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
-                          <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase px-1">
+                    {dateLabel}
+                  </p>
+
+                  {qa && (() => {
+                    const myAns = qa.answers[activeUser.id];
+                    const partnerAns = qa.answers[partnerUser.id];
+                    return (
+                      <div className="bg-white rounded-2xl border border-black/5 overflow-hidden" data-testid={`card-qa-${qa.id}`}>
+                        <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-[#FAF9F7] flex items-center justify-center shrink-0">
+                            <MessageCircle className="w-3.5 h-3.5 text-[#909090]" />
+                          </div>
+                          <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase flex-1">
+                            Q&A
+                            <span className="ml-2 text-[#c0c0c0]">{qa.category}</span>
+                          </p>
+                          {onToggleBookmark && (
+                            <button
+                              onClick={() => onToggleBookmark('qa', qa.id)}
+                              className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedQAIds.has(qa.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
+                              aria-label={bookmarkedQAIds.has(qa.id) ? "Remove bookmark" : "Bookmark"}
+                              data-testid={`button-bookmark-qa-${qa.id}`}
+                            >
+                              {bookmarkedQAIds.has(qa.id) ? <BookmarkCheck className="w-4 h-4" /> : <BookmarkIcon className="w-4 h-4" />}
+                            </button>
+                          )}
                         </div>
-                      )}
-                      {partnerAns && (
-                        <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
-                          <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
+                        <div className="px-5 pb-4">
+                          <p className="font-serif text-[15px] text-[#1C1C1C] leading-relaxed mb-3">{qa.questionText}</p>
+                          <div className="space-y-2">
+                            {myAns && (
+                              <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                              </div>
+                            )}
+                            {partnerAns && (
+                              <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    );
+                  })()}
+
+                  {grat && (() => {
+                    const myGrat = grat.entries[activeUser.id];
+                    const partnerGrat = grat.entries[partnerUser.id];
+                    return (
+                      <div className="bg-white rounded-2xl border border-black/5 overflow-hidden" data-testid={`card-gratitude-${grat.id}`}>
+                        <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+                            <HandHeart className="w-3.5 h-3.5 text-rose-400" />
+                          </div>
+                          <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase flex-1">
+                            Gratitude
+                          </p>
+                        </div>
+                        <div className="px-5 pb-4">
+                          <div className="space-y-2">
+                            {myGrat && (
+                              <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
+                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGrat}</p>
+                              </div>
+                            )}
+                            {partnerGrat && (
+                              <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
+                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGrat}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               );
             })
