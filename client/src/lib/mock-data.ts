@@ -37,6 +37,13 @@ export type JournalEntry = {
   imageData?: string;
 };
 
+export type Bookmark = {
+  id: string;
+  itemType: 'fact' | 'qa';
+  itemId: string;
+  savedAt: string;
+};
+
 export type AuthState = {
   user: User;
   pairing: { id: string; inviteCode: string; anniversaryDate?: string | null } | null;

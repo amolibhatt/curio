@@ -23,6 +23,19 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 50
         && request.resource.data.avatar is string;
       allow delete: if request.auth != null && request.auth.uid == userId;
+
+      match /bookmarks/{bookmarkId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null
+          && request.auth.uid == userId
+          && request.resource.data.itemType is string
+          && request.resource.data.itemType in ['fact', 'qa']
+          && request.resource.data.itemId is string
+          && request.resource.data.itemId.size() > 0
+          && request.resource.data.savedAt is string
+          && request.resource.data.keys().hasOnly(['itemType', 'itemId', 'savedAt']);
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     match /pairings/{pairingId} {

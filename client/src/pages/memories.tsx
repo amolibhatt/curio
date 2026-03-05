@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useRef } from "react";
-import { Fact, User, DailyAnswer, ReactionType, JournalEntry } from "@/lib/mock-data";
+import { Fact, User, DailyAnswer, ReactionType, JournalEntry, Bookmark } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, differenceInDays } from "date-fns";
-import { Heart, Rewind, Sparkles, Star, Shuffle, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle, Camera, X, Send, ImageIcon, Trash2, PenLine } from "lucide-react";
+import { Heart, Rewind, Sparkles, Star, Shuffle, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle, Camera, X, Send, ImageIcon, Trash2, PenLine, Bookmark as BookmarkIcon, BookmarkCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { compressImage } from "@/lib/image-utils";
@@ -36,6 +36,8 @@ export default function Memories({
   journalEntries,
   onAddJournalEntry,
   onDeleteJournalEntry,
+  bookmarks = [],
+  onToggleBookmark,
 }: {
   facts: Fact[];
   dailyAnswers: DailyAnswer[];
@@ -48,6 +50,8 @@ export default function Memories({
   journalEntries: JournalEntry[];
   onAddJournalEntry: (text: string, imageData?: string) => Promise<void>;
   onDeleteJournalEntry: (entryId: string) => Promise<void>;
+  bookmarks?: Bookmark[];
+  onToggleBookmark?: (itemType: 'fact' | 'qa', itemId: string) => void;
 }) {
   const [randomFact, setRandomFact] = useState<Fact | null>(null);
   const [randomRevealed, setRandomRevealed] = useState(false);
@@ -503,6 +507,65 @@ export default function Memories({
             <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mt-1">Longest Streak</p>
           </div>
         </div>
+      )}
+
+      {bookmarks.length > 0 && (
+        <section data-testid="section-saved">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+              <BookmarkCheck className="w-4.5 h-4.5 text-[#8B7E74]" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#1C1C1C]">Saved</h2>
+              <p className="text-[11px] text-[#b0b0b0]">{bookmarks.length} {bookmarks.length === 1 ? 'item' : 'items'} bookmarked</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {bookmarks.sort((a, b) => b.savedAt.localeCompare(a.savedAt)).map((bm, i) => {
+              const item = bm.itemType === 'fact'
+                ? facts.find(f => f.id === bm.itemId)
+                : dailyAnswers.find(a => a.id === bm.itemId);
+              if (!item) return null;
+              return (
+                <motion.div
+                  key={`saved-${bm.id}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="rounded-2xl bg-white border border-black/5 overflow-hidden"
+                >
+                  <div className="px-5 pt-4 pb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">
+                      {bm.itemType === 'fact' ? 'Discovery' : 'Q&A'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#c0c0c0]">
+                        {(() => { const [y, m, d] = (item as any).date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()}
+                      </span>
+                      {onToggleBookmark && (
+                        <button
+                          onClick={() => onToggleBookmark(bm.itemType, bm.itemId)}
+                          className="p-1 rounded-full text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-90"
+                          aria-label="Remove bookmark"
+                          data-testid={`button-unsave-${bm.itemType}-${bm.itemId}`}
+                        >
+                          <BookmarkCheck className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-5 pb-4 pt-2">
+                    {bm.itemType === 'fact' ? (
+                      <FactCard fact={item as Fact} activeUser={activeUser} partnerUser={partnerUser} />
+                    ) : (
+                      <QACard qa={item as DailyAnswer} activeUser={activeUser} partnerUser={partnerUser} />
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {onThisDay.length > 0 && (

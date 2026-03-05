@@ -558,3 +558,25 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
     return null;
   }
 }
+
+export async function getBookmarks(userId: string): Promise<import('./mock-data').Bookmark[]> {
+  const snap = await getDocs(collection(db, "users", userId, "bookmarks"));
+  return snap.docs.map(d => {
+    const data = d.data();
+    return { id: d.id, itemType: data.itemType, itemId: data.itemId, savedAt: data.savedAt };
+  });
+}
+
+export async function addBookmark(userId: string, itemType: 'fact' | 'qa', itemId: string): Promise<import('./mock-data').Bookmark> {
+  const savedAt = new Date().toISOString();
+  const ref = await addDoc(collection(db, "users", userId, "bookmarks"), {
+    itemType,
+    itemId,
+    savedAt,
+  });
+  return { id: ref.id, itemType, itemId, savedAt };
+}
+
+export async function removeBookmark(userId: string, bookmarkId: string): Promise<void> {
+  await deleteDoc(doc(db, "users", userId, "bookmarks", bookmarkId));
+}

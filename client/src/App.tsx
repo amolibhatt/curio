@@ -17,7 +17,7 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
 import { getLocalDateStr } from "./lib/date-utils";
-import type { AuthState, Fact, ReactionType, Category, DailyAnswer, JournalEntry } from "./lib/mock-data";
+import type { AuthState, Fact, ReactionType, Category, DailyAnswer, JournalEntry, Bookmark } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
@@ -25,6 +25,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const [dailyAnswers, setDailyAnswers] = useState<DailyAnswer[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
@@ -103,6 +104,35 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
       setInitialLoading(false);
     }
   }, [toast, partnerId, partnerName, showNotification]);
+
+  useEffect(() => {
+    firestoreOps.getBookmarks(auth.user.id)
+      .then(setBookmarks)
+      .catch(err => console.warn("[Curio] Bookmarks fetch failed:", err?.message));
+  }, [auth.user.id]);
+
+  const handleToggleBookmark = useCallback(async (itemType: 'fact' | 'qa', itemId: string) => {
+    const existing = bookmarks.find(b => b.itemType === itemType && b.itemId === itemId);
+    if (existing) {
+      setBookmarks(prev => prev.filter(b => b.id !== existing.id));
+      try {
+        await firestoreOps.removeBookmark(auth.user.id, existing.id);
+      } catch (err: any) {
+        setBookmarks(prev => [...prev, existing]);
+        toast({ title: "Couldn't remove bookmark", description: err?.message, variant: "destructive" });
+      }
+    } else {
+      const optimistic: Bookmark = { id: 'temp-' + itemId, itemType, itemId, savedAt: new Date().toISOString() };
+      setBookmarks(prev => [...prev, optimistic]);
+      try {
+        const saved = await firestoreOps.addBookmark(auth.user.id, itemType, itemId);
+        setBookmarks(prev => prev.map(b => b.id === optimistic.id ? saved : b));
+      } catch (err: any) {
+        setBookmarks(prev => prev.filter(b => b.id !== optimistic.id));
+        toast({ title: "Couldn't save bookmark", description: err?.message, variant: "destructive" });
+      }
+    }
+  }, [bookmarks, auth.user.id, toast]);
 
   useEffect(() => {
     fetchFacts();
@@ -367,6 +397,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             partnerUser={partner}
             reactingFacts={reactingFacts}
             dailyAnswers={dailyAnswers}
+            bookmarks={bookmarks}
+            onToggleBookmark={handleToggleBookmark}
           />
         </Route>
         <Route path="/memories">
@@ -386,6 +418,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             journalEntries={journalEntries}
             onAddJournalEntry={handleAddJournalEntry}
             onDeleteJournalEntry={handleDeleteJournalEntry}
+            bookmarks={bookmarks}
+            onToggleBookmark={handleToggleBookmark}
           />
         </Route>
         <Route path="/us">

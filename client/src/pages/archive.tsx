@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Fact, User, DailyAnswer, ReactionType } from "@/lib/mock-data";
+import { Fact, User, DailyAnswer, ReactionType, Bookmark } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -10,7 +10,7 @@ import { QUESTION_CATEGORIES } from "@/lib/daily-questions";
 
 type TabMode = "discoveries" | "questions";
 
-export default function Archive({ facts, onReact, onQAReact, activeUser, partnerUser, reactingFacts, dailyAnswers }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, onQAReact?: (answerId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[] }) {
+export default function Archive({ facts, onReact, onQAReact, activeUser, partnerUser, reactingFacts, dailyAnswers, bookmarks = [], onToggleBookmark }: { facts: Fact[], onReact: (factId: string, reaction: string | null) => void, onQAReact?: (answerId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, reactingFacts?: Set<string>, dailyAnswers: DailyAnswer[], bookmarks?: Bookmark[], onToggleBookmark?: (itemType: 'fact' | 'qa', itemId: string) => void }) {
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
   const [filterCategories, setFilterCategories] = useState<string[]>([]);
   const [filterQACategories, setFilterQACategories] = useState<string[]>([]);
@@ -21,8 +21,11 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
   const [activeTab, setActiveTab] = useState<TabMode>("discoveries");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const burstTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const bookmarkedFactIds = new Set(bookmarks.filter(b => b.itemType === 'fact').map(b => b.itemId));
+  const bookmarkedQAIds = new Set(bookmarks.filter(b => b.itemType === 'qa').map(b => b.itemId));
   useEffect(() => {
     const check = setInterval(() => {
       const now = getLocalDateStr();
@@ -37,6 +40,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
   const searchLower = searchQuery.toLowerCase().trim();
 
   const filteredFacts = facts.filter(fact => {
+    if (showSavedOnly && !bookmarkedFactIds.has(fact.id)) return false;
     if (filterPerson && fact.authorId !== filterPerson) return false;
     if (filterCategories.length > 0 && !fact.categories.some(c => filterCategories.includes(c))) return false;
     if (searchLower && !fact.text.toLowerCase().includes(searchLower)) return false;
@@ -90,6 +94,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
   const completedAnswers = dailyAnswers.filter(a => {
     const answers = a.answers || {};
     if (!(activeUser.id in answers && partnerUser.id in answers)) return false;
+    if (showSavedOnly && !bookmarkedQAIds.has(a.id)) return false;
     if (filterQACategories.length > 0 && !filterQACategories.includes(a.category)) return false;
     return true;
   });
@@ -137,6 +142,13 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
           {activeTab === "discoveries" && (
             <div className="flex items-center gap-1">
               <button
+                onClick={() => setShowSavedOnly(!showSavedOnly)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showSavedOnly ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-saved"
+              >
+                {showSavedOnly ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+              </button>
+              <button
                 onClick={() => { setShowSearch(!showSearch); if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 100); else setSearchQuery(""); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showSearch || searchQuery ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
                 data-testid="button-toggle-search"
@@ -154,14 +166,23 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
             </div>
           )}
           {activeTab === "questions" && (
-            <button 
-              onClick={() => setShowQAFilters(!showQAFilters)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showQAFilters || filterQACategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
-              data-testid="button-toggle-qa-filters"
-            >
-              <Filter className="w-3.5 h-3.5" />
-              {filterQACategories.length > 0 ? 'Filtered' : 'Filter'}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowSavedOnly(!showSavedOnly)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showSavedOnly ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-qa-saved"
+              >
+                {showSavedOnly ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+              </button>
+              <button 
+                onClick={() => setShowQAFilters(!showQAFilters)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showQAFilters || filterQACategories.length > 0 ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-qa-filters"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                {filterQACategories.length > 0 ? 'Filtered' : 'Filter'}
+              </button>
+            </div>
           )}
         </div>
 
@@ -287,6 +308,16 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                       )}
                     </p>
                     <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">{qa.category}</span>
+                    {onToggleBookmark && (
+                      <button
+                        onClick={() => onToggleBookmark('qa', qa.id)}
+                        className={`ml-auto p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedQAIds.has(qa.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
+                        aria-label={bookmarkedQAIds.has(qa.id) ? "Remove bookmark" : "Bookmark"}
+                        data-testid={`button-bookmark-qa-${qa.id}`}
+                      >
+                        {bookmarkedQAIds.has(qa.id) ? <BookmarkCheck className="w-4 h-4" /> : <BookmarkIcon className="w-4 h-4" />}
+                      </button>
+                    )}
                   </div>
                   <p className="font-serif text-base text-[#1C1C1C] leading-relaxed mb-4">{qa.questionText}</p>
                   <div className="space-y-3">
@@ -397,6 +428,16 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                                       {category}
                                     </div>
                                   ))}
+                                  {onToggleBookmark && (
+                                    <button
+                                      onClick={() => onToggleBookmark('fact', fact.id)}
+                                      className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedFactIds.has(fact.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
+                                      aria-label={bookmarkedFactIds.has(fact.id) ? "Remove bookmark" : "Bookmark"}
+                                      data-testid={`button-bookmark-fact-${fact.id}`}
+                                    >
+                                      {bookmarkedFactIds.has(fact.id) ? <BookmarkCheck className="w-4 h-4" /> : <BookmarkIcon className="w-4 h-4" />}
+                                    </button>
+                                  )}
                                 </div>
                                 
                                   {!isMe && <div className="flex items-center gap-1 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-3 md:mt-0">
