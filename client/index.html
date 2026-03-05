@@ -31,13 +31,18 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js?v=10')
-            .then((registration) => {
-              registration.addEventListener('updatefound', () => {
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          if (event.data && event.data.type === 'SW_UPDATED') {
+            window.location.reload();
+          }
+        });
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js?v=11')
+            .then(function(registration) {
+              registration.addEventListener('updatefound', function() {
                 var newWorker = registration.installing;
                 if (newWorker) {
-                  newWorker.addEventListener('statechange', () => {
+                  newWorker.addEventListener('statechange', function() {
                     if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
                       window.location.reload();
                     }
@@ -45,9 +50,15 @@
                 }
               });
               registration.update();
-            }, (err) => {
+              setInterval(function() { registration.update(); }, 60000);
+            }, function(err) {
               console.log('ServiceWorker registration failed: ', err);
             });
+        });
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible' && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then(function(reg) { reg.update(); });
+          }
         });
       }
     </script>
