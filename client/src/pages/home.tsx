@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -18,6 +18,7 @@ const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'Science', icon: Microscope },
   { name: 'Space', icon: Telescope },
   { name: 'Art', icon: Palette },
+  { name: 'Geography', icon: MapPin },
   { name: 'Us', icon: Heart },
   { name: 'Random', icon: HelpCircle },
 ];

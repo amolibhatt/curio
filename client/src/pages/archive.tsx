@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Fact, User, DailyAnswer, ReactionType, Bookmark, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, differenceInDays } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2 } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -102,6 +102,7 @@ export default function Archive({
       case 'Science': return <Microscope className="w-3 h-3" />;
       case 'Space': return <Telescope className="w-3 h-3" />;
       case 'Art': return <Palette className="w-3 h-3" />;
+      case 'Geography': return <MapPin className="w-3 h-3" />;
       case 'Us': return <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />;
       default: return <HelpCircle className="w-3 h-3" />;
     }

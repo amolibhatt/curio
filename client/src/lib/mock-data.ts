@@ -1,4 +1,4 @@
-export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | 'Us' | 'Random';
+export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | 'Geography' | 'Us' | 'Random';
 
 export type ReactionType = 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad';
 

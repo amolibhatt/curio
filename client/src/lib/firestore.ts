@@ -17,7 +17,7 @@ import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer, JournalEntry } from "./mock-data";
 
 const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
-export const VALID_CATEGORIES_LIST = ['Science', 'History', 'Etymology', 'Space', 'Art', 'Us', 'Random'] as const;
+export const VALID_CATEGORIES_LIST = ['Science', 'History', 'Etymology', 'Space', 'Art', 'Geography', 'Us', 'Random'] as const;
 const VALID_CATEGORIES: Set<string> = new Set(VALID_CATEGORIES_LIST);
 export const VALID_CATEGORIES_SET = VALID_CATEGORIES;
 const MAX_FACT_LENGTH = 5000;
