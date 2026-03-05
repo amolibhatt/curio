@@ -484,11 +484,17 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             </div>
 
             {myFactToday && partnerFactToday ? (
-              <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
-                <Sparkles className="w-4 h-4" />
-                Both shared — reveal discoveries
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="space-y-2">
+                <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
+                  <Sparkles className="w-4 h-4" />
+                  Both shared — reveal discoveries
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#909090] text-xs font-medium hover:text-[#737373] hover:bg-[#FAF9F7] transition-all" data-testid="button-edit-fact">
+                  <Pencil className="w-3 h-3" />
+                  Edit your discovery
+                </button>
+              </div>
             ) : myFactToday ? (
               <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FAF9F7] text-[#737373] text-sm font-semibold hover:bg-[#F0EEEA] transition-all border border-black/5" data-testid="button-edit-fact">
                 <Pencil className="w-3.5 h-3.5" />
