@@ -16,7 +16,7 @@ import {
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer, JournalEntry } from "./mock-data";
 
-const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'fascinating', 'heart', 'laugh', 'thinking', 'sad']);
+const VALID_REACTIONS: Set<string> = new Set(['mind-blown', 'heart', 'laugh', 'thinking']);
 export const VALID_CATEGORIES_LIST = ['Science', 'History', 'Etymology', 'Space', 'Art', 'Geography', 'Us', 'Random'] as const;
 const VALID_CATEGORIES: Set<string> = new Set(VALID_CATEGORIES_LIST);
 export const VALID_CATEGORIES_SET = VALID_CATEGORIES;

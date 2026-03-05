@@ -444,7 +444,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
               <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
             </div>
             {myFactToday && partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Both shared</span>
+              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
             )}
             {myFactToday && !partnerFactToday && (
               <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
@@ -621,11 +621,17 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                 ) : bothAnswered ? (
                   <div className="space-y-2.5 animate-in fade-in duration-500">
                     <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</span>
+                      </div>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
                     </div>
                     <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</span>
+                      </div>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
                     </div>
                     {onQAReact && todayAnswer && (
@@ -658,7 +664,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                         <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
                         <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
                       </div>
-                      <p className="text-[10px] text-white/60">Answered</p>
+                      <p className="text-[10px] text-white/60">Shared</p>
                     </div>
                     <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
                       <div className="flex items-center gap-2">
@@ -725,11 +731,17 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                 ) : bothGratitudesDone ? (
                   <div className="space-y-2.5 animate-in fade-in duration-500">
                     <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</span>
+                      </div>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
                     </div>
                     <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</span>
+                      </div>
                       <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
                     </div>
                   </div>

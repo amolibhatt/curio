@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Fact, User, DailyAnswer, ReactionType, Bookmark, JournalEntry, DailyGratitude } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, differenceInDays } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2, MapPin, HandHeart } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind, Shuffle, Award, Gem, Star, PenLine, Trash2, MapPin, HandHeart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -114,7 +114,7 @@ export default function Archive({
     return 'bg-[#FAF9F7] text-[#737373] border-none';
   };
 
-  const handleReact = (factId: string, type: 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad') => {
+  const handleReact = (factId: string, type: 'mind-blown' | 'heart' | 'laugh' | 'thinking') => {
     if (reactingFacts?.has(factId)) return;
     const fact = facts.find(f => f.id === factId);
     const currentReaction = fact?.reactions?.[activeUser.id];
@@ -592,6 +592,8 @@ export default function Archive({
                   {qa && (() => {
                     const myAns = qa.answers[activeUser.id];
                     const partnerAns = qa.answers[partnerUser.id];
+                    const myQAReaction = qa.reactions?.[activeUser.id] as ReactionType | undefined;
+                    const partnerQAReaction = qa.reactions?.[partnerUser.id] as ReactionType | undefined;
                     return (
                       <div className="bg-white rounded-2xl border border-black/5 overflow-hidden" data-testid={`card-qa-${qa.id}`}>
                         <div className="px-5 pt-4 pb-1 flex items-center gap-2">
@@ -618,17 +620,55 @@ export default function Archive({
                           <div className="space-y-2">
                             {myAns && (
                               <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full" />
+                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</p>
+                                </div>
                                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
                               </div>
                             )}
                             {partnerAns && (
                               <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full" />
+                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</p>
+                                </div>
                                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
                               </div>
                             )}
                           </div>
+                          {onQAReact && (
+                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-black/5">
+                              <div className="flex items-center gap-0.5">
+                                {([
+                                  { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                                  { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                                  { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                                  { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                                ]).map(({ type, Icon, active, hover, fill }) => (
+                                  <button
+                                    key={type}
+                                    onClick={() => onQAReact(qa.id, type)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
+                                      myQAReaction === type ? active : `text-[#c0c0c0] ${hover}`
+                                    }`}
+                                    data-testid={`button-qa-react-${type}-${qa.id}`}
+                                  >
+                                    <Icon className={`w-3.5 h-3.5 ${fill && myQAReaction === type ? 'fill-white' : ''}`} />
+                                  </button>
+                                ))}
+                              </div>
+                              {partnerQAReaction && (
+                                <div className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase">
+                                  {partnerQAReaction === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                                  {partnerQAReaction === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
+                                  {partnerQAReaction === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
+                                  {partnerQAReaction === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
+                                  <span className="truncate">{partnerUser.name}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -651,13 +691,19 @@ export default function Archive({
                           <div className="space-y-2">
                             {myGrat && (
                               <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
-                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full" />
+                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</p>
+                                </div>
                                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGrat}</p>
                               </div>
                             )}
                             {partnerGrat && (
                               <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
-                                <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full" />
+                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</p>
+                                </div>
                                 <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGrat}</p>
                               </div>
                             )}
@@ -759,12 +805,10 @@ export default function Archive({
                                 {!isMe && (
                                   <div className="flex items-center gap-0.5">
                                     {([
-                                      { type: 'mind-blown' as const, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                                      { type: 'fascinating' as const, Icon: Sparkles, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
                                       { type: 'heart' as const, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                                      { type: 'mind-blown' as const, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
                                       { type: 'laugh' as const, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
                                       { type: 'thinking' as const, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
-                                      { type: 'sad' as const, Icon: Frown, active: 'bg-indigo-100 text-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
                                     ]).map(({ type, Icon, active, hover, fill }) => (
                                       <div key={type} className="relative">
                                         <button
@@ -786,7 +830,7 @@ export default function Archive({
                                               transition={{ duration: 0.7, ease: "easeOut" }}
                                               className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
                                             >
-                                              <Icon className={`w-5 h-5 ${type === 'heart' ? 'text-rose-500 fill-rose-500' : type === 'laugh' ? 'text-amber-500' : type === 'thinking' ? 'text-blue-500' : type === 'sad' ? 'text-indigo-500' : 'text-[#1C1C1C]'}`} />
+                                              <Icon className={`w-5 h-5 ${type === 'heart' ? 'text-rose-500 fill-rose-500' : type === 'laugh' ? 'text-amber-500' : type === 'thinking' ? 'text-blue-500' : 'text-[#1C1C1C]'}`} />
                                             </motion.div>
                                           )}
                                         </AnimatePresence>
@@ -797,12 +841,10 @@ export default function Archive({
 
                                 {isMe && fact.reactions?.[partnerUser.id] && (
                                   <div className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase animate-in zoom-in-95 duration-300">
-                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
                                     {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
                                     {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
                                     {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
                                     <span className="truncate">{partnerUser.name}</span>
                                   </div>
                                 )}

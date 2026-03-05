@@ -1,6 +1,6 @@
 export type Category = 'Science' | 'History' | 'Etymology' | 'Space' | 'Art' | 'Geography' | 'Us' | 'Random';
 
-export type ReactionType = 'mind-blown' | 'fascinating' | 'heart' | 'laugh' | 'thinking' | 'sad';
+export type ReactionType = 'mind-blown' | 'heart' | 'laugh' | 'thinking';
 
 export type Fact = {
   id: string;
