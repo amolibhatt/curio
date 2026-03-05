@@ -57,6 +57,10 @@ export default function Archive({
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [showQASavedOnly, setShowQASavedOnly] = useState(false);
+  const [showQASearch, setShowQASearch] = useState(false);
+  const [qaSearchQuery, setQASearchQuery] = useState("");
+  const qaSearchInputRef = useRef<HTMLInputElement>(null);
   const [randomFact, setRandomFact] = useState<Fact | null>(null);
   const [randomRevealed, setRandomRevealed] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -178,8 +182,14 @@ export default function Archive({
   const completedAnswers = dailyAnswers.filter(a => {
     const answers = a.answers || {};
     if (!(activeUser.id in answers && partnerUser.id in answers)) return false;
-    if (showSavedOnly && !bookmarkedQAIds.has(a.id)) return false;
+    if (showQASavedOnly && !bookmarkedQAIds.has(a.id)) return false;
     if (filterQACategories.length > 0 && !filterQACategories.includes(a.category)) return false;
+    const qaSearchLower = qaSearchQuery.toLowerCase().trim();
+    if (qaSearchLower) {
+      const questionMatch = a.questionText.toLowerCase().includes(qaSearchLower);
+      const answerMatch = Object.values(a.answers || {}).some(ans => typeof ans === 'string' && ans.toLowerCase().includes(qaSearchLower));
+      if (!questionMatch && !answerMatch) return false;
+    }
     return true;
   });
 
@@ -364,9 +374,13 @@ export default function Archive({
                 {throwback.type === 'fact' ? (() => {
                   const f = throwback.data as Fact;
                   const authorName = f.authorId === activeUser.id ? activeUser.name : partnerUser.name;
+                  const authorAvatar = f.authorId === activeUser.id ? activeUser.avatar : partnerUser.avatar;
                   return (
                     <div>
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase mb-1.5">{authorName} shared</p>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <img src={authorAvatar} alt={authorName} className="w-4 h-4 rounded-full opacity-60" />
+                        <p className="text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">{authorName}</p>
+                      </div>
                       <div className="text-sm text-white/90 font-serif leading-relaxed">{formatText(f.text)}</div>
                     </div>
                   );
@@ -380,13 +394,19 @@ export default function Archive({
                       <div className="space-y-2">
                         {myAns && (
                           <div className="rounded-xl bg-white/10 px-3.5 py-2.5">
-                            <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase mb-0.5">{activeUser.name}</p>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full opacity-60" />
+                              <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase">{activeUser.name}</p>
+                            </div>
                             <p className="text-[13px] text-white/80 font-serif leading-relaxed">{myAns}</p>
                           </div>
                         )}
                         {partAns && (
                           <div className="rounded-xl bg-white/10 px-3.5 py-2.5">
-                            <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase mb-0.5">{partnerUser.name}</p>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full opacity-60" />
+                              <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase">{partnerUser.name}</p>
+                            </div>
                             <p className="text-[13px] text-white/80 font-serif leading-relaxed">{partAns}</p>
                           </div>
                         )}
@@ -459,11 +479,18 @@ export default function Archive({
           {activeTab === "questions" && (
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setShowSavedOnly(!showSavedOnly)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showSavedOnly ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                onClick={() => setShowQASavedOnly(!showQASavedOnly)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showQASavedOnly ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
                 data-testid="button-toggle-qa-saved"
               >
-                {showSavedOnly ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+                {showQASavedOnly ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                onClick={() => { setShowQASearch(!showQASearch); if (!showQASearch) setTimeout(() => qaSearchInputRef.current?.focus(), 100); else setQASearchQuery(""); }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-colors shrink-0 ${showQASearch || qaSearchQuery ? 'bg-[#1C1C1C] text-white' : 'bg-transparent text-[#1C1C1C] hover:bg-black/5'}`}
+                data-testid="button-toggle-qa-search"
+              >
+                <Search className="w-3.5 h-3.5" />
               </button>
               <button 
                 onClick={() => setShowQAFilters(!showQAFilters)}
@@ -497,6 +524,35 @@ export default function Archive({
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#b0b0b0] hover:text-[#909090]">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showQASearch && activeTab === "questions" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b0b0b0]" />
+                <input
+                  ref={qaSearchInputRef}
+                  type="text"
+                  value={qaSearchQuery}
+                  onChange={(e) => setQASearchQuery(e.target.value)}
+                  placeholder="Search questions & answers..."
+                  className="w-full bg-[#FAF9F7] rounded-xl pl-10 pr-10 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] focus:outline-none focus:ring-2 focus:ring-black/5 font-serif border border-black/5"
+                  data-testid="input-qa-search"
+                />
+                {qaSearchQuery && (
+                  <button onClick={() => setQASearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#b0b0b0] hover:text-[#909090]">
                     <X className="w-4 h-4" />
                   </button>
                 )}
@@ -715,6 +771,17 @@ export default function Archive({
                 </motion.div>
               );
             })
+          ) : dailyAnswers.filter(a => Object.keys(a.answers || {}).length >= 2).length > 0 && togetherDates.length === 0 ? (
+            <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
+              <p className="text-[#909090] font-serif italic text-lg">No conversations match</p>
+              <button
+                onClick={() => { setFilterQACategories([]); setQASearchQuery(""); setShowQASavedOnly(false); }}
+                className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
+                data-testid="button-clear-qa-filters"
+              >
+                Clear filters
+              </button>
+            </div>
           ) : (
             <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 py-12">
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
@@ -1221,13 +1288,19 @@ function MemQACard({ qa, activeUser, partnerUser }: { qa: DailyAnswer; activeUse
       <div className="space-y-2">
         {myAns && (
           <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{activeUser.name}</p>
+            <div className="flex items-center gap-2 mb-0.5">
+              <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full" />
+              <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</p>
+            </div>
             <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
           </div>
         )}
         {partAns && (
           <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{partnerUser.name}</p>
+            <div className="flex items-center gap-2 mb-0.5">
+              <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full" />
+              <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</p>
+            </div>
             <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{partAns}</p>
           </div>
         )}
