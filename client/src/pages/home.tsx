@@ -136,7 +136,7 @@ function RitualDots({ done, total }: { done: number; total: number }) {
   );
 }
 
-export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude, onAddJournalEntry }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude>, onAddJournalEntry?: (text: string, imageData?: string) => Promise<void> }) {
+export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude, onAddJournalEntry }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, onReact?: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude>, onAddJournalEntry?: (text: string, imageData?: string) => Promise<void> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
@@ -452,45 +452,91 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </div>
 
           <div className="px-5 pb-5">
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                  <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                    {activeUser.name}
-                  </span>
-                  {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+            {!(myFactToday && partnerFactToday) && (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                  myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                    <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                      {activeUser.name}
+                    </span>
+                    {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                  </div>
+                  <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                    {myFactToday ? "Shared" : "Not yet"}
+                  </p>
                 </div>
-                <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                  {myFactToday ? "Shared" : "Not yet"}
-                </p>
-              </div>
-              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                  <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                    {hasPartner ? partnerUser.name : "Partner"}
-                  </span>
-                  {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                  partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                    <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                      {hasPartner ? partnerUser.name : "Partner"}
+                    </span>
+                    {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                  </div>
+                  <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                    {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
+                  </p>
                 </div>
-                <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                  {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
-                </p>
               </div>
-            </div>
+            )}
 
             {myFactToday && partnerFactToday ? (
-              <div className="space-y-2">
-                <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
-                  <Sparkles className="w-4 h-4" />
-                  Both shared — reveal discoveries
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#909090] text-xs font-medium hover:text-[#737373] hover:bg-[#FAF9F7] transition-all" data-testid="button-edit-fact">
+              <div className="space-y-3 animate-in fade-in duration-500">
+                {[myFactToday, partnerFactToday].map((fact) => {
+                  const isMe = fact.authorId === activeUser.id;
+                  const author = isMe ? activeUser : partnerUser;
+                  const myReaction = fact.reactions?.[activeUser.id];
+                  return (
+                    <div key={fact.id} className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{author.name}</span>
+                        <div className="flex items-center gap-1 ml-auto">
+                          {fact.categories.map((cat) => (
+                            <span key={cat} className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${cat === 'Us' ? 'bg-rose-50 text-rose-500' : 'bg-[#FAF9F7] text-[#909090]'}`}>{cat}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="font-serif text-sm text-[#1C1C1C] leading-relaxed">{formatText(fact.text)}</div>
+                      {!isMe && onReact && (
+                        <div className="flex items-center gap-0.5 mt-2.5 pt-2 border-t border-black/5">
+                          {([
+                            { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                            { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                            { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                            { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                          ]).map(({ type, Icon, active, hover, fill }) => (
+                            <button
+                              key={type}
+                              onClick={() => onReact(fact.id, type)}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
+                                myReaction === type ? active : `text-[#c0c0c0] ${hover}`
+                              }`}
+                              data-testid={`button-fact-react-${type}-${fact.id}`}
+                            >
+                              <Icon className={`w-3.5 h-3.5 ${fill && myReaction === type ? 'fill-white' : ''}`} />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {isMe && fact.reactions?.[partnerUser.id] && (
+                        <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-black/5 text-[#909090] text-[10px] font-bold tracking-wider uppercase">
+                          {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                          {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
+                          {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
+                          {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
+                          <span className="truncate">{partnerUser.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#909090] text-xs font-medium hover:text-[#737373] hover:bg-white/60 transition-all" data-testid="button-edit-fact">
                   <Pencil className="w-3 h-3" />
                   Edit your discovery
                 </button>

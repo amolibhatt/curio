@@ -397,6 +397,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             facts={facts}
             onAddFact={handleAddFact}
             onEditFact={handleEditFact}
+            onReact={(factId, reaction) => {
+              if (reaction) handleReact(factId, reaction as ReactionType);
+            }}
             activeUser={auth.user}
             partnerUser={partner}
             dailyAnswers={dailyAnswers}
@@ -443,6 +446,9 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             facts={facts}
             onAddFact={handleAddFact}
             onEditFact={handleEditFact}
+            onReact={(factId, reaction) => {
+              if (reaction) handleReact(factId, reaction as ReactionType);
+            }}
             activeUser={auth.user}
             partnerUser={partner}
             dailyAnswers={dailyAnswers}
