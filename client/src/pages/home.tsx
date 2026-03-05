@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude } from "@/lib/mock-data";
+import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, Rewind, HandHeart } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
 import { getDailyQuestion } from "@/lib/daily-questions";
 import { format } from "date-fns";
 import { formatText } from "@/lib/format-text";
+import { motion, AnimatePresence } from "framer-motion";
+import { compressImage } from "@/lib/image-utils";
 
 const CATEGORIES: { name: Category; icon: React.ElementType }[] = [
   { name: 'History', icon: Globe },
@@ -115,7 +117,7 @@ function getGreeting(hour: number): string {
   return "Good evening";
 }
 
-export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude> }) {
+export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude, onAddJournalEntry }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude>, onAddJournalEntry?: (text: string, imageData?: string) => Promise<void> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
@@ -129,6 +131,13 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [isSubmittingGratitude, setIsSubmittingGratitude] = useState(false);
   const submittingGratitudeRef = useRef(false);
   const gratitudeTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [journalText, setJournalText] = useState("");
+  const [journalImage, setJournalImage] = useState<string | null>(null);
+  const [isSubmittingJournal, setIsSubmittingJournal] = useState(false);
+  const [showJournalComposer, setShowJournalComposer] = useState(false);
+  const [compressingImage, setCompressingImage] = useState(false);
+  const journalFileInputRef = useRef<HTMLInputElement>(null);
+  const journalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -158,49 +167,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
 
   const myQAReaction = todayAnswer?.reactions?.[activeUser.id] as ReactionType | undefined;
 
-  const throwback = useMemo(() => {
-    if (!hasPartner) return null;
-    const [ty, tm, td] = todayStr.split('-').map(Number);
-    const candidates: { type: 'fact' | 'qa'; label: string; data: Fact | DailyAnswer }[] = [];
-    for (const f of facts) {
-      const [fy, fm, fd] = f.date.split('-').map(Number);
-      if (fm === tm && fd === td && fy < ty) {
-        const diff = ty - fy;
-        candidates.push({ type: 'fact', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: f });
-      }
-    }
-    for (const a of dailyAnswers) {
-      const [ay, am, ad] = a.date.split('-').map(Number);
-      if (am === tm && ad === td && ay < ty && Object.keys(a.answers || {}).length >= 2) {
-        const diff = ty - ay;
-        candidates.push({ type: 'qa', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: a });
-      }
-    }
-    for (const f of facts) {
-      const [fy, fm, fd] = f.date.split('-').map(Number);
-      if (fd === td && (fy < ty || (fy === ty && fm < tm))) {
-        if (fm === tm && fd === td && fy < ty) continue;
-        const monthsDiff = (ty - fy) * 12 + (tm - fm);
-        if (monthsDiff >= 1 && monthsDiff <= 11) {
-          candidates.push({ type: 'fact', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: f });
-        }
-      }
-    }
-    for (const a of dailyAnswers) {
-      const [ay, am, ad] = a.date.split('-').map(Number);
-      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers || {}).length >= 2) {
-        if (am === tm && ad === td && ay < ty) continue;
-        const monthsDiff = (ty - ay) * 12 + (tm - am);
-        if (monthsDiff >= 1 && monthsDiff <= 11) {
-          candidates.push({ type: 'qa', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: a });
-        }
-      }
-    }
-    if (candidates.length === 0) return null;
-    const seed = todayStr.split('-').reduce((a, b) => a + parseInt(b), 0);
-    return candidates[seed % candidates.length];
-  }, [facts, dailyAnswers, todayStr, hasPartner]);
-
   const todayGratitude = gratitudes.find(g => g.date === todayStr);
   const myGratitude = todayGratitude?.entries?.[activeUser.id];
   const partnerGratitude = todayGratitude?.entries?.[partnerUser.id];
@@ -220,6 +186,37 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     } finally {
       setIsSubmittingGratitude(false);
       submittingGratitudeRef.current = false;
+    }
+  };
+
+  const handleJournalImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    setCompressingImage(true);
+    try {
+      const compressed = await compressImage(file);
+      setJournalImage(compressed);
+    } catch {
+    } finally {
+      setCompressingImage(false);
+      if (journalFileInputRef.current) journalFileInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmitJournal = async () => {
+    if ((!journalText.trim() && !journalImage) || isSubmittingJournal || !onAddJournalEntry) return;
+    setIsSubmittingJournal(true);
+    try {
+      await onAddJournalEntry(journalText.trim(), journalImage || undefined);
+      setJournalText("");
+      setJournalImage(null);
+      setShowJournalComposer(false);
+      toast({ title: "Memory saved" });
+    } catch (err: any) {
+      toast({ title: "Couldn't save", description: err?.message || "Try again.", variant: "destructive" });
+    } finally {
+      setIsSubmittingJournal(false);
     }
   };
 
@@ -697,53 +694,115 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         </div>
       )}
 
-      {throwback && (
-        <div className="px-1 md:px-0" data-testid="card-throwback">
-          <div className="rounded-2xl border border-black/5 bg-white">
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-              <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
-                <Rewind className="w-4.5 h-4.5 text-[#8B7E74]" />
+      {onAddJournalEntry && (
+        <div className="px-1 md:px-0">
+          <div className="rounded-2xl border border-black/5 bg-white" data-testid="card-capture-memory">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+                  <PenLine className="w-4.5 h-4.5 text-[#8B7E74]" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Capture a Memory</p>
+                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">{format(new Date(), 'EEEE, MMMM d')}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Throwback</p>
-                <p className="text-[11px] text-[#b0b0b0] mt-0.5">{throwback.label}</p>
-              </div>
+              {!showJournalComposer && (
+                <button
+                  onClick={() => { setShowJournalComposer(true); setTimeout(() => journalTextareaRef.current?.focus(), 150); }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 shadow-sm"
+                  data-testid="button-open-journal"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  Add
+                </button>
+              )}
             </div>
-            <div className="px-5 pb-5">
-              {throwback.type === 'fact' ? (() => {
-                const f = throwback.data as Fact;
-                const authorName = f.authorId === activeUser.id ? activeUser.name : partnerUser.name;
-                return (
-                  <div>
-                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1.5">{authorName} shared</p>
-                    <div className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{formatText(f.text)}</div>
-                  </div>
-                );
-              })() : (() => {
-                const a = throwback.data as DailyAnswer;
-                const myAns = a.answers[activeUser.id];
-                const partAns = a.answers[partnerUser.id];
-                return (
-                  <div>
-                    <p className="font-serif text-sm text-[#1C1C1C] leading-relaxed mb-3">{a.questionText}</p>
-                    <div className="space-y-2">
-                      {myAns && (
-                        <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{activeUser.name}</p>
-                          <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
-                        </div>
-                      )}
-                      {partAns && (
-                        <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{partnerUser.name}</p>
-                          <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{partAns}</p>
-                        </div>
-                      )}
+
+            <AnimatePresence>
+              {showJournalComposer && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 pb-5 space-y-3">
+                    <textarea
+                      ref={journalTextareaRef}
+                      value={journalText}
+                      onChange={(e) => {
+                        setJournalText(e.target.value);
+                        const el = e.target;
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+                      }}
+                      placeholder="What happened today? How did it feel?"
+                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
+                      rows={3}
+                      data-testid="input-journal-text"
+                    />
+
+                    {journalImage && (
+                      <div className="relative inline-block">
+                        <img
+                          src={journalImage}
+                          alt="Preview"
+                          className="rounded-xl max-h-48 object-cover border border-black/5"
+                          data-testid="img-journal-preview"
+                        />
+                        <button
+                          onClick={() => setJournalImage(null)}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                          data-testid="button-remove-journal-image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={journalFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleJournalImagePick}
+                          className="hidden"
+                          data-testid="input-journal-image"
+                        />
+                        <button
+                          onClick={() => journalFileInputRef.current?.click()}
+                          disabled={compressingImage}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-medium text-[#737373] hover:text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-95 border border-black/5"
+                          data-testid="button-add-journal-image"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          {compressingImage ? 'Processing...' : 'Photo'}
+                        </button>
+                        <button
+                          onClick={() => { setShowJournalComposer(false); setJournalText(""); setJournalImage(null); }}
+                          className="px-3 py-2 rounded-full text-[11px] font-medium text-[#b0b0b0] hover:text-[#737373] hover:bg-black/5 transition-all"
+                          data-testid="button-cancel-journal"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <button
+                        onClick={handleSubmitJournal}
+                        disabled={(!journalText.trim() && !journalImage) || isSubmittingJournal}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        data-testid="button-submit-journal"
+                      >
+                        {isSubmittingJournal ? "Saving..." : "Save"}
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-                );
-              })()}
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       )}

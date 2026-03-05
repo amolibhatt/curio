@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Fact, User, DailyAnswer, ReactionType, Bookmark } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format } from "date-fns";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, Filter, Sparkles, Brain, Laugh, Lightbulb, Frown, BookOpen, MessageCircle, Search, X, Bookmark as BookmarkIcon, BookmarkCheck, Rewind } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
@@ -91,6 +91,51 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
     onReact(factId, type);
   };
 
+  const hasPartner = partnerUser.id !== "0";
+
+  const throwback = useMemo(() => {
+    if (!hasPartner) return null;
+    const [ty, tm, td] = todayStr.split('-').map(Number);
+    const candidates: { type: 'fact' | 'qa'; label: string; data: Fact | DailyAnswer }[] = [];
+    for (const f of facts) {
+      const [fy, fm, fd] = f.date.split('-').map(Number);
+      if (fm === tm && fd === td && fy < ty) {
+        const diff = ty - fy;
+        candidates.push({ type: 'fact', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: f });
+      }
+    }
+    for (const a of dailyAnswers) {
+      const [ay, am, ad] = a.date.split('-').map(Number);
+      if (am === tm && ad === td && ay < ty && Object.keys(a.answers || {}).length >= 2) {
+        const diff = ty - ay;
+        candidates.push({ type: 'qa', label: diff === 1 ? '1 year ago' : `${diff} years ago`, data: a });
+      }
+    }
+    for (const f of facts) {
+      const [fy, fm, fd] = f.date.split('-').map(Number);
+      if (fd === td && (fy < ty || (fy === ty && fm < tm))) {
+        if (fm === tm && fd === td && fy < ty) continue;
+        const monthsDiff = (ty - fy) * 12 + (tm - fm);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          candidates.push({ type: 'fact', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: f });
+        }
+      }
+    }
+    for (const a of dailyAnswers) {
+      const [ay, am, ad] = a.date.split('-').map(Number);
+      if (ad === td && (ay < ty || (ay === ty && am < tm)) && Object.keys(a.answers || {}).length >= 2) {
+        if (am === tm && ad === td && ay < ty) continue;
+        const monthsDiff = (ty - ay) * 12 + (tm - am);
+        if (monthsDiff >= 1 && monthsDiff <= 11) {
+          candidates.push({ type: 'qa', label: monthsDiff === 1 ? '1 month ago' : `${monthsDiff} months ago`, data: a });
+        }
+      }
+    }
+    if (candidates.length === 0) return null;
+    const seed = todayStr.split('-').reduce((a, b) => a + parseInt(b), 0);
+    return candidates[seed % candidates.length];
+  }, [facts, dailyAnswers, todayStr, hasPartner]);
+
   const completedAnswers = dailyAnswers.filter(a => {
     const answers = a.answers || {};
     if (!(activeUser.id in answers && partnerUser.id in answers)) return false;
@@ -110,6 +155,57 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
             Everything we've shared, side by side.
           </p>
         </div>
+
+        {throwback && (
+          <div className="mb-6" data-testid="card-throwback">
+            <div className="rounded-2xl border border-black/5 bg-white">
+              <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+                <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+                  <Rewind className="w-4.5 h-4.5 text-[#8B7E74]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Throwback</p>
+                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">{throwback.label}</p>
+                </div>
+              </div>
+              <div className="px-5 pb-5">
+                {throwback.type === 'fact' ? (() => {
+                  const f = throwback.data as Fact;
+                  const authorName = f.authorId === activeUser.id ? activeUser.name : partnerUser.name;
+                  return (
+                    <div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1.5">{authorName} shared</p>
+                      <div className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{formatText(f.text)}</div>
+                    </div>
+                  );
+                })() : (() => {
+                  const a = throwback.data as DailyAnswer;
+                  const myAns = a.answers[activeUser.id];
+                  const partAns = a.answers[partnerUser.id];
+                  return (
+                    <div>
+                      <p className="font-serif text-sm text-[#1C1C1C] leading-relaxed mb-3">{a.questionText}</p>
+                      <div className="space-y-2">
+                        {myAns && (
+                          <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
+                            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{activeUser.name}</p>
+                            <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                          </div>
+                        )}
+                        {partAns && (
+                          <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
+                            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{partnerUser.name}</p>
+                            <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{partAns}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex bg-[#FAF9F7] rounded-full p-1 shrink-0">

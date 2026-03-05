@@ -1,11 +1,10 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Fact, User, DailyAnswer, ReactionType, JournalEntry, Bookmark } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { format, differenceInDays } from "date-fns";
-import { Heart, Rewind, Sparkles, Star, Shuffle, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle, Camera, X, Send, ImageIcon, Trash2, PenLine, Bookmark as BookmarkIcon, BookmarkCheck } from "lucide-react";
+import { Heart, Rewind, Sparkles, Star, Shuffle, Brain, Laugh, Lightbulb, Award, Gem, BookOpen, MessageCircle, Trash2, PenLine, Bookmark as BookmarkIcon, BookmarkCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatText } from "@/lib/format-text";
-import { compressImage } from "@/lib/image-utils";
 
 type MemoryItem = {
   type: 'fact' | 'qa';
@@ -34,7 +33,6 @@ export default function Memories({
   reactingFacts,
   anniversaryDate,
   journalEntries,
-  onAddJournalEntry,
   onDeleteJournalEntry,
   bookmarks = [],
   onToggleBookmark,
@@ -48,7 +46,6 @@ export default function Memories({
   reactingFacts?: Set<string>;
   anniversaryDate?: string | null;
   journalEntries: JournalEntry[];
-  onAddJournalEntry: (text: string, imageData?: string) => Promise<void>;
   onDeleteJournalEntry: (entryId: string) => Promise<void>;
   bookmarks?: Bookmark[];
   onToggleBookmark?: (itemType: 'fact' | 'qa', itemId: string) => void;
@@ -57,14 +54,6 @@ export default function Memories({
   const [randomRevealed, setRandomRevealed] = useState(false);
   const todayStr = getLocalDateStr();
   const [ty, tm, td] = todayStr.split('-').map(Number);
-
-  const [journalText, setJournalText] = useState("");
-  const [journalImage, setJournalImage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showComposer, setShowComposer] = useState(false);
-  const [compressingImage, setCompressingImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const onThisDay = useMemo(() => {
     const items: MemoryItem[] = [];
@@ -267,38 +256,6 @@ export default function Memories({
     return new Date(y, m - 1, d);
   };
 
-  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-    setCompressingImage(true);
-    try {
-      const compressed = await compressImage(file);
-      setJournalImage(compressed);
-    } catch {
-      // silently fail
-    } finally {
-      setCompressingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleSubmitJournal = async () => {
-    if (isSubmitting) return;
-    if (!journalText.trim() && !journalImage) return;
-    setIsSubmitting(true);
-    try {
-      await onAddJournalEntry(journalText.trim(), journalImage || undefined);
-      setJournalText("");
-      setJournalImage(null);
-      setShowComposer(false);
-    } catch {
-      // handled upstream
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const groupedJournal = useMemo(() => {
     const groups: Record<string, JournalEntry[]> = {};
     for (const entry of journalEntries) {
@@ -319,118 +276,18 @@ export default function Memories({
         </p>
       </header>
 
-      <section data-testid="section-capture">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
+      {groupedJournal.length > 0 && (
+        <section data-testid="section-journal-entries">
+          <div className="flex items-center gap-2.5 mb-4">
             <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
               <PenLine className="w-4.5 h-4.5 text-[#8B7E74]" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-[#1C1C1C]">Capture Today</h2>
-              <p className="text-[11px] text-[#b0b0b0]">{format(new Date(ty, tm - 1, td), 'EEEE, MMMM d')}</p>
+              <h2 className="text-sm font-bold text-[#1C1C1C]">Journal</h2>
+              <p className="text-[11px] text-[#b0b0b0]">Your shared moments</p>
             </div>
           </div>
-          {!showComposer && (
-            <button
-              onClick={() => { setShowComposer(true); setTimeout(() => textareaRef.current?.focus(), 150); }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 shadow-sm"
-              data-testid="button-open-journal"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              Add
-            </button>
-          )}
-        </div>
-
-        <AnimatePresence>
-          {showComposer && (
-            <motion.div
-              initial={{ opacity: 0, y: 8, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -8, height: 0 }}
-              className="rounded-2xl bg-white border border-black/5 overflow-hidden"
-            >
-              <div className="p-5 space-y-3">
-                <textarea
-                  ref={textareaRef}
-                  value={journalText}
-                  onChange={(e) => {
-                    setJournalText(e.target.value);
-                    const el = e.target;
-                    el.style.height = 'auto';
-                    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
-                  }}
-                  placeholder="What happened today? How did it feel?"
-                  maxLength={2000}
-                  className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
-                  rows={3}
-                  data-testid="input-journal-text"
-                />
-
-                {journalImage && (
-                  <div className="relative inline-block">
-                    <img
-                      src={journalImage}
-                      alt="Preview"
-                      className="rounded-xl max-h-48 object-cover border border-black/5"
-                      data-testid="img-journal-preview"
-                    />
-                    <button
-                      onClick={() => setJournalImage(null)}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                      data-testid="button-remove-journal-image"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handleImagePick}
-                      className="hidden"
-                      data-testid="input-journal-image"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={compressingImage}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-medium text-[#737373] hover:text-[#1C1C1C] hover:bg-black/5 transition-all active:scale-95 border border-black/5"
-                      data-testid="button-add-journal-image"
-                    >
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      {compressingImage ? 'Processing...' : 'Photo'}
-                    </button>
-                    <button
-                      onClick={() => { setShowComposer(false); setJournalText(""); setJournalImage(null); }}
-                      className="px-3 py-2 rounded-full text-[11px] font-medium text-[#b0b0b0] hover:text-[#737373] hover:bg-black/5 transition-all"
-                      data-testid="button-cancel-journal"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <button
-                    onClick={handleSubmitJournal}
-                    disabled={(!journalText.trim() && !journalImage) || isSubmitting}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                    data-testid="button-submit-journal"
-                  >
-                    {isSubmitting ? "Saving..." : "Save"}
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <p className="text-[10px] text-[#c0c0c0] text-right">{journalText.length}/2000</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {groupedJournal.length > 0 && (
-          <div className="space-y-3 mt-4">
+          <div className="space-y-3">
             {groupedJournal.map(([date, entries]) => (
               <div key={date}>
                 <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase mb-2 px-1">
@@ -483,8 +340,8 @@ export default function Memories({
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {stats.totalFacts > 0 && (
         <div className="grid grid-cols-2 gap-3" data-testid="section-stats">

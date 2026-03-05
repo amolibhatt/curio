@@ -406,6 +406,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             }}
             gratitudes={gratitudes}
             onSubmitGratitude={handleSubmitGratitude}
+            onAddJournalEntry={handleAddJournalEntry}
           />
         </Route>
         <Route path="/archive">
@@ -440,7 +441,6 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             reactingFacts={reactingFacts}
             anniversaryDate={anniversaryDate}
             journalEntries={journalEntries}
-            onAddJournalEntry={handleAddJournalEntry}
             onDeleteJournalEntry={handleDeleteJournalEntry}
             bookmarks={bookmarks}
             onToggleBookmark={handleToggleBookmark}
@@ -468,6 +468,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             }}
             gratitudes={gratitudes}
             onSubmitGratitude={handleSubmitGratitude}
+            onAddJournalEntry={handleAddJournalEntry}
           />
         </Route>
         <Route component={NotFound} />
