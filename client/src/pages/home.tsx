@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon, CircleDot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -117,6 +117,34 @@ function getGreeting(hour: number): string {
   return "Good evening";
 }
 
+function ProgressRing({ done, total }: { done: number; total: number }) {
+  const radius = 16;
+  const stroke = 3;
+  const circumference = 2 * Math.PI * radius;
+  const progress = total > 0 ? (done / total) * circumference : 0;
+  const allDone = done === total && total > 0;
+
+  return (
+    <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+      <svg width="40" height="40" className="transform -rotate-90">
+        <circle cx="20" cy="20" r={radius} fill="none" stroke="#E8E5E0" strokeWidth={stroke} />
+        <circle
+          cx="20" cy="20" r={radius} fill="none"
+          stroke={allDone ? "#1C1C1C" : "#b0b0b0"}
+          strokeWidth={stroke}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          strokeLinecap="round"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className={`absolute text-[11px] font-bold ${allDone ? 'text-[#1C1C1C]' : 'text-[#909090]'}`}>
+        {done}/{total}
+      </span>
+    </div>
+  );
+}
+
 export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude, onAddJournalEntry }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude>, onAddJournalEntry?: (text: string, imageData?: string) => Promise<void> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -171,6 +199,9 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const myGratitude = todayGratitude?.entries?.[activeUser.id];
   const partnerGratitude = todayGratitude?.entries?.[partnerUser.id];
   const bothGratitudesDone = !!myGratitude && !!partnerGratitude;
+
+  const ritualsDone = (myAnswer ? 1 : 0) + (myGratitude ? 1 : 0) + (myFactToday ? 1 : 0);
+  const ritualsTotal = 3;
 
   const handleSubmitGratitude = async () => {
     if (!gratitudeText.trim() || submittingGratitudeRef.current || !onSubmitGratitude) return;
@@ -232,145 +263,101 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     } catch (err: any) {
       toast({ title: "Couldn't submit", description: err?.message || "Try again.", variant: "destructive" });
     } finally {
-      submittingAnswerRef.current = false;
       setIsSubmittingAnswer(false);
+      submittingAnswerRef.current = false;
     }
   };
 
-  const streak = useMemo(() => {
-    if (!hasPartner) return 0;
-    let currentStreak = 0;
-    const factsByDate = new Map<string, { user1: boolean; user2: boolean }>();
-    for (const f of facts) {
-      const entry = factsByDate.get(f.date) || { user1: false, user2: false };
-      if (f.authorId === activeUser.id) entry.user1 = true;
-      if (f.authorId === partnerUser.id) entry.user2 = true;
-      factsByDate.set(f.date, entry);
-    }
-    let skippedToday = false;
-    const [ty, tm, td] = todayStr.split('-').map(Number);
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(ty, tm - 1, td);
-      d.setDate(d.getDate() - i);
-      const dateStr = getLocalDateStr(d);
-      const entry = factsByDate.get(dateStr);
-      if (entry?.user1 && entry?.user2) {
-        currentStreak++;
-      } else if (i === 0 && !skippedToday) {
-        skippedToday = true;
-        continue;
-      } else {
-        break;
-      }
-    }
-    return currentStreak;
-  }, [facts, activeUser.id, partnerUser.id, hasPartner, todayStr]);
-
-  const prevStreakRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (facts.length === 0) return;
-    if (prevStreakRef.current === null) { prevStreakRef.current = streak; return; }
-    if (streak > prevStreakRef.current && streak > 0) {
-      const duration = 3 * 1000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
-        const particleCount = 50 * (timeLeft / duration);
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#D4C5B9', '#B8A99A', '#C9B8A8', '#E0D5CC', '#A89888', '#C2B2A2', '#DDD0C4'] });
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#D4C5B9', '#B8A99A', '#C9B8A8', '#E0D5CC', '#A89888', '#C2B2A2', '#DDD0C4'] });
-      }, 250);
-      prevStreakRef.current = streak;
-      return () => clearInterval(interval);
-    }
-    prevStreakRef.current = streak;
-  }, [streak, facts.length]);
-
-  useEffect(() => {
-    if (isAdding || isEditing) { document.body.style.overflow = "hidden"; } else { document.body.style.overflow = ""; }
-    return () => { document.body.style.overflow = ""; };
-  }, [isAdding, isEditing]);
-
-  const closeEditorRef = useRef<(force?: boolean) => void>(() => {});
-
-  const closeEditor = (force?: boolean) => {
-    if (!force) {
-      const hasContent = isEditing
-        ? (newFact.trim() !== (myFactToday?.text || '') || [...selectedCategories].sort().join(',') !== [...(myFactToday?.categories || [])].sort().join(','))
-        : (newFact.trim() || selectedCategories.length > 0);
-      if (hasContent && !window.confirm("Discard your changes?")) return;
-    }
-    setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); setShowHeadingMenu(false);
-  };
-
-  closeEditorRef.current = closeEditor;
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && (isAdding || isEditing)) {
-        closeEditorRef.current();
-      }
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isAdding, isEditing]);
-
-  const startEditing = () => {
-    if (myFactToday) {
-      setNewFact(myFactToday.text);
-      setSelectedCategories([...myFactToday.categories]);
-      setEditingFactId(myFactToday.id);
-      setIsEditing(true);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const addingRef = useRef(false);
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFact.trim() || selectedCategories.length === 0 || isSubmitting) return;
+    if (!newFact.trim() || selectedCategories.length === 0 || addingRef.current) return;
+    addingRef.current = true;
     if (navigator.vibrate) navigator.vibrate(50);
     setIsSubmitting(true);
     try {
       if (isEditing && editingFactId) {
         await onEditFact(editingFactId, newFact.trim(), selectedCategories);
-        toast({ title: "Updated", description: "Your discovery has been updated." });
       } else {
         await onAddFact(newFact.trim(), selectedCategories);
-        toast({ title: "Shared!", description: "Your discovery has been added." });
       }
-      closeEditor(true);
+      setNewFact("");
+      setSelectedCategories([]);
+      setIsAdding(false);
+      setIsEditing(false);
+      setEditingFactId(null);
+      confetti({ particleCount: 60, spread: 55, origin: { y: 0.7 }, colors: ['#1C1C1C', '#E0DDD8', '#FAF9F7'] });
     } catch (err: any) {
-      toast({ title: isEditing ? "Couldn't update" : "Couldn't add", description: err?.message || "Something went wrong. Try again.", variant: "destructive" });
+      toast({ title: isEditing ? "Edit failed" : "Couldn't add", description: err?.message || "Try again.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
+      addingRef.current = false;
     }
   };
 
-  const toggleCategory = (category: Category) => {
-    setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]);
+  const toggleCategory = (cat: Category) => {
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
   };
 
-  if (isAdding || isEditing) {
+  const streak = useMemo(() => {
+    if (facts.length === 0) return 0;
+    const uniqueDates = [...new Set(facts.map(f => f.date))].sort((a, b) => b.localeCompare(a));
+    let count = 0;
+    const today = getLocalDateStr();
+    const [ty, tm, td] = today.split('-').map(Number);
+    let checkDate = new Date(ty, tm - 1, td);
+
+    for (const dateStr of uniqueDates) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const diffDays = Math.round((checkDate.getTime() - date.getTime()) / 86400000);
+
+      if (diffDays === 0) {
+        count++;
+        checkDate = new Date(checkDate);
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else if (diffDays === 1 && count === 0) {
+        count++;
+        checkDate = new Date(date);
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return count;
+  }, [facts]);
+
+  const startEditing = () => {
+    if (!myFactToday) return;
+    setNewFact(myFactToday.text);
+    setSelectedCategories([...myFactToday.categories]);
+    setEditingFactId(myFactToday.id);
+    setIsEditing(true);
+    setIsAdding(true);
+  };
+
+  if (isAdding) {
     return (
-      <div className="fixed inset-0 z-[60] bg-[#FAF9F7] flex flex-col animate-in fade-in zoom-in-95 duration-300 overflow-y-auto" role="dialog" aria-modal="true" aria-label={isEditing ? "Edit discovery" : "New discovery"}>
-        <div className="flex items-center justify-between p-4 md:p-6 pt-[max(env(safe-area-inset-top),1rem)] sticky top-0 z-20 bg-[#FAF9F7]/90 backdrop-blur-md">
-          <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase pl-1">
-            {isEditing ? "Edit entry" : "New entry"}
-          </p>
-          <button
-            onClick={() => closeEditor()}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-black/5 text-[#909090] hover:text-black transition-colors"
-            data-testid="button-close-form"
-            aria-label="Close editor"
-          >
-            <X className="w-5 h-5" />
+      <div className="animate-in fade-in duration-500 max-w-2xl mx-auto flex flex-col min-h-[calc(100vh-140px)] pt-2 md:pt-6 pb-4">
+        <div className="flex items-center justify-between mb-8 px-1 md:px-0">
+          <button onClick={() => { setIsAdding(false); setIsEditing(false); setEditingFactId(null); setNewFact(""); setSelectedCategories([]); }} className="text-[#909090] hover:text-[#1C1C1C] transition-colors" data-testid="button-close-add">
+            <X className="w-6 h-6" />
           </button>
+          <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">
+            {isEditing ? 'Edit Discovery' : 'New Discovery'}
+          </p>
+          <div className="w-6" />
         </div>
-        <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-6 md:px-10 pb-6 relative z-10">
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-8 md:space-y-12">
-            <RichEditorSection newFact={newFact} setNewFact={setNewFact} showHeadingMenu={showHeadingMenu} setShowHeadingMenu={setShowHeadingMenu} />
+        <div className="px-1 md:px-0 flex-1 flex flex-col">
+          <form onSubmit={handleAdd} className="flex flex-col flex-1">
+            <RichEditorSection
+              newFact={newFact}
+              setNewFact={setNewFact}
+              showHeadingMenu={showHeadingMenu}
+              setShowHeadingMenu={setShowHeadingMenu}
+            />
             <div className="space-y-8 mt-auto pb-[env(safe-area-inset-bottom,2rem)] animate-in slide-in-from-bottom-8 duration-500 delay-200">
               <div className="space-y-4">
                 <p className="text-[11px] font-bold tracking-[0.2em] text-[#909090] uppercase">Tags</p>
@@ -402,7 +389,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   }
 
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-5 md:gap-6">
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-6 md:gap-8">
 
       <header className="flex-shrink-0 px-1 md:px-0">
         <div className="flex items-center gap-4">
@@ -422,29 +409,241 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               {(() => { const [y, m, d] = todayStr.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); })()}
             </p>
           </div>
-          {streak > 0 && (
-            <div className="flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full shrink-0" data-testid="badge-streak">
-              <Flame className="w-3.5 h-3.5 fill-white" />
-              <span className="text-[11px] font-bold">{streak}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {streak > 0 && (
+              <div className="flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full" data-testid="badge-streak">
+                <Flame className="w-3.5 h-3.5 fill-white" />
+                <span className="text-[11px] font-bold">{streak}</span>
+              </div>
+            )}
+            <ProgressRing done={ritualsDone} total={ritualsTotal} />
+          </div>
         </div>
       </header>
 
-      <div className="px-1 md:px-0">
+      <section className="px-1 md:px-0" data-testid="section-daily-ritual">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <p className="text-[10px] font-bold tracking-[0.2em] text-[#b0b0b0] uppercase">Your daily ritual</p>
+          {ritualsDone >= 2 && (
+            <div className="h-px flex-1 bg-gradient-to-r from-black/5 to-transparent" />
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <div className={`rounded-2xl border transition-colors ${
+            bothAnswered ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
+          }`} data-testid="card-daily-question">
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${myAnswer ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+                <MessageCircle className={`w-4 h-4 ${myAnswer ? 'text-white' : 'text-[#909090]'}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Question</p>
+                <p className="text-[11px] text-[#b0b0b0] mt-0.5">{dailyQuestion.category}</p>
+              </div>
+              {bothAnswered && (
+                <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
+              )}
+              {myAnswer && !bothAnswered && (
+                <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
+              )}
+            </div>
+
+            <div className="px-5 pb-5">
+              <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed mb-4" data-testid="text-daily-question">
+                {dailyQuestion.text}
+              </p>
+
+              {!myAnswer ? (
+                <div className="space-y-3">
+                  <textarea
+                    ref={answerTextareaRef}
+                    value={answerText}
+                    onChange={(e) => {
+                      setAnswerText(e.target.value);
+                      const el = e.target;
+                      el.style.height = 'auto';
+                      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                    }}
+                    placeholder="Type your answer..."
+                    className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
+                    rows={2}
+                    data-testid="input-daily-answer"
+                  />
+                  <div className="flex items-center justify-end">
+                    <button
+                      onClick={handleSubmitDailyAnswer}
+                      disabled={!answerText.trim() || isSubmittingAnswer}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                      data-testid="button-submit-answer"
+                    >
+                      {isSubmittingAnswer ? "Sending..." : "Answer"}
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : bothAnswered ? (
+                <div className="space-y-2.5 animate-in fade-in duration-500">
+                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
+                  </div>
+                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
+                  </div>
+                  {onQAReact && todayAnswer && (
+                    <div className="flex items-center gap-1 pt-1">
+                      {([
+                        { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                        { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                        { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                        { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                      ]).map(({ type, Icon, active, hover, fill }) => (
+                        <button
+                          key={type}
+                          onClick={() => onQAReact(todayAnswer.id, type)}
+                          className={`w-9 h-9 flex items-center justify-center rounded-full text-[10px] transition-all active:scale-95 ${
+                            myQAReaction === type ? active : `text-[#b0b0b0] ${hover}`
+                          }`}
+                          data-testid={`button-qa-react-${type}`}
+                        >
+                          <Icon className={`w-4 h-4 ${fill && myQAReaction === type ? 'fill-white' : ''}`} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                      <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
+                      <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
+                    </div>
+                    <p className="text-[10px] text-white/60">Answered</p>
+                  </div>
+                  <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
+                    <div className="flex items-center gap-2">
+                      <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                      <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : "Partner"}</span>
+                      <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
+                    </div>
+                    <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? "Waiting..." : "Invite to join"}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {onSubmitGratitude && (
+            <div className={`rounded-2xl border transition-colors ${
+              bothGratitudesDone ? 'bg-rose-50/50 border-rose-100' : 'bg-white border-black/5'
+            }`} data-testid="card-daily-gratitude">
+              <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-rose-50 border border-rose-100'}`}>
+                  <HandHeart className={`w-4 h-4 ${myGratitude ? 'text-white' : 'text-rose-300'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Gratitude</p>
+                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
+                </div>
+                {bothGratitudesDone && (
+                  <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
+                )}
+                {myGratitude && !bothGratitudesDone && (
+                  <span className="text-[9px] font-bold tracking-wider text-rose-400 bg-rose-50 px-2.5 py-1 rounded-full uppercase shrink-0 border border-rose-100">Sent</span>
+                )}
+              </div>
+
+              <div className="px-5 pb-5">
+                {!myGratitude ? (
+                  <div className="space-y-3">
+                    <textarea
+                      ref={gratitudeTextareaRef}
+                      value={gratitudeText}
+                      onChange={(e) => {
+                        setGratitudeText(e.target.value);
+                        const el = e.target;
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                      }}
+                      placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
+                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-100 font-serif leading-relaxed border border-black/5"
+                      rows={2}
+                      data-testid="input-daily-gratitude"
+                    />
+                    <div className="flex items-center justify-end">
+                      <button
+                        onClick={handleSubmitGratitude}
+                        disabled={!gratitudeText.trim() || isSubmittingGratitude}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        data-testid="button-submit-gratitude"
+                      >
+                        {isSubmittingGratitude ? "Sending..." : "Share"}
+                        <Heart className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : bothGratitudesDone ? (
+                  <div className="space-y-2.5 animate-in fade-in duration-500">
+                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{activeUser.name}</p>
+                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
+                    </div>
+                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{partnerUser.name}</p>
+                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
+                        <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
+                      </div>
+                      <p className="text-[10px] text-white/60">Shared</p>
+                    </div>
+                    <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
+                      <div className="flex items-center gap-2">
+                        <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                        <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : 'Partner'}</span>
+                        <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
+                      </div>
+                      <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? 'Waiting...' : 'Invite to join'}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="px-1 md:px-0" data-testid="section-discovery">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <p className="text-[10px] font-bold tracking-[0.2em] text-[#b0b0b0] uppercase">Share & Learn</p>
+        </div>
+
         <div className={`rounded-2xl border transition-colors ${
           myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
           <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-            <div className="w-9 h-9 rounded-xl bg-[#1C1C1C] flex items-center justify-center shrink-0">
-              <Sparkles className="w-4.5 h-4.5 text-white" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+              <Sparkles className={`w-4 h-4 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Discovery</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Discovery</p>
               <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
             </div>
             {myFactToday && partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
+              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Both shared</span>
+            )}
+            {myFactToday && !partnerFactToday && (
+              <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
             )}
           </div>
 
@@ -503,208 +702,23 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             )}
           </div>
         </div>
-      </div>
-
-      <div className="px-1 md:px-0">
-        <div className={`rounded-2xl border transition-colors ${
-          bothAnswered ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
-        }`} data-testid="card-daily-question">
-          <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-            <div className="w-9 h-9 rounded-xl bg-[#1C1C1C] flex items-center justify-center shrink-0">
-              <MessageCircle className="w-4.5 h-4.5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Question</p>
-              <p className="text-[11px] text-[#b0b0b0] mt-0.5">{dailyQuestion.category}</p>
-            </div>
-            {bothAnswered && (
-              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
-            )}
-          </div>
-
-          <div className="px-5 pb-5">
-            <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed mb-4" data-testid="text-daily-question">
-              {dailyQuestion.text}
-            </p>
-
-            {!myAnswer ? (
-              <div className="space-y-3">
-                <textarea
-                  ref={answerTextareaRef}
-                  value={answerText}
-                  onChange={(e) => {
-                    setAnswerText(e.target.value);
-                    const el = e.target;
-                    el.style.height = 'auto';
-                    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-                  }}
-                  placeholder="Type your answer..."
-                  className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
-                  rows={2}
-                  data-testid="input-daily-answer"
-                />
-                <div className="flex items-center justify-end">
-                  <button
-                    onClick={handleSubmitDailyAnswer}
-                    disabled={!answerText.trim() || isSubmittingAnswer}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                    data-testid="button-submit-answer"
-                  >
-                    {isSubmittingAnswer ? "Sending..." : "Answer"}
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ) : bothAnswered ? (
-              <div className="space-y-2.5 animate-in fade-in duration-500">
-                <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
-                  <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
-                </div>
-                <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
-                  <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
-                </div>
-                {onQAReact && todayAnswer && (
-                  <div className="flex items-center gap-1 pt-1">
-                    {([
-                      { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
-                      { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                      { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
-                      { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
-                    ]).map(({ type, Icon, active, hover, fill }) => (
-                      <button
-                        key={type}
-                        onClick={() => onQAReact(todayAnswer.id, type)}
-                        className={`w-9 h-9 flex items-center justify-center rounded-full text-[10px] transition-all active:scale-95 ${
-                          myQAReaction === type ? active : `text-[#b0b0b0] ${hover}`
-                        }`}
-                        data-testid={`button-qa-react-${type}`}
-                      >
-                        <Icon className={`w-4 h-4 ${fill && myQAReaction === type ? 'fill-white' : ''}`} />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                    <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
-                    <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
-                  </div>
-                  <p className="text-[10px] text-white/60">Answered</p>
-                </div>
-                <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
-                  <div className="flex items-center gap-2">
-                    <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                    <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : "Partner"}</span>
-                    <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
-                  </div>
-                  <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? "Waiting..." : "Invite to join"}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {onSubmitGratitude && (
-        <div className="px-1 md:px-0">
-          <div className={`rounded-2xl border transition-colors ${
-            bothGratitudesDone ? 'bg-rose-50/50 border-rose-100' : 'bg-white border-black/5'
-          }`} data-testid="card-daily-gratitude">
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                <HandHeart className="w-4.5 h-4.5 text-rose-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Gratitude</p>
-                <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
-              </div>
-              {bothGratitudesDone && (
-                <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
-              )}
-            </div>
-
-            <div className="px-5 pb-5">
-              {!myGratitude ? (
-                <div className="space-y-3">
-                  <textarea
-                    ref={gratitudeTextareaRef}
-                    value={gratitudeText}
-                    onChange={(e) => {
-                      setGratitudeText(e.target.value);
-                      const el = e.target;
-                      el.style.height = 'auto';
-                      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-                    }}
-                    placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
-                    className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-100 font-serif leading-relaxed border border-black/5"
-                    rows={2}
-                    data-testid="input-daily-gratitude"
-                  />
-                  <div className="flex items-center justify-end">
-                    <button
-                      onClick={handleSubmitGratitude}
-                      disabled={!gratitudeText.trim() || isSubmittingGratitude}
-                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                      data-testid="button-submit-gratitude"
-                    >
-                      {isSubmittingGratitude ? "Sending..." : "Share"}
-                      <Heart className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ) : bothGratitudesDone ? (
-                <div className="space-y-2.5 animate-in fade-in duration-500">
-                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
-                    <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{activeUser.name}</p>
-                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
-                  </div>
-                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
-                    <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{partnerUser.name}</p>
-                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                      <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
-                      <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
-                    </div>
-                    <p className="text-[10px] text-white/60">Shared</p>
-                  </div>
-                  <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
-                    <div className="flex items-center gap-2">
-                      <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                      <span className="text-[11px] font-semibold text-[#737373] truncate">{partnerUser.name}</span>
-                      <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
-                    </div>
-                    <p className="text-[10px] text-[#b0b0b0]">Waiting...</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      </section>
 
       {onAddJournalEntry && (
-        <div className="px-1 md:px-0">
+        <section className="px-1 md:px-0" data-testid="section-capture">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[#b0b0b0] uppercase">Capture</p>
+          </div>
+
           <div className="rounded-2xl border border-black/5 bg-white" data-testid="card-capture-memory">
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
-                  <PenLine className="w-4.5 h-4.5 text-[#8B7E74]" />
+                <div className="w-8 h-8 rounded-lg bg-[#FAF9F7] border border-black/5 flex items-center justify-center shrink-0">
+                  <PenLine className="w-4 h-4 text-[#909090]" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Capture a Memory</p>
-                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">{format(new Date(), 'EEEE, MMMM d')}</p>
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Memory</p>
+                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">A moment worth remembering</p>
                 </div>
               </div>
               {!showJournalComposer && (
@@ -804,7 +818,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
