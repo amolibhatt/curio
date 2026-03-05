@@ -559,7 +559,7 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
   }
 }
 
-const MAX_GRATITUDE_LENGTH = 1000;
+const MAX_GRATITUDE_LENGTH = 5000;
 
 export async function submitGratitude(
   pairingId: string,
