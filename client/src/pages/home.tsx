@@ -435,31 +435,28 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           <div className={`rounded-2xl border transition-all duration-500 ${
             bothAnswered ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
           }`} data-testid="card-daily-question">
-            <div className="px-5 pt-5 pb-4">
-              <div className="flex items-start gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myAnswer ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
-                  <MessageCircle className={`w-5 h-5 ${myAnswer ? 'text-white' : 'text-[#909090]'}`} />
-                </div>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Today's Question</p>
-                    <span className="text-[10px] text-[#c0c0c0]">{dailyQuestion.category}</span>
-                  </div>
-                </div>
-                {bothAnswered && (
-                  <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
-                )}
-                {myAnswer && !bothAnswered && (
-                  <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
-                )}
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myAnswer ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+                <MessageCircle className={`w-4.5 h-4.5 ${myAnswer ? 'text-white' : 'text-[#909090]'}`} />
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Today's Question</p>
+                <p className="text-[11px] text-[#b0b0b0] mt-0.5">{dailyQuestion.category}</p>
+              </div>
+              {bothAnswered && (
+                <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
+              )}
+              {myAnswer && !bothAnswered && (
+                <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
+              )}
+            </div>
 
-              <p className="font-serif text-lg md:text-xl text-[#1C1C1C] leading-relaxed mb-5 pl-[52px]" data-testid="text-daily-question">
+            <div className="px-5 pb-5">
+              <p className="font-serif text-[1.05rem] md:text-lg text-[#1C1C1C] leading-relaxed mb-4" data-testid="text-daily-question">
                 {dailyQuestion.text}
               </p>
 
-              <div className="pl-[52px]">
-                {!myAnswer ? (
+              {!myAnswer ? (
                   <div className="space-y-3">
                     <textarea
                       ref={answerTextareaRef}
@@ -539,7 +536,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                     </div>
                   </div>
                 )}
-              </div>
             </div>
           </div>
 
@@ -547,20 +543,23 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             <div className={`rounded-2xl border transition-all duration-500 ${
               bothGratitudesDone ? 'bg-rose-50/40 border-rose-100/80' : 'bg-white border-black/5'
             }`} data-testid="card-daily-gratitude">
-              <div className="px-5 pt-4 pb-4">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-rose-50'}`}>
-                    <HandHeart className={`w-3.5 h-3.5 ${myGratitude ? 'text-white' : 'text-rose-300'}`} />
-                  </div>
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase flex-1">Gratitude</p>
-                  {bothGratitudesDone && (
-                    <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
-                  )}
-                  {myGratitude && !bothGratitudesDone && (
-                    <span className="text-[9px] font-bold tracking-wider text-rose-400 bg-rose-50 px-2.5 py-1 rounded-full uppercase shrink-0 border border-rose-100">Sent</span>
-                  )}
+              <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-rose-50 border border-rose-100'}`}>
+                  <HandHeart className={`w-4.5 h-4.5 ${myGratitude ? 'text-white' : 'text-rose-300'}`} />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Gratitude</p>
+                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
+                </div>
+                {bothGratitudesDone && (
+                  <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
+                )}
+                {myGratitude && !bothGratitudesDone && (
+                  <span className="text-[9px] font-bold tracking-wider text-rose-400 bg-rose-50 px-2.5 py-1 rounded-full uppercase shrink-0 border border-rose-100">Sent</span>
+                )}
+              </div>
 
+              <div className="px-5 pb-5">
                 {!myGratitude ? (
                   <div className="space-y-3">
                     <textarea
@@ -635,8 +634,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
           <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
-              <Sparkles className={`w-4 h-4 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+              <Sparkles className={`w-4.5 h-4.5 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Discovery</p>
@@ -716,8 +715,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           <div className="rounded-2xl border border-dashed border-black/10 bg-[#FDFCFB]" data-testid="card-capture-memory">
             <div className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#F5F3F0] flex items-center justify-center shrink-0">
-                  <PenLine className="w-4 h-4 text-[#b0b0b0]" />
+                <div className="w-9 h-9 rounded-xl bg-[#F5F3F0] border border-black/5 flex items-center justify-center shrink-0">
+                  <PenLine className="w-4.5 h-4.5 text-[#b0b0b0]" />
                 </div>
                 <p className="text-[13px] text-[#909090] font-serif italic">A moment worth remembering...</p>
               </div>
