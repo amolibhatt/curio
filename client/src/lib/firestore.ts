@@ -11,6 +11,7 @@ import {
   addDoc,
   runTransaction,
   limit,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { User, Fact, AuthState, ReactionType, Category, DailyAnswer, JournalEntry } from "./mock-data";
@@ -631,4 +632,12 @@ export async function addBookmark(userId: string, itemType: 'fact' | 'qa', itemI
 
 export async function removeBookmark(userId: string, bookmarkId: string): Promise<void> {
   await deleteDoc(doc(db, "users", userId, "bookmarks", bookmarkId));
+}
+
+export function watchPairing(pairingId: string, onChange: (pairing: { id: string; user1Id: string; user2Id: string | null }) => void): () => void {
+  return onSnapshot(doc(db, "pairings", pairingId), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    onChange({ id: snap.id, user1Id: data.user1Id, user2Id: data.user2Id || null });
+  });
 }

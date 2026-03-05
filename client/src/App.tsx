@@ -566,6 +566,19 @@ function AppContent() {
     return () => clearInterval(interval);
   }, [authState, refreshAuth]);
 
+  useEffect(() => {
+    if (!authState?.pairing?.id) return;
+    if (authState.partner) return;
+    const unsubscribe = firestoreOps.watchPairing(authState.pairing.id, (pairing) => {
+      const myId = authState.user.id;
+      const partnerId = pairing.user1Id === myId ? pairing.user2Id : pairing.user1Id;
+      if (partnerId) {
+        refreshAuth();
+      }
+    });
+    return () => unsubscribe();
+  }, [authState?.pairing?.id, authState?.partner, authState?.user?.id, refreshAuth]);
+
   const handleLogin = async (name: string) => {
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2) {
