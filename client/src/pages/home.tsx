@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Fact, Category, User, DailyAnswer, ReactionType } from "@/lib/mock-data";
+import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, Rewind } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, Rewind, HandHeart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -115,7 +115,7 @@ function getGreeting(hour: number): string {
   return "Good evening";
 }
 
-export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void }) {
+export default function Home({ facts, onAddFact, onEditFact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFactId, setEditingFactId] = useState<string | null>(null);
@@ -125,6 +125,10 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const submittingAnswerRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [gratitudeText, setGratitudeText] = useState("");
+  const [isSubmittingGratitude, setIsSubmittingGratitude] = useState(false);
+  const submittingGratitudeRef = useRef(false);
+  const gratitudeTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -196,6 +200,28 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
     const seed = todayStr.split('-').reduce((a, b) => a + parseInt(b), 0);
     return candidates[seed % candidates.length];
   }, [facts, dailyAnswers, todayStr, hasPartner]);
+
+  const todayGratitude = gratitudes.find(g => g.date === todayStr);
+  const myGratitude = todayGratitude?.entries?.[activeUser.id];
+  const partnerGratitude = todayGratitude?.entries?.[partnerUser.id];
+  const bothGratitudesDone = !!myGratitude && !!partnerGratitude;
+
+  const handleSubmitGratitude = async () => {
+    if (!gratitudeText.trim() || submittingGratitudeRef.current || !onSubmitGratitude) return;
+    submittingGratitudeRef.current = true;
+    if (navigator.vibrate) navigator.vibrate(50);
+    setIsSubmittingGratitude(true);
+    try {
+      await onSubmitGratitude(gratitudeText.trim());
+      setGratitudeText("");
+      if (gratitudeTextareaRef.current) gratitudeTextareaRef.current.style.height = '';
+    } catch (err: any) {
+      toast({ title: "Couldn't submit", description: err?.message || "Try again.", variant: "destructive" });
+    } finally {
+      setIsSubmittingGratitude(false);
+      submittingGratitudeRef.current = false;
+    }
+  };
 
   const handleSubmitDailyAnswer = async () => {
     if (!answerText.trim() || submittingAnswerRef.current) return;
@@ -589,6 +615,91 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
           </div>
         </div>
       </div>
+
+      {hasPartner && onSubmitGratitude && (
+        <div className="px-1 md:px-0">
+          <div className={`rounded-2xl border transition-colors ${
+            bothGratitudesDone ? 'bg-rose-50/50 border-rose-100' : 'bg-white border-black/5'
+          }`} data-testid="card-daily-gratitude">
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
+                <HandHeart className="w-4.5 h-4.5 text-rose-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Gratitude</p>
+                <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {partnerUser.name}</p>
+              </div>
+              {bothGratitudesDone && (
+                <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
+              )}
+            </div>
+
+            <div className="px-5 pb-5">
+              {!myGratitude ? (
+                <div className="space-y-3">
+                  <textarea
+                    ref={gratitudeTextareaRef}
+                    value={gratitudeText}
+                    onChange={(e) => {
+                      setGratitudeText(e.target.value);
+                      const el = e.target;
+                      el.style.height = 'auto';
+                      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                    }}
+                    placeholder={`Today I appreciate ${partnerUser.name} for...`}
+                    maxLength={1000}
+                    className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-100 font-serif leading-relaxed border border-black/5"
+                    rows={2}
+                    data-testid="input-daily-gratitude"
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-[#c0c0c0]">{gratitudeText.length}/1000</p>
+                    <button
+                      onClick={handleSubmitGratitude}
+                      disabled={!gratitudeText.trim() || isSubmittingGratitude}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                      data-testid="button-submit-gratitude"
+                    >
+                      {isSubmittingGratitude ? "Sending..." : "Share"}
+                      <Heart className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : bothGratitudesDone ? (
+                <div className="space-y-2.5 animate-in fade-in duration-500">
+                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{activeUser.name}</p>
+                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
+                  </div>
+                  <div className="rounded-xl bg-white/80 px-4 py-3 border border-rose-100">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase mb-1">{partnerUser.name}</p>
+                    <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                      <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
+                      <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
+                    </div>
+                    <p className="text-[10px] text-white/60">Shared</p>
+                  </div>
+                  <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
+                    <div className="flex items-center gap-2">
+                      <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                      <span className="text-[11px] font-semibold text-[#737373] truncate">{partnerUser.name}</span>
+                      <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
+                    </div>
+                    <p className="text-[10px] text-[#b0b0b0]">Waiting...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {throwback && (
         <div className="px-1 md:px-0" data-testid="card-throwback">

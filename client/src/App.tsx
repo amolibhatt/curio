@@ -17,7 +17,7 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import * as firestoreOps from "./lib/firestore";
 
 import { getLocalDateStr } from "./lib/date-utils";
-import type { AuthState, Fact, ReactionType, Category, DailyAnswer, JournalEntry, Bookmark } from "./lib/mock-data";
+import type { AuthState, Fact, ReactionType, Category, DailyAnswer, JournalEntry, Bookmark, DailyGratitude } from "./lib/mock-data";
 
 function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const { toast } = useToast();
@@ -26,6 +26,7 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [reactingFacts, setReactingFacts] = useState<Set<string>>(new Set());
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [gratitudes, setGratitudes] = useState<DailyGratitude[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const pairingIdRef = useRef(auth.pairing?.id);
   pairingIdRef.current = auth.pairing?.id;
@@ -69,6 +70,10 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
       firestoreOps.getJournalEntries(pid)
         .then(data => setJournalEntries(data))
         .catch(err => console.warn("[Curio] Journal entries fetch failed:", err?.message));
+
+      firestoreOps.getAllGratitudes(pid)
+        .then(data => setGratitudes(data))
+        .catch(err => console.warn("[Curio] Gratitudes fetch failed:", err?.message));
 
       if (partnerId && hasLoadedOnce.current) {
         const newPartnerFacts = factsData.filter(f => f.authorId === partnerId).length;
@@ -324,6 +329,23 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
     setJournalEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
+  const handleSubmitGratitude = async (text: string): Promise<DailyGratitude> => {
+    if (!auth.pairing) throw new Error("No pairing");
+    const date = getLocalDateStr();
+    const result = await firestoreOps.submitGratitude(auth.pairing.id, date, auth.user.id, text);
+    setGratitudes(prev => {
+      const idx = prev.findIndex(g => g.id === result.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = result;
+        return next;
+      }
+      return [result, ...prev];
+    });
+    fetchFacts().catch(() => {});
+    return result;
+  };
+
   const partner = auth.partner || {
     id: "0",
     name: "Your partner",
@@ -382,6 +404,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             onQAReact={(answerId, reaction) => {
               if (reaction) handleQAReact(answerId, reaction as ReactionType);
             }}
+            gratitudes={gratitudes}
+            onSubmitGratitude={handleSubmitGratitude}
           />
         </Route>
         <Route path="/archive">
@@ -442,6 +466,8 @@ function AuthenticatedApp({ auth }: { auth: AuthState }) {
             onQAReact={(answerId, reaction) => {
               if (reaction) handleQAReact(answerId, reaction as ReactionType);
             }}
+            gratitudes={gratitudes}
+            onSubmitGratitude={handleSubmitGratitude}
           />
         </Route>
         <Route component={NotFound} />

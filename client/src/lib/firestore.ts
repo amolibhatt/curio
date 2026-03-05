@@ -559,6 +559,58 @@ export async function getAuthState(uid: string): Promise<AuthState | null> {
   }
 }
 
+const MAX_GRATITUDE_LENGTH = 1000;
+
+export async function submitGratitude(
+  pairingId: string,
+  date: string,
+  userId: string,
+  text: string
+): Promise<import('./mock-data').DailyGratitude> {
+  const safeText = text.slice(0, MAX_GRATITUDE_LENGTH);
+  if (!safeText.trim()) throw new Error("Gratitude text is required");
+
+  const docId = `${pairingId}_${date}`;
+  const ref = doc(db, "dailyGratitudes", docId);
+
+  try {
+    let finalEntries: Record<string, string> = {};
+
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(ref);
+
+      if (snap.exists()) {
+        const existingData = snap.data();
+        finalEntries = { ...existingData.entries, [userId]: safeText };
+        transaction.update(ref, { entries: finalEntries });
+      } else {
+        finalEntries = { [userId]: safeText };
+        transaction.set(ref, {
+          pairingId,
+          date,
+          entries: finalEntries,
+        });
+      }
+    });
+
+    return { id: docId, pairingId, date, entries: finalEntries };
+  } catch (err: any) {
+    console.error("[Curio] submitGratitude failed:", err?.code, err?.message);
+    throw err;
+  }
+}
+
+export async function getAllGratitudes(pairingId: string): Promise<import('./mock-data').DailyGratitude[]> {
+  const q = query(collection(db, "dailyGratitudes"), where("pairingId", "==", pairingId));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map(d => {
+      const data = d.data();
+      return { id: d.id, pairingId: data.pairingId, date: data.date, entries: data.entries || {} } as import('./mock-data').DailyGratitude;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
 export async function getBookmarks(userId: string): Promise<import('./mock-data').Bookmark[]> {
   const snap = await getDocs(collection(db, "users", userId, "bookmarks"));
   return snap.docs.map(d => {

@@ -37,6 +37,13 @@ export type JournalEntry = {
   imageData?: string;
 };
 
+export type DailyGratitude = {
+  id: string;
+  pairingId: string;
+  date: string;
+  entries: Record<string, string>;
+};
+
 export type Bookmark = {
   id: string;
   itemType: 'fact' | 'qa';

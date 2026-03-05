@@ -17,6 +17,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - `facts` — text, authorId, pairingId, date, categories[]
   - `facts/{id}/reactions` — subcollection, doc ID = userId, field: type
 - `dailyAnswers` — doc ID = `{pairingId}_{date}`, fields: pairingId, date, questionText, category, answers (map of userId → answer text)
+- `dailyGratitudes` — doc ID = `{pairingId}_{date}`, fields: pairingId, date, entries (map of userId → gratitude text, max 1000 chars)
 - `journalEntries` — text (up to 2000 chars), imageData (base64, up to ~800KB), authorId, pairingId, date
 - `users/{userId}/bookmarks` — subcollection, fields: itemType ('fact' | 'qa'), itemId, savedAt (ISO string)
 
@@ -28,6 +29,7 @@ A private PWA where two partners share one daily discovery each, maintain a stre
 - **Streak Counter**: Counts consecutive days where both users posted
 - **Reactions**: 6 reaction types (mind-blown, fascinating, heart, laugh, thinking, sad) with optimistic UI + burst animations
 - **Daily Q&A**: Each day a categorized question (Us, Deep, Memory Lane, Dream Big, Hot Takes, Hypothetical, Intimacy, Gratitude, Play, Before Us) is shown; both partners answer independently; answers are hidden until both submit; full Q&A history in archive
+- **Daily Gratitude**: Each partner writes one thing they appreciate about the other daily; blind reveal (hidden until both submit); rose-themed card on home page between Q&A and throwback; stored in `dailyGratitudes` with same transaction pattern as Q&A; `useRef` sync guard against double-submit
 - **Bookmarks/Saved**: Users can bookmark facts and Q&A answers; bookmarks are per-user in Firestore subcollection; "Saved" filter toggle in archive; "Saved" section in Memories page; optimistic UI with rollback
 - **Rich Text Editor**: WYSIWYG contentEditable editor with B/I/U/headings, markdown storage
 - **Edit Entry**: Can edit today's entry after posting
