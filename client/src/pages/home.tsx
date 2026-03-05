@@ -191,8 +191,8 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
   const partnerGratitude = todayGratitude?.entries?.[partnerUser.id];
   const bothGratitudesDone = !!myGratitude && !!partnerGratitude;
 
-  const ritualsDone = (myAnswer ? 1 : 0) + (myGratitude ? 1 : 0) + (myFactToday ? 1 : 0);
-  const ritualsTotal = 3;
+  const ritualsDone = (myAnswer ? 1 : 0) + (myFactToday ? 1 : 0);
+  const ritualsTotal = 2;
 
   const handleSubmitGratitude = async () => {
     if (!gratitudeText.trim() || submittingGratitudeRef.current || !onSubmitGratitude) return;
@@ -419,7 +419,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-serif text-[15px] leading-snug">You showed up for each other today</p>
-              <p className="text-white/50 text-[11px] mt-0.5">All three rituals complete</p>
+              <p className="text-white/50 text-[11px] mt-0.5">Both rituals complete</p>
             </div>
             <RitualDots done={ritualsDone} total={ritualsTotal} />
           </div>
