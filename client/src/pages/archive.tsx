@@ -684,157 +684,139 @@ export default function Archive({
           )}
         </div>
       ) : (
-        <div className="flex-1 flex flex-col">
-          {sortedDates.length > 0 && (
-            <div className="relative">
-              <div className="absolute left-[15px] md:left-[19px] top-8 bottom-0 w-px bg-black/[0.06]" />
+        <div className="space-y-6 flex-1 flex flex-col">
+          {sortedDates.length > 0 ? (
+            sortedDates.map((date, dateIdx) => {
+              const dateFacts = groupedFacts[date];
+              const allFactsForDate = facts.filter(f => f.date === date);
+              const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
+              const dateLabel = date === todayStr
+                ? <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                : (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })();
+              return (
+                <div key={date}>
+                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase mb-3 px-1">
+                    {dateLabel}
+                  </p>
+                  <div className="space-y-3">
+                    {dateFacts.map((fact, index) => {
+                      const isMe = fact.authorId === activeUser.id;
+                      const author = isMe ? activeUser : partnerUser;
+                      const isAboutUs = fact.categories.includes('Us');
+                      const isHidden = !isMe && !iPostedThisDate;
+                      const myReaction = fact.reactions?.[activeUser.id];
 
-              {sortedDates.map((date, dateIdx) => {
-                const dateFacts = groupedFacts[date];
-                const allFactsForDate = facts.filter(f => f.date === date);
-                const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
-                return (
-                  <div key={date} className="relative mb-8 last:mb-0">
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <div className={`w-[9px] h-[9px] md:w-[11px] md:h-[11px] rounded-full shrink-0 ml-[11px] md:ml-[14px] ${date === todayStr ? 'bg-[#1C1C1C]' : 'bg-[#c0c0c0]'}`} />
-                      <h2 className="text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
-                        {date === todayStr ? (
-                          <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
-                        ) : (
-                          (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()
-                        )}
-                      </h2>
-                    </div>
-                    
-                    <div className="pl-10 md:pl-12 space-y-4">
-                      {dateFacts.map((fact, index) => {
-                        const isMe = fact.authorId === activeUser.id;
-                        const author = isMe ? activeUser : partnerUser;
-                        const isAboutUs = fact.categories.includes('Us');
-                        const isHidden = !isMe && !iPostedThisDate;
-                        const myReaction = fact.reactions?.[activeUser.id];
-                        
-                        return (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: Math.min(index * 0.1 + dateIdx * 0.05, 0.6) }}
-                            key={fact.id} 
-                            className={`group ${isHidden ? 'opacity-50' : ''}`}
-                          >
-                            {isHidden ? (
-                              <div className="py-4 px-4 rounded-xl text-center relative overflow-hidden">
-                                {date === todayStr && (
-                                  <>
-                                    <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
-                                    <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
-                                  </>
-                                )}
-                                <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
-                                  {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>}
-                                  {date === todayStr ? "Sealed until you share yours" : "You didn\u2019t share that day"}
-                                  {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>}
-                                </p>
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: Math.min(index * 0.08 + dateIdx * 0.04, 0.6) }}
+                          key={fact.id}
+                        >
+                          {isHidden ? (
+                            <div className="rounded-2xl bg-[#FAF9F7] border border-dashed border-black/10 py-5 px-4 text-center">
+                              <p className="text-sm font-serif italic text-black/30 flex items-center justify-center gap-2">
+                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>}
+                                {date === todayStr ? "Sealed until you share yours" : "You didn\u2019t share that day"}
+                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className={`rounded-2xl overflow-hidden ${isAboutUs ? 'bg-rose-50/30' : 'bg-white'} border border-black/5`}>
+                              <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+                                <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full" />
+                                <span className="text-[10px] font-bold tracking-[0.12em] text-[#909090] uppercase">{author.name}</span>
+                                <div className="flex items-center gap-1 ml-auto">
+                                  {fact.categories.map((category) => (
+                                    <div key={category} className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
+                                      {getCategoryIcon(category)}
+                                      {category}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            ) : (
-                              <div className={`rounded-2xl transition-all duration-300 ${isAboutUs ? 'bg-rose-50/30' : 'bg-white'} border border-black/5`}>
-                                <div className="px-4 pt-4 pb-1 flex items-center gap-2">
-                                  <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full" />
-                                  <span className="text-[10px] font-bold tracking-[0.12em] text-[#909090] uppercase">{author.name}</span>
-                                  <div className="flex items-center gap-1 ml-auto">
-                                    {fact.categories.map((category) => (
-                                      <div key={category} className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
-                                        {getCategoryIcon(category)}
-                                        {category}
+
+                              <div className="px-5 pt-2 pb-3">
+                                <div className={`font-serif leading-relaxed text-[15px] md:text-base ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                                  {formatText(fact.text)}
+                                </div>
+                              </div>
+
+                              <div className="px-5 pb-3 flex items-center justify-between">
+                                <div className="flex items-center gap-0.5">
+                                  {onToggleBookmark && (
+                                    <button
+                                      onClick={() => onToggleBookmark('fact', fact.id)}
+                                      className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedFactIds.has(fact.id) ? 'text-[#1C1C1C]' : 'text-[#d0d0d0] hover:text-[#909090]'}`}
+                                      aria-label={bookmarkedFactIds.has(fact.id) ? "Remove bookmark" : "Bookmark"}
+                                      data-testid={`button-bookmark-fact-${fact.id}`}
+                                    >
+                                      {bookmarkedFactIds.has(fact.id) ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+                                    </button>
+                                  )}
+                                </div>
+
+                                {!isMe && (
+                                  <div className="flex items-center gap-0.5">
+                                    {([
+                                      { type: 'mind-blown' as const, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                                      { type: 'fascinating' as const, Icon: Sparkles, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                                      { type: 'heart' as const, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                                      { type: 'laugh' as const, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                                      { type: 'thinking' as const, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                                      { type: 'sad' as const, Icon: Frown, active: 'bg-indigo-100 text-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
+                                    ]).map(({ type, Icon, active, hover, fill }) => (
+                                      <div key={type} className="relative">
+                                        <button
+                                          onClick={() => handleReact(fact.id, type)}
+                                          aria-label={`React ${type}`}
+                                          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
+                                            myReaction === type ? active : `text-[#c0c0c0] ${hover}`
+                                          }`}
+                                          data-testid={`button-react-${type}-${fact.id}`}
+                                        >
+                                          <Icon className={`w-3.5 h-3.5 ${fill && myReaction === type ? 'fill-white' : ''}`} />
+                                        </button>
+                                        <AnimatePresence>
+                                          {burstReaction?.id === fact.id && burstReaction?.type === type && (
+                                            <motion.div
+                                              initial={{ opacity: 1, y: 0, scale: 1 }}
+                                              animate={{ opacity: 0, y: -30, scale: 1.4 }}
+                                              exit={{ opacity: 0 }}
+                                              transition={{ duration: 0.7, ease: "easeOut" }}
+                                              className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                            >
+                                              <Icon className={`w-5 h-5 ${type === 'heart' ? 'text-rose-500 fill-rose-500' : type === 'laugh' ? 'text-amber-500' : type === 'thinking' ? 'text-blue-500' : type === 'sad' ? 'text-indigo-500' : 'text-[#1C1C1C]'}`} />
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
                                       </div>
                                     ))}
                                   </div>
-                                </div>
-                                
-                                <div className="px-4 pt-2 pb-3">
-                                  <div className={`font-serif leading-relaxed text-[15px] md:text-base ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                                    {formatText(fact.text)}
-                                  </div>
-                                </div>
+                                )}
 
-                                <div className="px-4 pb-3 flex items-center justify-between">
-                                  <div className="flex items-center gap-0.5">
-                                    {onToggleBookmark && (
-                                      <button
-                                        onClick={() => onToggleBookmark('fact', fact.id)}
-                                        className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedFactIds.has(fact.id) ? 'text-[#1C1C1C]' : 'text-[#d0d0d0] hover:text-[#909090]'}`}
-                                        aria-label={bookmarkedFactIds.has(fact.id) ? "Remove bookmark" : "Bookmark"}
-                                        data-testid={`button-bookmark-fact-${fact.id}`}
-                                      >
-                                        {bookmarkedFactIds.has(fact.id) ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
-                                      </button>
-                                    )}
+                                {isMe && fact.reactions?.[partnerUser.id] && (
+                                  <div className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase animate-in zoom-in-95 duration-300">
+                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
+                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
+                                    <span className="truncate">{partnerUser.name}</span>
                                   </div>
-                                  
-                                  {!isMe && (
-                                    <div className="flex items-center gap-0.5">
-                                      {([
-                                        { type: 'mind-blown' as const, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                                        { type: 'fascinating' as const, Icon: Sparkles, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                                        { type: 'heart' as const, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
-                                        { type: 'laugh' as const, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
-                                        { type: 'thinking' as const, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
-                                        { type: 'sad' as const, Icon: Frown, active: 'bg-indigo-100 text-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
-                                      ]).map(({ type, Icon, active, hover, fill }) => (
-                                        <div key={type} className="relative">
-                                          <button
-                                            onClick={() => handleReact(fact.id, type)}
-                                            aria-label={`React ${type}`}
-                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
-                                              myReaction === type ? active : `text-[#c0c0c0] ${hover}`
-                                            }`}
-                                            data-testid={`button-react-${type}-${fact.id}`}
-                                          >
-                                            <Icon className={`w-3.5 h-3.5 ${fill && myReaction === type ? 'fill-white' : ''}`} />
-                                          </button>
-                                          <AnimatePresence>
-                                            {burstReaction?.id === fact.id && burstReaction?.type === type && (
-                                              <motion.div 
-                                                initial={{ opacity: 1, y: 0, scale: 1 }}
-                                                animate={{ opacity: 0, y: -30, scale: 1.4 }}
-                                                exit={{ opacity: 0 }}
-                                                transition={{ duration: 0.7, ease: "easeOut" }}
-                                                className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                              >
-                                                <Icon className={`w-5 h-5 ${type === 'heart' ? 'text-rose-500 fill-rose-500' : type === 'laugh' ? 'text-amber-500' : type === 'thinking' ? 'text-blue-500' : type === 'sad' ? 'text-indigo-500' : 'text-[#1C1C1C]'}`} />
-                                              </motion.div>
-                                            )}
-                                          </AnimatePresence>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  {isMe && fact.reactions?.[partnerUser.id] && (
-                                    <div className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase animate-in zoom-in-95 duration-300">
-                                      {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
-                                      {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
-                                      {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
-                                      {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
-                                      {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
-                                      {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
-                                      <span className="truncate">{partnerUser.name}</span>
-                                    </div>
-                                  )}
-                                </div>
+                                )}
                               </div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                    </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          )}
-          
-          {facts.length > 0 && filteredFacts.length === 0 && (
+                </div>
+              );
+            })
+          ) : facts.length > 0 && filteredFacts.length === 0 ? (
             <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
               <p className="text-[#909090] font-serif italic text-lg">No discoveries match</p>
               <button
@@ -845,9 +827,7 @@ export default function Archive({
                 Clear filters
               </button>
             </div>
-          )}
-
-          {facts.length === 0 && (
+          ) : facts.length === 0 ? (
             <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
                 <div className="w-16 h-16 rounded-full bg-black/[0.03] flex items-center justify-center mb-6">
@@ -859,7 +839,7 @@ export default function Archive({
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
 
