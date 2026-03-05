@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Fact, Category, User, DailyAnswer, ReactionType, DailyGratitude, JournalEntry } from "@/lib/mock-data";
 import { getLocalDateStr } from "@/lib/date-utils";
 import { Link } from "wouter";
-import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, Frown, HandHeart, PenLine, Camera, ImageIcon, MapPin } from "lucide-react";
+import { Heart, Microscope, Telescope, Palette, Globe, HelpCircle, BookA, X, Bold, Italic, Underline, Pencil, ArrowRight, Check, Send, MessageCircle, Lock, Flame, Sparkles, Brain, Laugh, Lightbulb, HandHeart, PenLine, Camera, ImageIcon, MapPin, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import RichEditor from "@/components/rich-editor";
@@ -136,6 +136,101 @@ function RitualDots({ done, total }: { done: number; total: number }) {
   );
 }
 
+const REACTIONS: { type: ReactionType; Icon: React.ElementType; active: string; hover: string; fill?: boolean; burstColor: string }[] = [
+  { type: 'heart', Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true, burstColor: 'text-rose-500' },
+  { type: 'mind-blown', Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5', burstColor: 'text-[#1C1C1C]' },
+  { type: 'laugh', Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50', burstColor: 'text-amber-500' },
+  { type: 'thinking', Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50', burstColor: 'text-blue-500' },
+];
+
+function ReactionBar({ currentReaction, onReact, size = 'sm' }: { currentReaction?: ReactionType; onReact: (type: ReactionType) => void; size?: 'sm' | 'md' }) {
+  const [burstType, setBurstType] = useState<string | null>(null);
+  const burstTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => { if (burstTimer.current) clearTimeout(burstTimer.current); };
+  }, []);
+
+  const handleClick = (type: ReactionType) => {
+    if (navigator.vibrate) navigator.vibrate(50);
+    if (currentReaction !== type) {
+      setBurstType(type);
+      if (burstTimer.current) clearTimeout(burstTimer.current);
+      burstTimer.current = setTimeout(() => setBurstType(null), 800);
+    }
+    onReact(type);
+  };
+
+  const btnSize = size === 'md' ? 'w-9 h-9' : 'w-8 h-8';
+  const iconSize = size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5';
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {REACTIONS.map(({ type, Icon, active, hover, fill, burstColor }) => (
+        <div key={type} className="relative">
+          <button
+            onClick={() => handleClick(type)}
+            className={`${btnSize} flex items-center justify-center rounded-full transition-all active:scale-90 ${
+              currentReaction === type ? active : `text-[#c0c0c0] ${hover}`
+            }`}
+            data-testid={`button-react-${type}`}
+          >
+            <Icon className={`${iconSize} ${fill && currentReaction === type ? 'fill-white' : ''}`} />
+          </button>
+          <AnimatePresence>
+            {burstType === type && (
+              <motion.div
+                initial={{ opacity: 1, y: 0, scale: 1 }}
+                animate={{ opacity: 0, y: -28, scale: 1.5 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+              >
+                <Icon className={`w-5 h-5 ${burstColor} ${fill ? `fill-current` : ''}`} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PartnerReactionBadge({ reaction, partnerName }: { reaction: ReactionType; partnerName: string }) {
+  const r = REACTIONS.find(r => r.type === reaction);
+  if (!r) return null;
+  const { Icon, fill, burstColor } = r;
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase"
+    >
+      <Icon className={`w-3.5 h-3.5 shrink-0 ${reaction === 'heart' ? 'text-rose-500 fill-rose-500' : ''}`} />
+      <span className="truncate">{partnerName}</span>
+    </motion.div>
+  );
+}
+
+function WaitingPulse() {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[0, 1, 2].map(i => (
+        <motion.div
+          key={i}
+          className="w-1 h-1 rounded-full bg-[#b0b0b0]"
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+          transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.2 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function celebrateReveal() {
+  confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 }, colors: ['#1C1C1C', '#E0DDD8', '#FAF9F7', '#8B7E74'], gravity: 0.8, ticks: 120 });
+}
+
 export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser, partnerUser, dailyAnswers, onSubmitAnswer, onQAReact, gratitudes = [], onSubmitGratitude, onAddJournalEntry }: { facts: Fact[], onAddFact: (text: string, categories: Category[]) => Promise<void>, onEditFact: (factId: string, text: string, categories: Category[]) => Promise<void>, onReact?: (factId: string, reaction: string | null) => void, activeUser: User, partnerUser: User, dailyAnswers: DailyAnswer[], onSubmitAnswer: (questionText: string, category: string, answer: string) => Promise<DailyAnswer>, onQAReact?: (answerId: string, reaction: string | null) => void, gratitudes?: DailyGratitude[], onSubmitGratitude?: (text: string) => Promise<DailyGratitude>, onAddJournalEntry?: (text: string, imageData?: string) => Promise<void> }) {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -193,6 +288,34 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
 
   const ritualsDone = (myAnswer ? 1 : 0) + (myFactToday ? 1 : 0);
   const ritualsTotal = 2;
+
+  const prevBothAnsweredRef = useRef(bothAnswered);
+  const prevBothDiscoveryRef = useRef(!!(myFactToday && partnerFactToday));
+  const prevBothGratitudeRef = useRef(bothGratitudesDone);
+
+  useEffect(() => {
+    if (bothAnswered && !prevBothAnsweredRef.current) {
+      celebrateReveal();
+    }
+    prevBothAnsweredRef.current = bothAnswered;
+  }, [bothAnswered]);
+
+  useEffect(() => {
+    const bothDiscovery = !!(myFactToday && partnerFactToday);
+    if (bothDiscovery && !prevBothDiscoveryRef.current) {
+      celebrateReveal();
+    }
+    prevBothDiscoveryRef.current = bothDiscovery;
+  }, [myFactToday, partnerFactToday]);
+
+  useEffect(() => {
+    if (bothGratitudesDone && !prevBothGratitudeRef.current) {
+      setTimeout(() => {
+        confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#fda4af', '#fecdd3', '#ffe4e6', '#1C1C1C'], gravity: 0.7, ticks: 100 });
+      }, 300);
+    }
+    prevBothGratitudeRef.current = bothGratitudesDone;
+  }, [bothGratitudesDone]);
 
   const handleSubmitGratitude = async () => {
     if (!gratitudeText.trim() || submittingGratitudeRef.current || !onSubmitGratitude) return;
@@ -380,6 +503,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
   }
 
   const allRitualsDone = ritualsDone === ritualsTotal;
+  const bothDiscoveries = !!(myFactToday && partnerFactToday);
 
   return (
     <div className="animate-in fade-in duration-700 max-w-2xl mx-auto flex flex-col pt-2 md:pt-6 pb-4 gap-6 md:gap-8">
@@ -387,44 +511,71 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
       <header className="flex-shrink-0 px-1 md:px-0">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className={`w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 transition-all duration-500 ${allRitualsDone ? 'ring-[#1C1C1C]/20' : 'ring-black/5'}`}>
+            <motion.div
+              className={`w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 transition-all duration-500 ${allRitualsDone ? 'ring-[#1C1C1C]/20' : 'ring-black/5'}`}
+              animate={allRitualsDone ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
-            </div>
-            <div className={`w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 transition-all duration-500 -ml-3 ${allRitualsDone ? 'ring-[#1C1C1C]/20' : 'ring-black/5'}`}>
+            </motion.div>
+            <motion.div
+              className={`w-11 h-11 rounded-full overflow-hidden bg-white shadow-sm border-2 border-white ring-2 transition-all duration-500 -ml-3 ${allRitualsDone ? 'ring-[#1C1C1C]/20' : 'ring-black/5'}`}
+              animate={allRitualsDone ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 0.6, delay: 0.35 }}
+            >
               <img src={partnerUser.avatar} alt={partnerUser.name} className="w-full h-full" />
-            </div>
+            </motion.div>
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-serif text-lg md:text-xl text-[#1C1C1C] leading-tight truncate" data-testid="text-greeting">
-              {getGreeting(currentHour)} <span className="text-[#909090]">✦</span>
+              {getGreeting(currentHour)} <span className="text-[#909090]">&#10022;</span>
             </p>
             <p className="text-[11px] text-[#909090] font-medium mt-0.5">
               {(() => { const [y, m, d] = todayStr.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); })()}
             </p>
           </div>
           {streak > 0 && (
-            <div className="flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full shrink-0" data-testid="badge-streak">
+            <motion.div
+              className="flex items-center gap-1.5 bg-[#1C1C1C] text-white px-3 py-1.5 rounded-full shrink-0"
+              data-testid="badge-streak"
+              initial={false}
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              key={streak}
+            >
               <Flame className="w-3.5 h-3.5 fill-white" />
               <span className="text-[11px] font-bold">{streak}</span>
-            </div>
+            </motion.div>
           )}
         </div>
       </header>
 
-      {allRitualsDone && (
-        <div className="px-1 md:px-0 animate-in fade-in slide-in-from-top-2 duration-700">
-          <div className="rounded-2xl bg-[#1C1C1C] px-5 py-4 flex items-center gap-3" data-testid="card-all-done">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-              <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
+      <AnimatePresence>
+        {allRitualsDone && (
+          <motion.div
+            className="px-1 md:px-0"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <div className="rounded-2xl bg-[#1C1C1C] px-5 py-4 flex items-center gap-3" data-testid="card-all-done">
+              <motion.div
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0"
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-serif text-[15px] leading-snug">You showed up for each other today</p>
+                <p className="text-white/50 text-[11px] mt-0.5">Both rituals complete</p>
+              </div>
+              <RitualDots done={ritualsDone} total={ritualsTotal} />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-serif text-[15px] leading-snug">You showed up for each other today</p>
-              <p className="text-white/50 text-[11px] mt-0.5">Both rituals complete</p>
-            </div>
-            <RitualDots done={ritualsDone} total={ritualsTotal} />
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <section className="px-1 md:px-0" data-testid="section-discovery">
         <div className="flex items-center justify-between mb-3 px-1">
@@ -433,66 +584,98 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
         </div>
 
         <div className={`rounded-2xl border transition-all duration-500 ${
-          myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
+          bothDiscoveries ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
         }`}>
           <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+            <motion.div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}
+              animate={bothDiscoveries ? { rotate: [0, 10, -10, 0] } : {}}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <Sparkles className={`w-4.5 h-4.5 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
-            </div>
+            </motion.div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Discovery</p>
               <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
             </div>
-            {myFactToday && partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
-            )}
-            {myFactToday && !partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
-            )}
+            <AnimatePresence mode="wait">
+              {bothDiscoveries && (
+                <motion.span
+                  key="revealed"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0"
+                >Revealed</motion.span>
+              )}
+              {myFactToday && !partnerFactToday && (
+                <motion.span
+                  key="sent"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5"
+                >Sent</motion.span>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="px-5 pb-5">
-            {!(myFactToday && partnerFactToday) && (
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                  myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                    <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                      {activeUser.name}
-                    </span>
-                    {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+            <AnimatePresence mode="wait">
+              {!bothDiscoveries && (
+                <motion.div
+                  key="status-boxes"
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-2 gap-3 mb-4"
+                >
+                  <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                    myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                      <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                        {activeUser.name}
+                      </span>
+                      {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                    </div>
+                    <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                      {myFactToday ? "Shared" : "Not yet"}
+                    </p>
                   </div>
-                  <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                    {myFactToday ? "Shared" : "Not yet"}
-                  </p>
-                </div>
-                <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                  partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                    <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                      {hasPartner ? partnerUser.name : "Partner"}
-                    </span>
-                    {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                  <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                    partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                      <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                        {hasPartner ? partnerUser.name : "Partner"}
+                      </span>
+                      {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                        {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
+                      </p>
+                      {hasPartner && !partnerFactToday && myFactToday && <WaitingPulse />}
+                    </div>
                   </div>
-                  <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                    {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
-                  </p>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {myFactToday && partnerFactToday ? (
-              <div className="space-y-3 animate-in fade-in duration-500">
-                {[myFactToday, partnerFactToday].map((fact) => {
+            {bothDiscoveries ? (
+              <div className="space-y-3">
+                {[myFactToday!, partnerFactToday!].map((fact, idx) => {
                   const isMe = fact.authorId === activeUser.id;
                   const author = isMe ? activeUser : partnerUser;
                   const myReaction = fact.reactions?.[activeUser.id];
                   return (
-                    <div key={fact.id} className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
+                    <motion.div
+                      key={fact.id}
+                      initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.5, delay: idx * 0.15, ease: "easeOut" }}
+                      className="rounded-xl bg-white/80 px-4 py-3 border border-black/5"
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{author.name}</span>
@@ -504,36 +687,19 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                       </div>
                       <div className="font-serif text-sm text-[#1C1C1C] leading-relaxed">{formatText(fact.text)}</div>
                       {!isMe && onReact && (
-                        <div className="flex items-center gap-0.5 mt-2.5 pt-2 border-t border-black/5">
-                          {([
-                            { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
-                            { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                            { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
-                            { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
-                          ]).map(({ type, Icon, active, hover, fill }) => (
-                            <button
-                              key={type}
-                              onClick={() => onReact(fact.id, type)}
-                              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
-                                myReaction === type ? active : `text-[#c0c0c0] ${hover}`
-                              }`}
-                              data-testid={`button-fact-react-${type}-${fact.id}`}
-                            >
-                              <Icon className={`w-3.5 h-3.5 ${fill && myReaction === type ? 'fill-white' : ''}`} />
-                            </button>
-                          ))}
+                        <div className="mt-2.5 pt-2 border-t border-black/5">
+                          <ReactionBar
+                            currentReaction={myReaction as ReactionType}
+                            onReact={(type) => onReact(fact.id, type)}
+                          />
                         </div>
                       )}
                       {isMe && fact.reactions?.[partnerUser.id] && (
-                        <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-black/5 text-[#909090] text-[10px] font-bold tracking-wider uppercase">
-                          {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
-                          {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
-                          {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
-                          {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
-                          <span className="truncate">{partnerUser.name}</span>
+                        <div className="mt-2.5 pt-2 border-t border-black/5">
+                          <PartnerReactionBadge reaction={fact.reactions[partnerUser.id] as ReactionType} partnerName={partnerUser.name} />
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
                 <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#909090] text-xs font-medium hover:text-[#737373] hover:bg-white/60 transition-all" data-testid="button-edit-fact">
@@ -577,12 +743,14 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                 <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Today's Question</p>
                 <p className="text-[11px] text-[#b0b0b0] mt-0.5">{dailyQuestion.category}</p>
               </div>
-              {bothAnswered && (
-                <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
-              )}
-              {myAnswer && !bothAnswered && (
-                <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
-              )}
+              <AnimatePresence mode="wait">
+                {bothAnswered && (
+                  <motion.span key="revealed" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</motion.span>
+                )}
+                {myAnswer && !bothAnswered && (
+                  <motion.span key="sent" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</motion.span>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="px-5 pb-5">
@@ -619,60 +787,64 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                     </div>
                   </div>
                 ) : bothAnswered ? (
-                  <div className="space-y-2.5 animate-in fade-in duration-500">
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</span>
-                      </div>
-                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAnswer}</p>
-                    </div>
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</span>
-                      </div>
-                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAnswer}</p>
-                    </div>
+                  <div className="space-y-2.5">
+                    {[
+                      { name: activeUser.name, avatar: activeUser.avatar, text: myAnswer },
+                      { name: partnerUser.name, avatar: partnerUser.avatar, text: partnerAnswer },
+                    ].map((entry, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.45, delay: idx * 0.15, ease: "easeOut" }}
+                        className="rounded-xl bg-white/80 px-4 py-3 border border-black/5"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={entry.avatar} alt={entry.name} className="w-5 h-5 rounded-full" />
+                          <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{entry.name}</span>
+                        </div>
+                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{entry.text}</p>
+                      </motion.div>
+                    ))}
                     {onQAReact && todayAnswer && (
-                      <div className="flex items-center gap-1 pt-1">
-                        {([
-                          { type: 'heart' as ReactionType, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
-                          { type: 'mind-blown' as ReactionType, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
-                          { type: 'laugh' as ReactionType, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
-                          { type: 'thinking' as ReactionType, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
-                        ]).map(({ type, Icon, active, hover, fill }) => (
-                          <button
-                            key={type}
-                            onClick={() => onQAReact(todayAnswer.id, type)}
-                            className={`w-9 h-9 flex items-center justify-center rounded-full text-[10px] transition-all active:scale-95 ${
-                              myQAReaction === type ? active : `text-[#b0b0b0] ${hover}`
-                            }`}
-                            data-testid={`button-qa-react-${type}`}
-                          >
-                            <Icon className={`w-4 h-4 ${fill && myQAReaction === type ? 'fill-white' : ''}`} />
-                          </button>
-                        ))}
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="pt-1"
+                      >
+                        <ReactionBar
+                          currentReaction={myQAReaction}
+                          onReact={(type) => onQAReact(todayAnswer.id, type)}
+                          size="md"
+                        />
+                      </motion.div>
                     )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5"
+                    >
                       <div className="flex items-center gap-2">
                         <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
                         <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
                       </div>
                       <p className="text-[10px] text-white/60">Shared</p>
-                    </div>
+                    </motion.div>
                     <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
                       <div className="flex items-center gap-2">
                         <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : "Partner"}</span>
                         <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
                       </div>
-                      <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? "Waiting..." : "Invite to join"}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? "Waiting..." : "Invite to join"}</p>
+                        {hasPartner && <WaitingPulse />}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -681,22 +853,24 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
 
           {onSubmitGratitude && (
             <div className={`rounded-2xl border transition-all duration-500 ${
-              bothGratitudesDone ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
+              bothGratitudesDone ? 'bg-rose-50/40 border-rose-200/50' : 'bg-white border-black/5'
             }`} data-testid="card-daily-gratitude">
               <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-[#FAF9F7] border border-black/5'}`}>
                   <HandHeart className={`w-4.5 h-4.5 ${myGratitude ? 'text-white' : 'text-[#909090]'}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Gratitude</p>
                   <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
                 </div>
-                {bothGratitudesDone && (
-                  <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</span>
-                )}
-                {myGratitude && !bothGratitudesDone && (
-                  <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
-                )}
+                <AnimatePresence mode="wait">
+                  {bothGratitudesDone && (
+                    <motion.span key="revealed" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</motion.span>
+                  )}
+                  {myGratitude && !bothGratitudesDone && (
+                    <motion.span key="sent" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</motion.span>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="px-5 pb-5">
@@ -712,7 +886,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                         el.style.height = Math.min(el.scrollHeight, 160) + 'px';
                       }}
                       placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
-                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/5 font-serif leading-relaxed border border-black/5"
+                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-200/50 font-serif leading-relaxed border border-black/5"
                       rows={2}
                       data-testid="input-daily-gratitude"
                     />
@@ -720,7 +894,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                       <button
                         onClick={handleSubmitGratitude}
                         disabled={!gratitudeText.trim() || isSubmittingGratitude}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         data-testid="button-submit-gratitude"
                       >
                         {isSubmittingGratitude ? "Sending..." : "Share"}
@@ -729,39 +903,50 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                     </div>
                   </div>
                 ) : bothGratitudesDone ? (
-                  <div className="space-y-2.5 animate-in fade-in duration-500">
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</span>
-                      </div>
-                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGratitude}</p>
-                    </div>
-                    <div className="rounded-xl bg-white/80 px-4 py-3 border border-black/5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                        <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</span>
-                      </div>
-                      <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGratitude}</p>
-                    </div>
+                  <div className="space-y-2.5">
+                    {[
+                      { name: activeUser.name, avatar: activeUser.avatar, text: myGratitude },
+                      { name: partnerUser.name, avatar: partnerUser.avatar, text: partnerGratitude },
+                    ].map((entry, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.45, delay: idx * 0.15, ease: "easeOut" }}
+                        className="rounded-xl bg-white/70 px-4 py-3 border border-rose-100/50"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={entry.avatar} alt={entry.name} className="w-5 h-5 rounded-full" />
+                          <span className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase">{entry.name}</span>
+                        </div>
+                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{entry.text}</p>
+                      </motion.div>
+                    ))}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5"
+                    >
                       <div className="flex items-center gap-2">
                         <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[11px] font-semibold text-white truncate">{activeUser.name}</span>
                         <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />
                       </div>
-                      <p className="text-[10px] text-white/60">Shared</p>
-                    </div>
+                      <p className="text-[10px] text-white/70">Shared</p>
+                    </motion.div>
                     <div className="rounded-xl bg-[#FAF9F7] p-3.5 flex flex-col gap-1.5 border border-black/5">
                       <div className="flex items-center gap-2">
                         <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
                         <span className="text-[11px] font-semibold text-[#737373] truncate">{hasPartner ? partnerUser.name : 'Partner'}</span>
                         <Lock className="w-3 h-3 text-[#b0b0b0] ml-auto shrink-0" />
                       </div>
-                      <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? 'Waiting...' : 'Invite to join'}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-[#b0b0b0]">{hasPartner ? 'Waiting...' : 'Invite to join'}</p>
+                        {hasPartner && <WaitingPulse />}
+                      </div>
                     </div>
                   </div>
                 )}
