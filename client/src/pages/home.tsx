@@ -426,10 +426,91 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         </div>
       )}
 
-      <section className="px-1 md:px-0" data-testid="section-daily-ritual">
+      <section className="px-1 md:px-0" data-testid="section-discovery">
         <div className="flex items-center justify-between mb-3 px-1">
-          <p className="text-[11px] font-semibold tracking-[0.15em] text-[#b0b0b0] uppercase font-serif">Together today</p>
+          <p className="text-[11px] font-semibold tracking-[0.15em] text-[#b0b0b0] uppercase font-serif">Teach each other</p>
           {!allRitualsDone && <RitualDots done={ritualsDone} total={ritualsTotal} />}
+        </div>
+
+        <div className={`rounded-2xl border transition-all duration-500 ${
+          myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
+        }`}>
+          <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
+              <Sparkles className={`w-4.5 h-4.5 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Discovery</p>
+              <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
+            </div>
+            {myFactToday && partnerFactToday && (
+              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Both shared</span>
+            )}
+            {myFactToday && !partnerFactToday && (
+              <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
+            )}
+          </div>
+
+          <div className="px-5 pb-5">
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
+                  <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                    {activeUser.name}
+                  </span>
+                  {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                </div>
+                <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                  {myFactToday ? "Shared" : "Not yet"}
+                </p>
+              </div>
+              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
+                partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
+                  <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
+                    {hasPartner ? partnerUser.name : "Partner"}
+                  </span>
+                  {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
+                </div>
+                <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
+                  {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
+                </p>
+              </div>
+            </div>
+
+            {myFactToday && partnerFactToday ? (
+              <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
+                <Sparkles className="w-4 h-4" />
+                Both shared — reveal discoveries
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : myFactToday ? (
+              <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FAF9F7] text-[#737373] text-sm font-semibold hover:bg-[#F0EEEA] transition-all border border-black/5" data-testid="button-edit-fact">
+                <Pencil className="w-3.5 h-3.5" />
+                Edit your discovery
+              </button>
+            ) : (
+              <button
+                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
+                className="w-full bg-[#1C1C1C] text-white rounded-xl py-3.5 px-6 flex items-center justify-center gap-2.5 font-semibold text-sm transition-all active:scale-[0.98] hover:bg-black shadow-sm"
+                data-testid="card-add-discovery"
+              >
+                <Send className="w-4 h-4" />
+                Share your discovery
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-1 md:px-0" data-testid="section-daily-ritual">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <p className="text-[11px] font-semibold tracking-[0.15em] text-[#b0b0b0] uppercase font-serif">Together today</p>
         </div>
 
         <div className="space-y-3">
@@ -623,87 +704,6 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      <section className="px-1 md:px-0" data-testid="section-discovery">
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <p className="text-[11px] font-semibold tracking-[0.15em] text-[#b0b0b0] uppercase font-serif">Teach each other</p>
-        </div>
-
-        <div className={`rounded-2xl border transition-all duration-500 ${
-          myFactToday && partnerFactToday ? 'bg-[#F0EEEA] border-[#E0DDD8]' : 'bg-white border-black/5'
-        }`}>
-          <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
-              <Sparkles className={`w-4.5 h-4.5 ${myFactToday ? 'text-white' : 'text-[#909090]'}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Discovery</p>
-              <p className="text-[11px] text-[#b0b0b0] mt-0.5">Share something you learned today</p>
-            </div>
-            {myFactToday && partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#E0DDD8] px-2.5 py-1 rounded-full uppercase shrink-0">Both shared</span>
-            )}
-            {myFactToday && !partnerFactToday && (
-              <span className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</span>
-            )}
-          </div>
-
-          <div className="px-5 pb-5">
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                myFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
-                  <span className={`text-[11px] font-semibold truncate ${myFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                    {activeUser.name}
-                  </span>
-                  {myFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
-                </div>
-                <p className={`text-[10px] leading-tight ${myFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                  {myFactToday ? "Shared" : "Not yet"}
-                </p>
-              </div>
-              <div className={`rounded-xl p-3.5 flex flex-col gap-1.5 transition-colors ${
-                partnerFactToday ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-5 h-5 rounded-full" />
-                  <span className={`text-[11px] font-semibold truncate ${partnerFactToday ? 'text-white' : 'text-[#737373]'}`}>
-                    {hasPartner ? partnerUser.name : "Partner"}
-                  </span>
-                  {partnerFactToday && <Check className="w-3 h-3 text-white ml-auto shrink-0" strokeWidth={3} />}
-                </div>
-                <p className={`text-[10px] leading-tight ${partnerFactToday ? 'text-white/60' : 'text-[#b0b0b0]'}`}>
-                  {!hasPartner ? "Invite to join" : partnerFactToday ? "Shared" : "Waiting..."}
-                </p>
-              </div>
-            </div>
-
-            {myFactToday && partnerFactToday ? (
-              <Link href="/archive" className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#1C1C1C] text-white text-sm font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm" data-testid="link-view-archive">
-                <Sparkles className="w-4 h-4" />
-                Both shared — reveal discoveries
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            ) : myFactToday ? (
-              <button onClick={startEditing} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FAF9F7] text-[#737373] text-sm font-semibold hover:bg-[#F0EEEA] transition-all border border-black/5" data-testid="button-edit-fact">
-                <Pencil className="w-3.5 h-3.5" />
-                Edit your discovery
-              </button>
-            ) : (
-              <button
-                onClick={() => { if (navigator.vibrate) navigator.vibrate(50); setIsAdding(true); }}
-                className="w-full bg-[#1C1C1C] text-white rounded-xl py-3.5 px-6 flex items-center justify-center gap-2.5 font-semibold text-sm transition-all active:scale-[0.98] hover:bg-black shadow-sm"
-                data-testid="card-add-discovery"
-              >
-                <Send className="w-4 h-4" />
-                Share your discovery
-              </button>
-            )}
-          </div>
         </div>
       </section>
 
