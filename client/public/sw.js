@@ -1,4 +1,4 @@
-const CACHE_NAME = 'curio-cache-v9';
+const CACHE_NAME = 'curio-cache-v10';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
