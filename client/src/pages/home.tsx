@@ -611,7 +611,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
         </div>
       </div>
 
-      {hasPartner && onSubmitGratitude && (
+      {onSubmitGratitude && (
         <div className="px-1 md:px-0">
           <div className={`rounded-2xl border transition-colors ${
             bothGratitudesDone ? 'bg-rose-50/50 border-rose-100' : 'bg-white border-black/5'
@@ -622,7 +622,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Daily Gratitude</p>
-                <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {partnerUser.name}</p>
+                <p className="text-[11px] text-[#b0b0b0] mt-0.5">One thing you appreciate about {hasPartner ? partnerUser.name : 'your partner'}</p>
               </div>
               {bothGratitudesDone && (
                 <span className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Done</span>
@@ -641,7 +641,7 @@ export default function Home({ facts, onAddFact, onEditFact, activeUser, partner
                       el.style.height = 'auto';
                       el.style.height = Math.min(el.scrollHeight, 160) + 'px';
                     }}
-                    placeholder={`Today I appreciate ${partnerUser.name} for...`}
+                    placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
                     className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-100 font-serif leading-relaxed border border-black/5"
                     rows={2}
                     data-testid="input-daily-gratitude"
