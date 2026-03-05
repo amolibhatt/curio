@@ -59,13 +59,13 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'History': return <Globe className="w-3.5 h-3.5" />;
-      case 'Etymology': return <BookA className="w-3.5 h-3.5" />;
-      case 'Science': return <Microscope className="w-3.5 h-3.5" />;
-      case 'Space': return <Telescope className="w-3.5 h-3.5" />;
-      case 'Art': return <Palette className="w-3.5 h-3.5" />;
-      case 'Us': return <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />;
-      default: return <HelpCircle className="w-3.5 h-3.5" />;
+      case 'History': return <Globe className="w-3 h-3" />;
+      case 'Etymology': return <BookA className="w-3 h-3" />;
+      case 'Science': return <Microscope className="w-3 h-3" />;
+      case 'Space': return <Telescope className="w-3 h-3" />;
+      case 'Art': return <Palette className="w-3 h-3" />;
+      case 'Us': return <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />;
+      default: return <HelpCircle className="w-3 h-3" />;
     }
   };
 
@@ -144,29 +144,33 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
     return true;
   });
 
+  const uniqueDays = new Set(facts.map(f => f.date)).size;
+  const totalFacts = facts.length;
+  const totalQA = dailyAnswers.filter(a => Object.keys(a.answers || {}).length >= 2).length;
+
   return (
-    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-6 md:py-10 flex flex-col min-h-[calc(100vh-140px)]">
-      <header className="mb-6 md:mb-10 shrink-0">
-        <div className="text-center md:text-left mb-6">
-          <h1 className="text-[2rem] md:text-[3.5rem] font-serif text-[#1C1C1C] tracking-tight leading-tight">
-            The Archive
-          </h1>
-          <p className="text-base text-[#909090] italic font-serif mt-2">
-            Everything we've shared, side by side.
-          </p>
+    <div className="animate-in fade-in duration-700 max-w-2xl mx-auto py-4 md:py-8 flex flex-col min-h-[calc(100vh-140px)]">
+
+      <header className="mb-5 md:mb-8 shrink-0">
+        <div className="flex items-end justify-between mb-5">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-serif text-[#1C1C1C] tracking-tight leading-tight" data-testid="text-archive-title">
+              Your story
+            </h1>
+            {totalFacts > 0 && (
+              <p className="text-[11px] text-[#b0b0b0] mt-1 font-medium" data-testid="text-archive-stats">
+                {totalFacts} {totalFacts === 1 ? 'discovery' : 'discoveries'}{totalQA > 0 ? ` · ${totalQA} conversations` : ''} · {uniqueDays} {uniqueDays === 1 ? 'day' : 'days'}
+              </p>
+            )}
+          </div>
         </div>
 
         {throwback && (
-          <div className="mb-6" data-testid="card-throwback">
-            <div className="rounded-2xl border border-black/5 bg-white">
-              <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-                <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
-                  <Rewind className="w-4.5 h-4.5 text-[#8B7E74]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-[#909090] uppercase">Throwback</p>
-                  <p className="text-[11px] text-[#b0b0b0] mt-0.5">{throwback.label}</p>
-                </div>
+          <div className="mb-5" data-testid="card-throwback">
+            <div className="rounded-2xl bg-[#1C1C1C] overflow-hidden">
+              <div className="flex items-center gap-2.5 px-5 pt-4 pb-2">
+                <Rewind className="w-4 h-4 text-white/50" />
+                <p className="text-[10px] font-bold tracking-[0.2em] text-white/50 uppercase">{throwback.label}</p>
               </div>
               <div className="px-5 pb-5">
                 {throwback.type === 'fact' ? (() => {
@@ -174,8 +178,8 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                   const authorName = f.authorId === activeUser.id ? activeUser.name : partnerUser.name;
                   return (
                     <div>
-                      <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1.5">{authorName} shared</p>
-                      <div className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{formatText(f.text)}</div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase mb-1.5">{authorName} shared</p>
+                      <div className="text-sm text-white/90 font-serif leading-relaxed">{formatText(f.text)}</div>
                     </div>
                   );
                 })() : (() => {
@@ -184,18 +188,18 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                   const partAns = a.answers[partnerUser.id];
                   return (
                     <div>
-                      <p className="font-serif text-sm text-[#1C1C1C] leading-relaxed mb-3">{a.questionText}</p>
+                      <p className="font-serif text-sm text-white/90 leading-relaxed mb-3">{a.questionText}</p>
                       <div className="space-y-2">
                         {myAns && (
-                          <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-                            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{activeUser.name}</p>
-                            <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                          <div className="rounded-xl bg-white/10 px-3.5 py-2.5">
+                            <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase mb-0.5">{activeUser.name}</p>
+                            <p className="text-[13px] text-white/80 font-serif leading-relaxed">{myAns}</p>
                           </div>
                         )}
                         {partAns && (
-                          <div className="rounded-xl bg-[#FAF9F7] px-3.5 py-2.5 border border-black/5">
-                            <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-0.5">{partnerUser.name}</p>
-                            <p className="text-[13px] text-[#1C1C1C] font-serif leading-relaxed">{partAns}</p>
+                          <div className="rounded-xl bg-white/10 px-3.5 py-2.5">
+                            <p className="text-[9px] font-bold tracking-[0.15em] text-white/40 uppercase mb-0.5">{partnerUser.name}</p>
+                            <p className="text-[13px] text-white/80 font-serif leading-relaxed">{partAns}</p>
                           </div>
                         )}
                       </div>
@@ -282,22 +286,51 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
           )}
         </div>
 
+        <AnimatePresence>
+          {showSearch && activeTab === "discoveries" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b0b0b0]" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search discoveries..."
+                  className="w-full bg-[#FAF9F7] rounded-xl pl-10 pr-10 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] focus:outline-none focus:ring-2 focus:ring-black/5 font-serif border border-black/5"
+                  data-testid="input-search"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#b0b0b0] hover:text-[#909090]">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {activeTab === "discoveries" && showFilters && (
-          <div className="mt-6 p-5 bg-transparent rounded-[1.5rem] animate-in slide-in-from-top-2 duration-200">
-            <div className="space-y-5">
+          <div className="mt-4 p-4 bg-[#FAF9F7] rounded-2xl animate-in slide-in-from-top-2 duration-200 border border-black/5">
+            <div className="space-y-4">
               <div>
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Person</p>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-2.5 text-left">By Person</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilterPerson(null)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === null ? 'bg-black text-white' : 'bg-white text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-everyone"
                   >
                     Everyone
                   </button>
                   <button
                     onClick={() => setFilterPerson(activeUser.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === activeUser.id ? 'bg-black text-white' : 'bg-white text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-me"
                   >
                     Me
@@ -305,7 +338,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                   {partnerUser.id !== "0" && (
                     <button
                       onClick={() => setFilterPerson(partnerUser.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPerson === partnerUser.id ? 'bg-black text-white' : 'bg-white text-[#737373] hover:bg-black/5'}`}
                       data-testid="filter-partner"
                     >
                       {partnerUser.name}
@@ -315,14 +348,14 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
               </div>
 
               <div>
-                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-2.5 text-left">By Category</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setFilterCategories([])}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.length === 0 ? 'bg-black text-white' : 'bg-white text-[#737373] hover:bg-black/5'}`}
                     data-testid="filter-category-all"
                   >
-                    All Categories
+                    All
                   </button>
                   {VALID_CATEGORIES_LIST.map(cat => (
                     <button
@@ -334,7 +367,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                             : [...prev, cat]
                         );
                       }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-white text-[#737373] hover:bg-black/5'}`}
                       data-testid={`filter-category-${cat.toLowerCase()}`}
                     >
                       {cat}
@@ -347,16 +380,16 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
         )}
 
         {activeTab === "questions" && showQAFilters && (
-          <div className="mt-6 p-5 bg-transparent rounded-[1.5rem] animate-in slide-in-from-top-2 duration-200">
+          <div className="mt-4 p-4 bg-[#FAF9F7] rounded-2xl animate-in slide-in-from-top-2 duration-200 border border-black/5">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-3 text-left">By Category</p>
+              <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-2.5 text-left">By Category</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setFilterQACategories([])}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.length === 0 ? 'bg-black text-white' : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.length === 0 ? 'bg-black text-white' : 'bg-white text-[#737373] hover:bg-black/5'}`}
                   data-testid="filter-qa-category-all"
                 >
-                  All Categories
+                  All
                 </button>
                 {QUESTION_CATEGORIES.map(cat => (
                   <button
@@ -368,7 +401,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                           : [...prev, cat]
                       );
                     }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-[#FAF9F7] text-[#737373] hover:bg-black/5'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterQACategories.includes(cat) ? (cat === 'Us' ? 'bg-rose-50 text-rose-600' : 'bg-black text-white') : 'bg-white text-[#737373] hover:bg-black/5'}`}
                     data-testid={`filter-qa-category-${cat.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     {cat}
@@ -381,7 +414,7 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
       </header>
 
       {activeTab === "questions" ? (
-        <div className="space-y-6 flex-1 flex flex-col">
+        <div className="space-y-4 flex-1 flex flex-col">
           {completedAnswers.length > 0 ? (
             completedAnswers.map((qa, idx) => {
               const myAns = qa.answers[activeUser.id];
@@ -392,22 +425,22 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: Math.min(idx * 0.08, 0.8) }}
-                  className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-black/5"
+                  className="bg-white rounded-2xl border border-black/5 overflow-hidden"
                   data-testid={`card-qa-${qa.id}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+                  <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+                    <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase flex-1">
                       {qa.date === todayStr ? (
                         <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
                       ) : (
                         (() => { const [y, m, d] = qa.date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()
                       )}
+                      <span className="ml-2 text-[#c0c0c0]">{qa.category}</span>
                     </p>
-                    <span className="text-[9px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase">{qa.category}</span>
                     {onToggleBookmark && (
                       <button
                         onClick={() => onToggleBookmark('qa', qa.id)}
-                        className={`ml-auto p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedQAIds.has(qa.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
+                        className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedQAIds.has(qa.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
                         aria-label={bookmarkedQAIds.has(qa.id) ? "Remove bookmark" : "Bookmark"}
                         data-testid={`button-bookmark-qa-${qa.id}`}
                       >
@@ -415,20 +448,22 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
                       </button>
                     )}
                   </div>
-                  <p className="font-serif text-base text-[#1C1C1C] leading-relaxed mb-4">{qa.questionText}</p>
-                  <div className="space-y-3">
-                    {myAns && (
-                      <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                        <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
-                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
-                      </div>
-                    )}
-                    {partnerAns && (
-                      <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
-                        <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
-                        <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
-                      </div>
-                    )}
+                  <div className="px-5 pb-4">
+                    <p className="font-serif text-[15px] text-[#1C1C1C] leading-relaxed mb-3">{qa.questionText}</p>
+                    <div className="space-y-2">
+                      {myAns && (
+                        <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{activeUser.name}</p>
+                          <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myAns}</p>
+                        </div>
+                      )}
+                      {partnerAns && (
+                        <div className="rounded-xl bg-[#FAF9F7] px-4 py-3 border border-black/5">
+                          <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase mb-1">{partnerUser.name}</p>
+                          <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerAns}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -436,11 +471,11 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
           ) : (
             <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 py-12">
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-                <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
-                  <MessageCircle className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
+                <div className="w-16 h-16 rounded-full bg-black/[0.03] flex items-center justify-center mb-6">
+                  <MessageCircle className="w-7 h-7 text-[#b0b0b0]" strokeWidth={1.2} />
                 </div>
-                <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">No questions yet.</h3>
-                <p className="text-[#909090] text-sm md:text-base leading-relaxed">
+                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">No conversations yet</h3>
+                <p className="text-[#909090] text-sm leading-relaxed">
                   Answer today's question on the home page. Once you both answer, it'll appear here.
                 </p>
               </div>
@@ -448,293 +483,164 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
           )}
         </div>
       ) : (
-        <div className="space-y-8 md:space-y-12 flex-1 flex flex-col">
-          {sortedDates.map((date) => {
-            const dateFacts = groupedFacts[date];
-            const allFactsForDate = facts.filter(f => f.date === date);
-            const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
-            return (
-              <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-                <div className="sticky top-0 z-10 bg-[#FAF9F7]/95 backdrop-blur-md py-2 md:py-3 mb-4 -mx-3 px-3 md:-mx-5 md:px-5">
-                  <h2 className="text-[11px] md:text-xs font-bold tracking-[0.2em] text-[#909090] uppercase">
-                    {date === todayStr ? (
-                      <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
-                    ) : (
-                      (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()
-                    )}
-                  </h2>
-                </div>
-                
-                <div className="space-y-6 md:space-y-8">
-                  {dateFacts.map((fact, index) => {
-                    const isMe = fact.authorId === activeUser.id;
-                    const author = isMe ? activeUser : partnerUser;
-                    const isAboutUs = fact.categories.includes('Us');
-                    const isHidden = !isMe && !iPostedThisDate;
-                    
-                    const myReaction = fact.reactions?.[activeUser.id];
-                    
-                    return (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: Math.min(index * 0.15 + 0.1, 0.55) }}
-                        key={fact.id} 
-                        className={`flex flex-col md:flex-row gap-3 md:gap-6 group ${isHidden ? 'opacity-50' : ''}`}
-                      >
-                        <div className="flex md:flex-col items-center md:items-end gap-2 md:w-24 shrink-0 pt-1 relative">
-                          <div className="relative z-10 bg-[#FAF9F7] p-1 rounded-full">
-                            <img src={author.avatar} alt={author.name} className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${isHidden ? 'grayscale' : 'z-10'}`} />
-                          </div>
-                          <span className={`text-[10px] md:text-[11px] font-semibold tracking-wider uppercase bg-[#FAF9F7] relative z-10 truncate max-w-[5rem] md:max-w-[6rem] ${isHidden ? 'text-black/40' : 'text-[#909090]'}`}>
-                            {author.name}
-                          </span>
-                        </div>
+        <div className="flex-1 flex flex-col">
+          {sortedDates.length > 0 && (
+            <div className="relative">
+              <div className="absolute left-[15px] md:left-[19px] top-8 bottom-0 w-px bg-black/[0.06]" />
 
-                        <div className="flex-1 relative group/card">
-                          {isHidden ? (
-                            <div className={`py-4 md:py-6 px-5 rounded-2xl bg-transparent text-center relative overflow-hidden transition-all duration-700 ${date === todayStr ? 'hover:bg-black/[0.02]' : ''}`}>
-                              {date === todayStr && (
-                                <>
-                                  <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
-                                  <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
-                                </>
-                              )}
-                              <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
-                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>}
-                                {date === todayStr
-                                  ? "Sealed until you share yours"
-                                  : "You didn\u2019t share that day"}
-                                {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>}
-                              </p>
-                            </div>
-                          ) : (
-                            <div className={`p-5 md:p-6 rounded-2xl md:rounded-[2rem] transition-all duration-500 relative overflow-hidden transform-gpu ${isAboutUs ? 'bg-rose-50/20 hover:bg-rose-50/40' : 'bg-transparent hover:bg-black/[0.02]'}`}>
-                              
-                              <div className="relative z-10">
-                                <div className={`font-serif leading-relaxed md:leading-loose text-[1.1rem] md:text-[1.25rem] mb-4 md:mb-6 ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
-                                  {formatText(fact.text)}
+              {sortedDates.map((date, dateIdx) => {
+                const dateFacts = groupedFacts[date];
+                const allFactsForDate = facts.filter(f => f.date === date);
+                const iPostedThisDate = allFactsForDate.some(f => f.authorId === activeUser.id);
+                return (
+                  <div key={date} className="relative mb-8 last:mb-0">
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
+                      <div className={`w-[9px] h-[9px] md:w-[11px] md:h-[11px] rounded-full shrink-0 ml-[11px] md:ml-[14px] ${date === todayStr ? 'bg-[#1C1C1C]' : 'bg-[#c0c0c0]'}`} />
+                      <h2 className="text-[11px] font-bold tracking-[0.15em] text-[#909090] uppercase">
+                        {date === todayStr ? (
+                          <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                        ) : (
+                          (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })()
+                        )}
+                      </h2>
+                    </div>
+                    
+                    <div className="pl-10 md:pl-12 space-y-4">
+                      {dateFacts.map((fact, index) => {
+                        const isMe = fact.authorId === activeUser.id;
+                        const author = isMe ? activeUser : partnerUser;
+                        const isAboutUs = fact.categories.includes('Us');
+                        const isHidden = !isMe && !iPostedThisDate;
+                        
+                        const myReaction = fact.reactions?.[activeUser.id];
+                        
+                        return (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: Math.min(index * 0.1 + dateIdx * 0.05, 0.6) }}
+                            key={fact.id} 
+                            className={`group ${isHidden ? 'opacity-50' : ''}`}
+                          >
+                            {isHidden ? (
+                              <div className="py-4 px-4 rounded-xl text-center relative overflow-hidden">
+                                {date === todayStr && (
+                                  <>
+                                    <div className="absolute inset-0 backdrop-blur-sm z-0 animate-breathe-blur"></div>
+                                    <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black via-transparent to-transparent animate-pulse" style={{ animationDuration: '4s' }}></div>
+                                  </>
+                                )}
+                                <p className="text-sm font-serif italic text-black/40 relative z-10 flex items-center justify-center gap-2">
+                                  {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s' }}></span>}
+                                  {date === todayStr
+                                    ? "Sealed until you share yours"
+                                    : "You didn\u2019t share that day"}
+                                  {date === todayStr && <span className="w-1.5 h-1.5 rounded-full bg-black/10 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}></span>}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className={`rounded-2xl transition-all duration-300 ${isAboutUs ? 'bg-rose-50/30' : 'bg-white'} border border-black/5`}>
+                                <div className="px-4 pt-4 pb-1 flex items-center gap-2">
+                                  <img src={author.avatar} alt={author.name} className="w-5 h-5 rounded-full" />
+                                  <span className="text-[10px] font-bold tracking-[0.12em] text-[#909090] uppercase">{author.name}</span>
+                                  <div className="flex items-center gap-1 ml-auto">
+                                    {fact.categories.map((category) => (
+                                      <div key={category} className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
+                                        {getCategoryIcon(category)}
+                                        {category}
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {fact.categories.map((category) => (
-                                    <div key={category} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] md:text-[10px] uppercase tracking-widest font-bold ${getCategoryColor(category)}`}>
-                                      {getCategoryIcon(category)}
-                                      {category}
+                                
+                                <div className="px-4 pt-2 pb-3">
+                                  <div className={`font-serif leading-relaxed text-[15px] md:text-base ${isAboutUs ? 'text-rose-950' : 'text-[#1C1C1C]'}`}>
+                                    {formatText(fact.text)}
+                                  </div>
+                                </div>
+
+                                <div className="px-4 pb-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-0.5">
+                                    {onToggleBookmark && (
+                                      <button
+                                        onClick={() => onToggleBookmark('fact', fact.id)}
+                                        className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedFactIds.has(fact.id) ? 'text-[#1C1C1C]' : 'text-[#d0d0d0] hover:text-[#909090]'}`}
+                                        aria-label={bookmarkedFactIds.has(fact.id) ? "Remove bookmark" : "Bookmark"}
+                                        data-testid={`button-bookmark-fact-${fact.id}`}
+                                      >
+                                        {bookmarkedFactIds.has(fact.id) ? <BookmarkCheck className="w-3.5 h-3.5" /> : <BookmarkIcon className="w-3.5 h-3.5" />}
+                                      </button>
+                                    )}
+                                  </div>
+                                  
+                                  {!isMe && (
+                                    <div className="flex items-center gap-0.5">
+                                      {([
+                                        { type: 'mind-blown' as const, Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                                        { type: 'fascinating' as const, Icon: Sparkles, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5' },
+                                        { type: 'heart' as const, Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true },
+                                        { type: 'laugh' as const, Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+                                        { type: 'thinking' as const, Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50' },
+                                        { type: 'sad' as const, Icon: Frown, active: 'bg-indigo-100 text-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
+                                      ]).map(({ type, Icon, active, hover, fill }) => (
+                                        <div key={type} className="relative">
+                                          <button
+                                            onClick={() => handleReact(fact.id, type)}
+                                            aria-label={`React ${type}`}
+                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-all active:scale-90 ${
+                                              myReaction === type ? active : `text-[#c0c0c0] ${hover}`
+                                            }`}
+                                            data-testid={`button-react-${type}-${fact.id}`}
+                                          >
+                                            <Icon className={`w-3.5 h-3.5 ${fill && myReaction === type ? 'fill-white' : ''}`} />
+                                          </button>
+                                          <AnimatePresence>
+                                            {burstReaction?.id === fact.id && burstReaction?.type === type && (
+                                              <motion.div 
+                                                initial={{ opacity: 1, y: 0, scale: 1 }}
+                                                animate={{ opacity: 0, y: -30, scale: 1.4 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.7, ease: "easeOut" }}
+                                                className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+                                              >
+                                                <Icon className={`w-5 h-5 ${type === 'heart' ? 'text-rose-500 fill-rose-500' : type === 'laugh' ? 'text-amber-500' : type === 'thinking' ? 'text-blue-500' : type === 'sad' ? 'text-indigo-500' : 'text-[#1C1C1C]'}`} />
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      ))}
                                     </div>
-                                  ))}
-                                  {onToggleBookmark && (
-                                    <button
-                                      onClick={() => onToggleBookmark('fact', fact.id)}
-                                      className={`p-1.5 rounded-full transition-all active:scale-90 ${bookmarkedFactIds.has(fact.id) ? 'text-[#1C1C1C]' : 'text-[#c0c0c0] hover:text-[#909090]'}`}
-                                      aria-label={bookmarkedFactIds.has(fact.id) ? "Remove bookmark" : "Bookmark"}
-                                      data-testid={`button-bookmark-fact-${fact.id}`}
-                                    >
-                                      {bookmarkedFactIds.has(fact.id) ? <BookmarkCheck className="w-4 h-4" /> : <BookmarkIcon className="w-4 h-4" />}
-                                    </button>
+                                  )}
+
+                                  {isMe && fact.reactions?.[partnerUser.id] && (
+                                    <div className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase animate-in zoom-in-95 duration-300">
+                                      {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
+                                      {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
+                                      {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
+                                      {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
+                                      {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
+                                      {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
+                                      <span className="truncate">{partnerUser.name}</span>
+                                    </div>
                                   )}
                                 </div>
-                                
-                                  {!isMe && <div className="flex items-center gap-1 flex-wrap opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-opacity md:ml-auto mt-3 md:mt-0">
-                                    <div className="relative shrink-0">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'mind-blown')}
-                                        aria-label="React mind blown"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'mind-blown' 
-                                            ? 'bg-black text-white' 
-                                            : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
-                                        }`}
-                                        data-testid={`button-react-mind-blown-${fact.id}`}
-                                      >
-                                        <Brain className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'mind-blown' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Brain className="w-6 h-6 text-[#1C1C1C]" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'fascinating')}
-                                        aria-label="React fascinating"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'fascinating' 
-                                            ? 'bg-black text-white' 
-                                            : 'bg-transparent text-[#909090] hover:text-black hover:bg-black/5'
-                                        }`}
-                                        data-testid={`button-react-fascinating-${fact.id}`}
-                                      >
-                                        <Sparkles className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'fascinating' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Sparkles className="w-6 h-6 text-[#1C1C1C]" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'heart')}
-                                        aria-label="React heart"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'heart' 
-                                            ? 'bg-rose-500 text-white' 
-                                            : 'bg-transparent text-[#909090] hover:text-rose-500 hover:bg-rose-50'
-                                        }`}
-                                        data-testid={`button-react-heart-${fact.id}`}
-                                      >
-                                        <Heart className={`w-4 h-4 md:w-3.5 md:h-3.5 ${myReaction === 'heart' ? 'fill-white' : ''}`} />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'heart' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'laugh')}
-                                        aria-label="React laugh"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'laugh' 
-                                            ? 'bg-amber-100 text-amber-700' 
-                                            : 'bg-transparent text-[#909090] hover:text-amber-600 hover:bg-amber-50'
-                                        }`}
-                                        data-testid={`button-react-laugh-${fact.id}`}
-                                      >
-                                        <Laugh className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'laugh' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Laugh className="w-6 h-6 text-amber-500" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'thinking')}
-                                        aria-label="React thinking"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'thinking' 
-                                            ? 'bg-blue-100 text-blue-700' 
-                                            : 'bg-transparent text-[#909090] hover:text-blue-600 hover:bg-blue-50'
-                                        }`}
-                                        data-testid={`button-react-thinking-${fact.id}`}
-                                      >
-                                        <Lightbulb className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'thinking' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Lightbulb className="w-6 h-6 text-blue-500" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                      <button
-                                        onClick={() => handleReact(fact.id, 'sad')}
-                                        aria-label="React sad"
-                                        className={`flex items-center gap-1.5 w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-1.5 justify-center rounded-full text-[10px] font-bold tracking-widest uppercase transition-all active:scale-95 ${
-                                          myReaction === 'sad' 
-                                            ? 'bg-indigo-100 text-indigo-700' 
-                                            : 'bg-transparent text-[#909090] hover:text-indigo-600 hover:bg-indigo-50'
-                                        }`}
-                                        data-testid={`button-react-sad-${fact.id}`}
-                                      >
-                                        <Frown className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                      </button>
-                                      <AnimatePresence>
-                                        {burstReaction?.id === fact.id && burstReaction?.type === 'sad' && (
-                                          <motion.div 
-                                            initial={{ opacity: 1, y: 0, scale: 1 }}
-                                            animate={{ opacity: 0, y: -40, scale: 1.5 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-                                          >
-                                            <Frown className="w-6 h-6 text-indigo-500" />
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                    </div>
-                                  </div>}
-                                
-                                {(fact.reactions?.[partnerUser.id]) && isMe && (
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-transparent text-[#737373] text-[10px] font-bold tracking-widest uppercase md:ml-auto animate-in zoom-in-95 duration-300 max-w-full">
-                                    {fact.reactions[partnerUser.id] === 'mind-blown' && <Brain className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'fascinating' && <Sparkles className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'heart' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'laugh' && <Laugh className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'thinking' && <Lightbulb className="w-3.5 h-3.5 shrink-0" />}
-                                    {fact.reactions[partnerUser.id] === 'sad' && <Frown className="w-3.5 h-3.5 shrink-0" />}
-                                    <span className="truncate"><span className="truncate inline-block max-w-[5rem] align-bottom">{partnerUser.name}</span> reacted</span>
-                                  </div>
-                                )}
                               </div>
-                            </div>
-                          </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           
           {facts.length > 0 && filteredFacts.length === 0 && (
             <div className="flex-1 flex flex-col justify-center items-center py-12 text-center animate-in fade-in duration-500">
-              <p className="text-[#909090] font-serif italic text-lg">No discoveries match.</p>
+              <p className="text-[#909090] font-serif italic text-lg">No discoveries match</p>
               <button
-                onClick={() => { setFilterPerson(null); setFilterCategories([]); }}
+                onClick={() => { setFilterPerson(null); setFilterCategories([]); setSearchQuery(""); setShowSavedOnly(false); }}
                 className="mt-3 text-xs font-bold tracking-widest uppercase text-[#909090] hover:text-black transition-colors"
                 data-testid="button-clear-filters"
               >
@@ -746,12 +652,12 @@ export default function Archive({ facts, onReact, onQAReact, activeUser, partner
           {facts.length === 0 && (
             <div className="flex-1 flex flex-col justify-center items-center animate-in fade-in duration-1000 delay-300 py-12">
               <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
-                <div className="w-20 h-20 rounded-full bg-black/[0.03] flex items-center justify-center mb-8">
-                  <BookOpen className="w-8 h-8 text-[#909090]" strokeWidth={1.2} />
+                <div className="w-16 h-16 rounded-full bg-black/[0.03] flex items-center justify-center mb-6">
+                  <BookOpen className="w-7 h-7 text-[#b0b0b0]" strokeWidth={1.2} />
                 </div>
-                <h3 className="font-serif text-2xl md:text-3xl text-[#1C1C1C] mb-3">Nothing here yet.</h3>
-                <p className="text-[#909090] text-sm md:text-base leading-relaxed">
-                  Share your first discovery to begin.
+                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Nothing here yet</h3>
+                <p className="text-[#909090] text-sm leading-relaxed">
+                  Share your first discovery to begin your story together.
                 </p>
               </div>
             </div>
