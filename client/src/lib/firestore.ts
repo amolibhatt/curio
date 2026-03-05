@@ -34,25 +34,27 @@ interface ReconnectData {
 export function setReconnectCookie(data: ReconnectData): void {
   const json = encodeURIComponent(JSON.stringify(data));
   document.cookie = `curio_rc=${json}; max-age=31536000; path=/; SameSite=Lax`;
+  try { localStorage.setItem('curio_rc', JSON.stringify(data)); } catch {}
 }
 
 export function getReconnectCookie(): ReconnectData | null {
   const match = document.cookie.match(/curio_rc=([^;]+)/);
-  if (!match) return null;
-  try {
-    const data = JSON.parse(decodeURIComponent(match[1]));
-    if (
-      typeof data?.uid !== 'string' || !data.uid ||
-      typeof data?.name !== 'string' || !data.name ||
-      typeof data?.pairingId !== 'string' || !data.pairingId ||
-      typeof data?.isUser1 !== 'boolean'
-    ) {
-      return null;
-    }
-    return data as ReconnectData;
-  } catch {
+  let data: any = null;
+  if (match) {
+    try { data = JSON.parse(decodeURIComponent(match[1])); } catch {}
+  }
+  if (!data) {
+    try { data = JSON.parse(localStorage.getItem('curio_rc') || ''); } catch {}
+  }
+  if (
+    typeof data?.uid !== 'string' || !data.uid ||
+    typeof data?.name !== 'string' || !data.name ||
+    typeof data?.pairingId !== 'string' || !data.pairingId ||
+    typeof data?.isUser1 !== 'boolean'
+  ) {
     return null;
   }
+  return data as ReconnectData;
 }
 
 export async function reconnectUser(
@@ -152,11 +154,28 @@ export async function reconnectUser(
     } catch {}
   }
 
+  const gratitudesQuery = query(
+    collection(db, "dailyGratitudes"),
+    where("pairingId", "==", pairingId)
+  );
+  const gratitudesSnap = await getDocs(gratitudesQuery);
+  for (const gratDoc of gratitudesSnap.docs) {
+    const gratData = gratDoc.data();
+    if (gratData.entries && oldUid in gratData.entries) {
+      try {
+        await updateDoc(doc(db, "dailyGratitudes", gratDoc.id), {
+          [`entries.${newUid}`]: gratData.entries[oldUid],
+        });
+      } catch {}
+    }
+  }
+
   setReconnectCookie({ uid: newUid, name: safeName, pairingId, isUser1 });
 }
 
 function clearReconnectCookie(): void {
   document.cookie = `curio_rc=; max-age=0; path=/; SameSite=Lax`;
+  try { localStorage.removeItem('curio_rc'); } catch {}
 }
 
 const LONG_HAIR_VARIANTS = "variant26,variant32,variant39,variant40,variant42,variant45,variant46,variant47,variant48,variant50,variant57,variant59,variant60,variant61,variant62,variant63";
