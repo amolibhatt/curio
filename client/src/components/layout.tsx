@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check, Bell, BellOff, BellRing, Sparkles } from "lucide-react";
+import { BookOpen, Compass, History, Heart, Link as LinkIcon, Check, Bell, BellOff, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { User } from "@/lib/mock-data";
@@ -130,11 +130,6 @@ export default function Layout({ children, user, hasFriendJoined = false, invite
               <Link href="/archive">
                 <Button variant="ghost" size="icon" aria-label="Archive" className={`rounded-xl w-12 h-11 transition-all ${location === "/archive" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
                   <History className="w-[20px] h-[20px]" strokeWidth={location === "/archive" ? 2 : 1.5} />
-                </Button>
-              </Link>
-              <Link href="/memories">
-                <Button variant="ghost" size="icon" aria-label="Memories" className={`rounded-xl w-12 h-11 transition-all ${location === "/memories" ? "bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/90 hover:text-white shadow-sm" : "text-[#909090] hover:text-black hover:bg-black/5"}`}>
-                  <Sparkles className="w-[20px] h-[20px]" strokeWidth={location === "/memories" ? 2 : 1.5} />
                 </Button>
               </Link>
               <Link href="/us">
