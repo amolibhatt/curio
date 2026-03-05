@@ -1,4 +1,5 @@
-const CACHE_NAME = 'curio-cache-v11';
+const CACHE_NAME = 'curio-cache-v12';
+const APP_VERSION = '12';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -12,7 +13,7 @@ self.addEventListener('activate', (event) => {
       )
     ).then(() => self.clients.claim()).then(() => {
       self.clients.matchAll({ type: 'window' }).then((clients) => {
-        clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' }));
+        clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED', version: APP_VERSION }));
       });
     })
   );
@@ -33,7 +34,23 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('dicebear.com')
   ) return;
 
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+  if (url.pathname === '/version.json') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match(event.request).then((cached) =>
+          cached || caches.match('/').then((r) => r || new Response('Offline', { status: 503 }))
+        )
+      )
+    );
+    return;
+  }
+
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -44,13 +61,9 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(event.request).then((cached) => {
-            if (cached) return cached;
-            if (event.request.mode === 'navigate') {
-              return caches.match('/').then((r) => r || new Response('Offline', { status: 503 }));
-            }
-            return new Response('Offline', { status: 503 });
-          })
+          caches.match(event.request).then((cached) =>
+            cached || new Response('Offline', { status: 503 })
+          )
         )
     );
     return;

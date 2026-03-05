@@ -30,6 +30,27 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      var CURIO_VERSION = '12';
+
+      (function checkVersion() {
+        fetch('/version.json?t=' + Date.now())
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.version && data.version !== CURIO_VERSION) {
+              if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                  return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+                }).then(function() {
+                  window.location.reload();
+                });
+              } else {
+                window.location.reload();
+              }
+            }
+          })
+          .catch(function() {});
+      })();
+
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', function(event) {
           if (event.data && event.data.type === 'SW_UPDATED') {
@@ -37,7 +58,7 @@
           }
         });
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js?v=11')
+          navigator.serviceWorker.register('/sw.js?v=12')
             .then(function(registration) {
               registration.addEventListener('updatefound', function() {
                 var newWorker = registration.installing;
@@ -56,8 +77,26 @@
             });
         });
         document.addEventListener('visibilitychange', function() {
-          if (document.visibilityState === 'visible' && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.ready.then(function(reg) { reg.update(); });
+          if (document.visibilityState === 'visible') {
+            fetch('/version.json?t=' + Date.now())
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.version && data.version !== CURIO_VERSION) {
+                  if ('caches' in window) {
+                    caches.keys().then(function(keys) {
+                      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+                    }).then(function() {
+                      window.location.reload();
+                    });
+                  } else {
+                    window.location.reload();
+                  }
+                }
+              })
+              .catch(function() {});
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.ready.then(function(reg) { reg.update(); });
+            }
           }
         });
       }
