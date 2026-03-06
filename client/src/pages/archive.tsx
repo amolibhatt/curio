@@ -8,7 +8,7 @@ import { formatText } from "@/lib/format-text";
 import { VALID_CATEGORIES_LIST } from "@/lib/firestore";
 import { QUESTION_CATEGORIES } from "@/lib/daily-questions";
 
-type TabMode = "discoveries" | "questions" | "memories";
+type TabMode = "discoveries" | "questions" | "gratitude" | "memories";
 
 type MemoryItem = {
   type: 'fact' | 'qa';
@@ -209,9 +209,12 @@ export default function Archive({
   const togetherDates = useMemo(() => {
     const dateSet = new Set<string>();
     for (const a of completedAnswers) dateSet.add(a.date);
-    for (const g of completedGratitudes) dateSet.add(g.date);
     return [...dateSet].sort((a, b) => b.localeCompare(a));
-  }, [completedAnswers, completedGratitudes]);
+  }, [completedAnswers]);
+
+  const gratitudeDates = useMemo(() => {
+    return completedGratitudes.map(g => g.date).sort((a, b) => b.localeCompare(a));
+  }, [completedGratitudes]);
 
   const qaByDate = useMemo(() => {
     const map: Record<string, DailyAnswer> = {};
@@ -421,25 +424,28 @@ export default function Archive({
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex bg-[#FAF9F7] rounded-full p-1 shrink-0 relative">
-            {(["discoveries", "questions", "memories"] as TabMode[]).map((tab) => (
+            {(["discoveries", "questions", "gratitude", "memories"] as TabMode[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => { if (navigator.vibrate) navigator.vibrate(20); setActiveTab(tab); }}
                 className={`px-3 py-2 rounded-full text-[10px] font-bold tracking-[0.12em] uppercase transition-all relative z-10 flex items-center gap-1.5 ${
-                  activeTab === tab ? "text-white" : "text-[#909090] hover:text-black"
+                  activeTab === tab
+                    ? (tab === "gratitude" ? "text-white" : "text-white")
+                    : "text-[#909090] hover:text-black"
                 }`}
-                data-testid={`tab-${tab === "questions" ? "questions" : tab}`}
+                data-testid={`tab-${tab}`}
               >
                 {activeTab === tab && (
                   <motion.div
                     layoutId="tab-pill"
-                    className="absolute inset-0 bg-[#1C1C1C] rounded-full shadow-sm"
+                    className={`absolute inset-0 rounded-full shadow-sm ${tab === "gratitude" ? "bg-rose-500" : "bg-[#1C1C1C]"}`}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 <span className="relative z-10 flex items-center gap-1.5">
                   {tab === "memories" && <Sparkles className="w-3 h-3" />}
-                  {tab === "discoveries" ? "Discoveries" : tab === "questions" ? "Q&A" : "Memories"}
+                  {tab === "gratitude" && <HandHeart className="w-3 h-3" />}
+                  {tab === "discoveries" ? "Discoveries" : tab === "questions" ? "Q&A" : tab === "gratitude" ? "Gratitude" : "Memories"}
                 </span>
               </button>
             ))}
@@ -623,7 +629,6 @@ export default function Archive({
           {togetherDates.length > 0 ? (
             togetherDates.map((date, dateIdx) => {
               const qa = qaByDate[date];
-              const grat = gratitudeByDate[date];
               const dateLabel = date === todayStr
                 ? <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
                 : (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })();
@@ -724,44 +729,6 @@ export default function Archive({
                     );
                   })()}
 
-                  {grat && (() => {
-                    const myGrat = grat.entries[activeUser.id];
-                    const partnerGrat = grat.entries[partnerUser.id];
-                    return (
-                      <div className="bg-rose-50/40 rounded-2xl border border-rose-100/60 overflow-hidden" data-testid={`card-gratitude-${grat.id}`}>
-                        <div className="px-5 pt-4 pb-1 flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-rose-100/60 flex items-center justify-center shrink-0">
-                            <HandHeart className="w-3.5 h-3.5 text-rose-400" />
-                          </div>
-                          <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400/80 uppercase flex-1">
-                            Gratitude
-                          </p>
-                        </div>
-                        <div className="px-5 pb-4">
-                          <div className="space-y-2">
-                            {myGrat && (
-                              <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full" />
-                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</p>
-                                </div>
-                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGrat}</p>
-                              </div>
-                            )}
-                            {partnerGrat && (
-                              <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full" />
-                                  <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</p>
-                                </div>
-                                <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGrat}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
                 </motion.div>
               );
             })
@@ -802,6 +769,86 @@ export default function Archive({
                 <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Conversations live here</h3>
                 <p className="text-[#909090] text-sm leading-relaxed">
                   Answer today's question together and your shared answers will appear here.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      ) : activeTab === "gratitude" ? (
+        <div className="space-y-6 flex-1 flex flex-col">
+          {gratitudeDates.length > 0 ? (
+            gratitudeDates.map((date, dateIdx) => {
+              const grat = gratitudeByDate[date];
+              if (!grat) return null;
+              const myGrat = grat.entries[activeUser.id];
+              const partnerGrat = grat.entries[partnerUser.id];
+              const dateLabel = date === todayStr
+                ? <><span className="text-[#1C1C1C]">Today</span> · {(() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d'); })()}</>
+                : (() => { const [y, m, d] = date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMMM d, yyyy'); })();
+              return (
+                <motion.div
+                  key={date}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: Math.min(dateIdx * 0.08, 0.8) }}
+                  className="space-y-3"
+                >
+                  <p className="text-[10px] font-bold tracking-[0.15em] text-[#b0b0b0] uppercase px-1">
+                    {dateLabel}
+                  </p>
+                  <div className="bg-rose-50/40 rounded-2xl border border-rose-100/60 overflow-hidden" data-testid={`card-gratitude-${grat.id}`}>
+                    <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-rose-100/60 flex items-center justify-center shrink-0">
+                        <HandHeart className="w-3.5 h-3.5 text-rose-400" />
+                      </div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400/80 uppercase flex-1">
+                        Gratitude
+                      </p>
+                    </div>
+                    <div className="px-5 pb-4">
+                      <div className="space-y-2">
+                        {myGrat && (
+                          <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
+                            <div className="flex items-center gap-2 mb-1">
+                              <img src={activeUser.avatar} alt={activeUser.name} className="w-4 h-4 rounded-full" />
+                              <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{activeUser.name}</p>
+                            </div>
+                            <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{myGrat}</p>
+                          </div>
+                        )}
+                        {partnerGrat && (
+                          <div className="rounded-xl bg-rose-50/50 px-4 py-3 border border-rose-100/50">
+                            <div className="flex items-center gap-2 mb-1">
+                              <img src={partnerUser.avatar} alt={partnerUser.name} className="w-4 h-4 rounded-full" />
+                              <p className="text-[9px] font-bold tracking-[0.15em] text-[#909090] uppercase">{partnerUser.name}</p>
+                            </div>
+                            <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{partnerGrat}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex-1 flex flex-col justify-center items-center py-16"
+            >
+              <div className="flex flex-col items-center justify-center text-center px-6 max-w-sm">
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-6"
+                >
+                  <HandHeart className="w-7 h-7 text-rose-400" strokeWidth={1.5} />
+                </motion.div>
+                <h3 className="font-serif text-xl text-[#1C1C1C] mb-2">Gratitude grows here</h3>
+                <p className="text-[#909090] text-sm leading-relaxed">
+                  Write what you're grateful for today. When you both share, your gratitudes will appear here together.
                 </p>
               </div>
             </motion.div>
