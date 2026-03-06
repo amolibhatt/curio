@@ -60,7 +60,7 @@ export default function Login({ onLogin, error, isLoading }: { onLogin: (name: s
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
               >
-                <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
+                <Heart className="w-4 h-4 text-[#8B7E74] fill-[#8B7E74]" />
               </motion.div>
               <span className="text-[13px] font-medium text-[#8B7E74]">Your partner is waiting</span>
             </motion.div>

@@ -193,10 +193,10 @@ function MonthBadge({ months }: { months: number }) {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.2 }}
-      className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.1em] uppercase mt-3"
+      className="inline-flex items-center gap-1.5 bg-[#EDEAE6] text-[#1C1C1C] px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.1em] uppercase mt-3"
       data-testid="badge-months"
     >
-      <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
+      <Heart className="w-3 h-3 fill-[#8B7E74] text-[#8B7E74]" />
       {label}
     </motion.div>
   );
@@ -281,8 +281,8 @@ export default function Timeline({
           transition={{ duration: 0.6 }}
           className="text-center px-6"
         >
-          <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-8">
-            <Heart className="w-9 h-9 text-rose-400" />
+          <div className="w-20 h-20 bg-[#EDEAE6] rounded-full flex items-center justify-center mx-auto mb-8">
+            <Heart className="w-9 h-9 text-[#8B7E74]" />
           </div>
           <h1 className="font-serif text-[2rem] md:text-[3rem] text-[#1C1C1C] tracking-tight leading-tight mb-4">
             When did it all <span className="italic text-[#4A4A4A]">begin</span>?
@@ -349,7 +349,7 @@ export default function Timeline({
           <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
             <img src={activeUser.avatar} alt={activeUser.name} className="w-full h-full" />
           </div>
-          <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
+          <Heart className="w-4 h-4 text-[#8B7E74] fill-[#8B7E74]" />
           <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-sm border border-black/5">
             <img src={partnerUser.avatar} alt={partnerUser.name} className="w-full h-full" />
           </div>

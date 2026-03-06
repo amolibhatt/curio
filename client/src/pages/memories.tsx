@@ -524,8 +524,8 @@ export default function Memories({
       {stats.mostReactedFact && (
         <section data-testid="section-most-loved">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-              <Heart className="w-4.5 h-4.5 text-rose-400 fill-rose-400" />
+            <div className="w-9 h-9 rounded-xl bg-[#EDEAE6] flex items-center justify-center shrink-0">
+              <Heart className="w-4.5 h-4.5 text-[#8B7E74] fill-[#8B7E74]" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-[#1C1C1C]">Most Loved</h2>
@@ -624,7 +624,7 @@ function FactCard({ fact, activeUser, partnerUser }: { fact: Fact; activeUser: U
       {fact.categories.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2.5">
           {fact.categories.map(c => (
-            <span key={c} className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${c === 'Us' ? 'bg-rose-50 text-rose-500' : 'bg-[#FAF9F7] text-[#909090]'}`}>
+            <span key={c} className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${c === 'Us' ? 'bg-[#EDEAE6] text-[#1C1C1C]' : 'bg-[#FAF9F7] text-[#909090]'}`}>
               {c}
             </span>
           ))}

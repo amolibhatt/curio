@@ -137,7 +137,7 @@ function RitualDots({ done, total }: { done: number; total: number }) {
 }
 
 const REACTIONS: { type: ReactionType; Icon: React.ElementType; active: string; hover: string; fill?: boolean; burstColor: string }[] = [
-  { type: 'heart', Icon: Heart, active: 'bg-rose-500 text-white', hover: 'hover:text-rose-500 hover:bg-rose-50', fill: true, burstColor: 'text-rose-500' },
+  { type: 'heart', Icon: Heart, active: 'bg-[#1C1C1C] text-white', hover: 'hover:text-[#1C1C1C] hover:bg-black/5', fill: true, burstColor: 'text-[#1C1C1C]' },
   { type: 'mind-blown', Icon: Brain, active: 'bg-black text-white', hover: 'hover:text-black hover:bg-black/5', burstColor: 'text-[#1C1C1C]' },
   { type: 'laugh', Icon: Laugh, active: 'bg-amber-100 text-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50', burstColor: 'text-amber-500' },
   { type: 'thinking', Icon: Lightbulb, active: 'bg-blue-100 text-blue-700', hover: 'hover:text-blue-600 hover:bg-blue-50', burstColor: 'text-blue-500' },
@@ -206,7 +206,7 @@ function PartnerReactionBadge({ reaction, partnerName }: { reaction: ReactionTyp
       animate={{ opacity: 1, scale: 1 }}
       className="flex items-center gap-1.5 text-[#909090] text-[10px] font-bold tracking-wider uppercase"
     >
-      <Icon className={`w-3.5 h-3.5 shrink-0 ${reaction === 'heart' ? 'text-rose-500 fill-rose-500' : ''}`} />
+      <Icon className={`w-3.5 h-3.5 shrink-0 ${reaction === 'heart' ? 'text-[#1C1C1C] fill-[#1C1C1C]' : ''}`} />
       <span className="truncate">{partnerName}</span>
     </motion.div>
   );
@@ -480,11 +480,11 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                     <button key={name} type="button" onClick={() => { if (navigator.vibrate) navigator.vibrate(20); toggleCategory(name); }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-200 active:scale-95 border ${
                         selectedCategories.includes(name)
-                          ? name === 'Us' ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm' : 'bg-black text-white border-black shadow-sm'
+                          ? name === 'Us' ? 'bg-[#EDEAE6] text-[#1C1C1C] border-[#D5D0C8] shadow-sm' : 'bg-black text-white border-black shadow-sm'
                           : 'bg-white text-[#737373] border-black/5 hover:border-black/10 shadow-sm hover:shadow-md'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-rose-500 fill-rose-500' : ''}`} />
+                      <Icon className={`w-3.5 h-3.5 ${selectedCategories.includes(name) && name === 'Us' ? 'text-[#1C1C1C] fill-[#1C1C1C]' : ''}`} />
                       {name}
                     </button>
                   ))}
@@ -681,7 +681,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                         <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{author.name}</span>
                         <div className="flex items-center gap-1 ml-auto">
                           {fact.categories.map((cat) => (
-                            <span key={cat} className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${cat === 'Us' ? 'bg-rose-50 text-rose-500' : 'bg-[#FAF9F7] text-[#909090]'}`}>{cat}</span>
+                            <span key={cat} className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-[0.1em] uppercase ${cat === 'Us' ? 'bg-[#EDEAE6] text-[#1C1C1C]' : 'bg-[#FAF9F7] text-[#909090]'}`}>{cat}</span>
                           ))}
                         </div>
                       </div>
@@ -853,10 +853,10 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
 
           {onSubmitGratitude && (
             <div className={`rounded-2xl border transition-all duration-500 ${
-              bothGratitudesDone ? 'bg-rose-50/40 border-rose-200/50' : 'bg-white border-black/5'
+              bothGratitudesDone ? 'bg-[#EDEAE6]/40 border-[#D5D0C8]/50' : 'bg-white border-black/5'
             }`} data-testid="card-daily-gratitude">
               <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-rose-500' : 'bg-[#FAF9F7] border border-black/5'}`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${myGratitude ? 'bg-[#1C1C1C]' : 'bg-[#FAF9F7] border border-black/5'}`}>
                   <HandHeart className={`w-4.5 h-4.5 ${myGratitude ? 'text-white' : 'text-[#909090]'}`} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -865,7 +865,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                 </div>
                 <AnimatePresence mode="wait">
                   {bothGratitudesDone && (
-                    <motion.span key="revealed" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</motion.span>
+                    <motion.span key="revealed" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-[#1C1C1C] bg-[#EDEAE6] px-2.5 py-1 rounded-full uppercase shrink-0">Revealed</motion.span>
                   )}
                   {myGratitude && !bothGratitudesDone && (
                     <motion.span key="sent" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[9px] font-bold tracking-wider text-[#909090] bg-[#FAF9F7] px-2.5 py-1 rounded-full uppercase shrink-0 border border-black/5">Sent</motion.span>
@@ -886,7 +886,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                         el.style.height = Math.min(el.scrollHeight, 160) + 'px';
                       }}
                       placeholder={`Today I appreciate ${hasPartner ? partnerUser.name : 'my partner'} for...`}
-                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-rose-200/50 font-serif leading-relaxed border border-black/5"
+                      className="w-full bg-[#FAF9F7] rounded-xl px-4 py-3 text-sm text-[#1C1C1C] placeholder:text-[#c0c0c0] resize-none focus:outline-none focus:ring-2 focus:ring-black/10 font-serif leading-relaxed border border-black/5"
                       rows={2}
                       data-testid="input-daily-gratitude"
                     />
@@ -894,7 +894,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                       <button
                         onClick={handleSubmitGratitude}
                         disabled={!gratitudeText.trim() || isSubmittingGratitude}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-rose-500 text-white hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[12px] font-semibold bg-[#1C1C1C] text-white hover:bg-black transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         data-testid="button-submit-gratitude"
                       >
                         {isSubmittingGratitude ? "Sending..." : "Share"}
@@ -913,11 +913,11 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                         initial={{ opacity: 0, y: 12, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ duration: 0.45, delay: idx * 0.15, ease: "easeOut" }}
-                        className="rounded-xl bg-white/70 px-4 py-3 border border-rose-100/50"
+                        className="rounded-xl bg-white/70 px-4 py-3 border border-black/5"
                       >
                         <div className="flex items-center gap-2 mb-2">
                           <img src={entry.avatar} alt={entry.name} className="w-5 h-5 rounded-full" />
-                          <span className="text-[10px] font-bold tracking-[0.15em] text-rose-400 uppercase">{entry.name}</span>
+                          <span className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase">{entry.name}</span>
                         </div>
                         <p className="text-sm text-[#1C1C1C] font-serif leading-relaxed">{entry.text}</p>
                       </motion.div>
@@ -928,7 +928,7 @@ export default function Home({ facts, onAddFact, onEditFact, onReact, activeUser
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="rounded-xl bg-rose-500 p-3.5 flex flex-col gap-1.5"
+                      className="rounded-xl bg-[#1C1C1C] p-3.5 flex flex-col gap-1.5"
                     >
                       <div className="flex items-center gap-2">
                         <img src={activeUser.avatar} alt={activeUser.name} className="w-5 h-5 rounded-full" />
