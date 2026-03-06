@@ -728,12 +728,12 @@ export default function Archive({
                     const myGrat = grat.entries[activeUser.id];
                     const partnerGrat = grat.entries[partnerUser.id];
                     return (
-                      <div className="bg-white rounded-2xl border border-black/5 overflow-hidden" data-testid={`card-gratitude-${grat.id}`}>
+                      <div className="bg-rose-50/40 rounded-2xl border border-rose-100/60 overflow-hidden" data-testid={`card-gratitude-${grat.id}`}>
                         <div className="px-5 pt-4 pb-1 flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-rose-100/60 flex items-center justify-center shrink-0">
                             <HandHeart className="w-3.5 h-3.5 text-rose-400" />
                           </div>
-                          <p className="text-[10px] font-bold tracking-[0.15em] text-[#909090] uppercase flex-1">
+                          <p className="text-[10px] font-bold tracking-[0.15em] text-rose-400/80 uppercase flex-1">
                             Gratitude
                           </p>
                         </div>
